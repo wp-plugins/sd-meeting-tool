@@ -1,0 +1,30 @@
+#have_voted .option
+{
+	text-align: center;
+}
+
+#have_voted tr:hover
+{
+	background-color: #ddd;
+}
+
+/**
+	Results graph
+**/
+.wp-admin table.election_graph th.option,
+.wp-admin table.election_graph th.votes
+{
+	width: 12em;
+}
+
+.wp-admin table.election_graph td.votes .percent
+{
+	margin-left: 1em;
+	font-style: italic;
+}
+
+.wp-admin table.election_graph div.percent_graph
+{
+	height: 100%;
+	background-color: #0099cc;
+}

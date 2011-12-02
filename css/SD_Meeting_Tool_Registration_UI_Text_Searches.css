@@ -1,0 +1,38 @@
+.ui_text_searches .text .label
+{
+	font-size: 50%;
+}
+
+.ui_text_searches .text .label sup,
+.ui_text_searches .participant_lookup .label
+{
+	display: none;
+}
+
+.ui_text_searches #__text
+{
+	font-size: 200%;
+	text-align: center;
+}
+
+.ui_text_searches #__text,
+.ui_text_searches #__participant_lookup
+{
+	width: 100%;
+}
+
+.ui_text_searches #__text.search_successful
+{
+	background-color: #66f47a;
+	font-weight: bold;
+}
+
+/**
+	Loading gif
+**/
+.ui_text_searches .text .input 
+{
+	padding-right: 24px;
+	background-position: center right;
+	background-repeat: no-repeat;
+}

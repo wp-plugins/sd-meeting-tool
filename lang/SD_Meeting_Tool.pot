@@ -1,0 +1,2247 @@
+# SD Meeting Tool
+# Copyright (C) 2011
+# This file is distributed under the GPL v3.
+# Sverigedemokraterna IT <it@sverigedemokraterna.se>, 2011.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: SD Meeting Tool\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: xxxx-xx-xx xx:xx+0200\n"
+"PO-Revision-Date: xxxx-xx-xx xx:xx+0200\n"
+"Last-Translator: Sverigedemokraterna IT <it@sverigedemokraterna.se>\n"
+"Language-Team: Sverigedemokraterna IT <it@sverigedemokraterna.se>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: SD_Meeting_Tool_Printing.php:1082
+#, php-format
+msgid "%s columns, %s mm per row"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1599
+#, php-format
+msgid "%s participants have physically voted but there are %s votes registered by the functionary."
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:820 SD_Meeting_Tool_Participants.php:301
+#, php-format
+msgid "%s participants."
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:1869
+msgid "+"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:1876
+msgid "-"
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:728
+msgid "<em>autorefresh</em>: Use javascript to automatically refresh the agenda."
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:740
+msgid "<em>autorefresh</em>: Use javascript to automatically refresh the item."
+msgstr ""
+
+#: SD_Meeting_Tool_Displays.php:591
+msgid "<em>display_format_id</em>: Optional ID of display format to use."
+msgstr ""
+
+#: SD_Meeting_Tool_Displays.php:592
+msgid "<em>display_id</em>: ID of template to use as display."
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:729
+msgid "<em>id</em>: The ID of the agenda to be displayed."
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:741
+msgid "<em>id</em>: The ID of the agenda to use."
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:742
+msgid "<em>link</em>: Enable linking of the agenda item."
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:730
+msgid "<em>link</em>: Enable links of those agenda items that have links."
+msgstr ""
+
+#: SD_Meeting_Tool_Displays.php:593
+msgid "<em>list_id</em>: ID of list to display."
+msgstr ""
+
+#: SD_Meeting_Tool_Displays.php:594
+msgid "<em>list_sort_id</em>: Optional ID of list sort to use."
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:743
+msgid "<em>number</em>: Display the number of the item before the text."
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:744
+msgid "<em>text</em>: Display the agenda item text."
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:1125
+msgid "A countdown timer of how much time the speaker has left."
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:448 SD_Meeting_Tool_Agendas.php:458
+msgid "A new item has been created!"
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:514 SD_Meeting_Tool_Displays.php:510
+#: SD_Meeting_Tool_Elections.php:1100 SD_Meeting_Tool_Speakers.php:706
+#: SD_Meeting_Tool_Speakers.php:1218
+#, php-format
+msgid "A new page has been created! You can now %sedit the page%s or %sview the page%s."
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:777
+msgid "Abstain"
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:255
+#, php-format
+msgid "Action <em>%s</em> deleted."
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:240
+#, php-format
+msgid "Action cloned! <a href=\"%s\">Edit the newly-cloned action</a>."
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:267
+#, php-format
+msgid "Action created %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:278
+#, php-format
+msgid "Action created! <a href=\"%s\">Edit the newly-created action</a>."
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:478
+#, php-format
+msgid "Action item <em>%s</em> deleted."
+msgstr ""
+
+#: SD_Meeting_Tool_Registrations.php:252
+#, php-format
+msgid "Action on failure: <em>%s</em>"
+msgstr ""
+
+#: SD_Meeting_Tool_Registrations.php:262
+#, php-format
+msgid "Action on success: <em>%s</em>"
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:502
+msgid "Action settings"
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:136 SD_Meeting_Tool_Actions.php:138
+#: SD_Meeting_Tool_Actions.php:139
+msgid "Actions"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:1870
+msgid "Add 30 seconds"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:862
+msgid "Add a new field"
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:1419
+msgid "Add the participant to a list"
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:1420
+#, php-format
+msgid "Add the participant to: <br /><em>%s</em>"
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:492 SD_Meeting_Tool_Speakers.php:522
+#: SD_Meeting_Tool_Speakers.php:816
+msgid "Agenda"
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:256
+#, php-format
+msgid "Agenda <em>%s</em> deleted."
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:268
+#, php-format
+msgid "Agenda created %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:279
+#, php-format
+msgid "Agenda created! <a href=\"%s\">Edit the newly-created agenda</a>."
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:496 SD_Meeting_Tool_Speakers.php:1980
+msgid "Agenda item"
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:473
+#, php-format
+msgid "Agenda item <em>%s</em> deleted."
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:823
+msgid "Agenda item settings"
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:535
+msgid "Agenda settings"
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:139 SD_Meeting_Tool_Agendas.php:141
+#: SD_Meeting_Tool_Agendas.php:142
+msgid "Agendas"
+msgstr ""
+
+#: SD_Meeting_Tool_Registration_UI_Text_Searches.php:230
+msgid "Ajax submit"
+msgstr ""
+
+#: SD_Meeting_Tool_Registration_UI_Text_Searches.php:382
+msgid "All participants"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:1027
+msgid "All the participants in the list will be printed."
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:691
+msgid "Amount of blocks to create"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:557
+msgid "Anonymous"
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:352 SD_Meeting_Tool_Actions.php:560
+#: SD_Meeting_Tool_Agendas.php:347 SD_Meeting_Tool_Agendas.php:594
+#: SD_Meeting_Tool_Display_Formats.php:296 SD_Meeting_Tool_Displays.php:345
+#: SD_Meeting_Tool_Elections.php:512 SD_Meeting_Tool_List_Sorts.php:266
+#: SD_Meeting_Tool_Lists.php:444 SD_Meeting_Tool_Lists.php:892
+#: SD_Meeting_Tool_Participants.php:274 SD_Meeting_Tool_Printing.php:394
+#: SD_Meeting_Tool_Printing.php:645 SD_Meeting_Tool_Printing.php:829
+#: SD_Meeting_Tool_Registrations.php:314 SD_Meeting_Tool_Speakers.php:485
+#: SD_Meeting_Tool_Speakers.php:994
+msgid "Apply"
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:677
+msgid "Apply from the above select box"
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:692
+msgid "Apply from the above text area"
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:699
+msgid "Apply from the checkboxes below"
+msgstr ""
+
+#: SD_Meeting_Tool_List_Sorts.php:394
+msgid "Ascending"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:1158
+msgid "Automatically refresh"
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:913
+msgid "Back to the action editor"
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:1101
+msgid "Back to the agenda editor"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:1402
+msgid "Back to the template editor"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:1327
+#, php-format
+msgid "Barcode: %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1022
+msgid "Begin registering votes"
+msgstr ""
+
+#: SD_Meeting_Tool_Display_Formats.php:414
+msgid "Below is a table with two columns. In the left column there is a keyword with a corresponding user field in the right column."
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:360
+#, php-format
+msgid "Block fields: %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:522
+msgid "Blocks"
+msgstr ""
+
+#: SD_Meeting_Tool_Registration_UI_Text_Searches.php:239
+msgid "CSS color to fade to when the input is disabled. Default is <em>#999</em>."
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:442 SD_Meeting_Tool_Elections.php:957
+msgid "Calculate the electoral register"
+msgstr ""
+
+#: SD_Meeting_Tool_Participants.php:406
+msgid "Cancel import"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:777 SD_Meeting_Tool_Printing.php:935
+msgid "Center"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1816
+msgid "Choice"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:884
+msgid "Choice list"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:797 SD_Meeting_Tool_Elections.php:821
+#: SD_Meeting_Tool_Elections.php:846 SD_Meeting_Tool_Elections.php:883
+msgid "Choice name"
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:344 SD_Meeting_Tool_Actions.php:553
+#: SD_Meeting_Tool_Display_Formats.php:288 SD_Meeting_Tool_Displays.php:337
+#: SD_Meeting_Tool_Elections.php:504 SD_Meeting_Tool_Lists.php:435
+#: SD_Meeting_Tool_Printing.php:386
+msgid "Clone"
+msgstr ""
+
+#: SD_Meeting_Tool_Display_Formats.php:204 SD_Meeting_Tool_Lists.php:960
+#, php-format
+msgid "Clone of %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:465
+msgid "Combined participants"
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:775
+msgid "Copy"
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:215 SD_Meeting_Tool_Displays.php:233
+#: SD_Meeting_Tool_Elections.php:311 SD_Meeting_Tool_Printing.php:238
+#, php-format
+msgid "Copy of %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:205 SD_Meeting_Tool_Lists.php:207
+#: SD_Meeting_Tool_Lists.php:348 SD_Meeting_Tool_Lists.php:351
+msgid "Copy participants"
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:215
+#, php-format
+msgid "Copying participants from: %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:386
+msgid "Create a new action"
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:381
+msgid "Create a new agenda"
+msgstr ""
+
+#: SD_Meeting_Tool_Displays.php:379
+msgid "Create a new display"
+msgstr ""
+
+#: SD_Meeting_Tool_Display_Formats.php:330
+msgid "Create a new display format"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:546 SD_Meeting_Tool_Elections.php:561
+msgid "Create a new election"
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:613
+msgid "Create a new item"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:749 SD_Meeting_Tool_Elections.php:859
+#: SD_Meeting_Tool_Lists.php:480
+msgid "Create a new list"
+msgstr ""
+
+#: SD_Meeting_Tool_List_Sorts.php:300
+msgid "Create a new list sort"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:428
+msgid "Create a new printing template"
+msgstr ""
+
+#: SD_Meeting_Tool_Registrations.php:348
+msgid "Create a new registration"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:1028 SD_Meeting_Tool_Speakers.php:1032
+msgid "Create a new speaker display"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:529 SD_Meeting_Tool_Speakers.php:534
+msgid "Create a new speaker list"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:1226
+msgid "Create a new template from the above type"
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:693 SD_Meeting_Tool_Agendas.php:701
+#: SD_Meeting_Tool_Displays.php:547 SD_Meeting_Tool_Elections.php:1123
+#: SD_Meeting_Tool_Elections.php:1131 SD_Meeting_Tool_Speakers.php:1237
+msgid "Create a page with this shortcode"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:696
+msgid "Create new blocks"
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:671 SD_Meeting_Tool_Agendas.php:678
+msgid "Create new item(s)"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:643
+msgid "Create shortcode"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:1163
+msgid "Create the shortcode with the above settings."
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:694 SD_Meeting_Tool_Agendas.php:702
+#: SD_Meeting_Tool_Displays.php:548 SD_Meeting_Tool_Elections.php:1124
+#: SD_Meeting_Tool_Elections.php:1132
+msgid "Creates a new page with this shortcode as the only content."
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:1211
+msgid "Current speaker"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:606
+msgid "Default reply time"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:598
+msgid "Default speaker time"
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:345 SD_Meeting_Tool_Actions.php:554
+#: SD_Meeting_Tool_Agendas.php:340 SD_Meeting_Tool_Agendas.php:588
+#: SD_Meeting_Tool_Display_Formats.php:289 SD_Meeting_Tool_Displays.php:338
+#: SD_Meeting_Tool_Elections.php:505 SD_Meeting_Tool_List_Sorts.php:259
+#: SD_Meeting_Tool_Lists.php:436 SD_Meeting_Tool_Participants.php:267
+#: SD_Meeting_Tool_Printing.php:387 SD_Meeting_Tool_Printing.php:638
+#: SD_Meeting_Tool_Printing.php:822 SD_Meeting_Tool_Registrations.php:307
+#: SD_Meeting_Tool_Speakers.php:477 SD_Meeting_Tool_Speakers.php:987
+msgid "Delete"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:780
+msgid "Delete speaker"
+msgstr ""
+
+#: SD_Meeting_Tool_List_Sorts.php:394
+msgid "Descending"
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:579 SD_Meeting_Tool_Agendas.php:718
+#: SD_Meeting_Tool_Displays.php:581 SD_Meeting_Tool_Elections.php:1171
+msgid "Description"
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:765
+msgid "Destination lists"
+msgstr ""
+
+#: SD_Meeting_Tool_Registration_UI_Text_Searches.php:238
+msgid "Disabled color"
+msgstr ""
+
+#: SD_Meeting_Tool_Displays.php:260
+#, php-format
+msgid "Display <em>%s</em> deleted."
+msgstr ""
+
+#: SD_Meeting_Tool_Displays.php:245
+#, php-format
+msgid "Display cloned! <a href=\"%s\">Edit the newly-cloned display</a>."
+msgstr ""
+
+#: SD_Meeting_Tool_Displays.php:272
+#, php-format
+msgid "Display created %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Displays.php:283
+#, php-format
+msgid "Display created! <a href=\"%s\">Edit the newly-created display</a>."
+msgstr ""
+
+#: SD_Meeting_Tool_Display_Formats.php:362 SD_Meeting_Tool_Lists.php:515
+#: SD_Meeting_Tool_Speakers.php:620 SD_Meeting_Tool_Speakers.php:638
+#: SD_Meeting_Tool_Speakers.php:1152
+msgid "Display format"
+msgstr ""
+
+#: SD_Meeting_Tool_Display_Formats.php:230
+#, php-format
+msgid "Display format <em>%s</em> deleted."
+msgstr ""
+
+#: SD_Meeting_Tool_Display_Formats.php:215
+#, php-format
+msgid "Display format cloned! <a href=\"%s\">Edit the newly-cloned display format</a>."
+msgstr ""
+
+#: SD_Meeting_Tool_Display_Formats.php:177
+#, php-format
+msgid "Display format created %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Display_Formats.php:188
+#, php-format
+msgid "Display format created! <a href=\"%s\">Edit the newly-created display format</a>."
+msgstr ""
+
+#: SD_Meeting_Tool_Displays.php:414
+msgid "Display format override"
+msgstr ""
+
+#: SD_Meeting_Tool_Display_Formats.php:400
+#: SD_Meeting_Tool_Display_Formats.php:412
+msgid "Display format settings"
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:371
+msgid "Display format:"
+msgstr ""
+
+#: SD_Meeting_Tool_Display_Formats.php:127
+#: SD_Meeting_Tool_Display_Formats.php:129
+#: SD_Meeting_Tool_Display_Formats.php:130
+msgid "Display formats"
+msgstr ""
+
+#: SD_Meeting_Tool_Displays.php:150 SD_Meeting_Tool_Displays.php:152
+#: SD_Meeting_Tool_Displays.php:153 SD_Meeting_Tool_Speakers.php:324
+msgid "Displays"
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:738
+msgid "Displays the current agenda item text and or link. If both text and link are selected, the text will be linked."
+msgstr ""
+
+#: SD_Meeting_Tool_Registration_UI_Text_Searches.php:249
+msgid "Do not show a list"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:457
+msgid "Do not use a PDF template"
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:343 SD_Meeting_Tool_Actions.php:552
+#: SD_Meeting_Tool_Agendas.php:339 SD_Meeting_Tool_Agendas.php:587
+#: SD_Meeting_Tool_Display_Formats.php:287 SD_Meeting_Tool_Displays.php:336
+#: SD_Meeting_Tool_Elections.php:503 SD_Meeting_Tool_List_Sorts.php:258
+#: SD_Meeting_Tool_Lists.php:434 SD_Meeting_Tool_Participants.php:266
+#: SD_Meeting_Tool_Printing.php:385 SD_Meeting_Tool_Printing.php:637
+#: SD_Meeting_Tool_Printing.php:821 SD_Meeting_Tool_Registrations.php:306
+#: SD_Meeting_Tool_Speakers.php:476 SD_Meeting_Tool_Speakers.php:986
+msgid "Do nothing"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:551
+msgid "Each agenda item has a list of speakers. The speaker row is comma-separated into the following: The speaker's name, time allocated, start time, stop time and time spoken."
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:664
+msgid "Each row of text becomes a new item."
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:312 SD_Meeting_Tool_Display_Formats.php:152
+#: SD_Meeting_Tool_Display_Formats.php:154
+#: SD_Meeting_Tool_Display_Formats.php:183
+#: SD_Meeting_Tool_Display_Formats.php:210
+#: SD_Meeting_Tool_Display_Formats.php:261 SD_Meeting_Tool_Displays.php:199
+#: SD_Meeting_Tool_Displays.php:201 SD_Meeting_Tool_Displays.php:240
+#: SD_Meeting_Tool_Displays.php:278 SD_Meeting_Tool_Displays.php:309
+#: SD_Meeting_Tool_Elections.php:229 SD_Meeting_Tool_Elections.php:231
+#: SD_Meeting_Tool_Elections.php:320 SD_Meeting_Tool_Elections.php:360
+#: SD_Meeting_Tool_Elections.php:450 SD_Meeting_Tool_Elections.php:453
+#: SD_Meeting_Tool_Elections.php:457 SD_Meeting_Tool_Lists.php:190
+#: SD_Meeting_Tool_Lists.php:192 SD_Meeting_Tool_Lists.php:254
+#: SD_Meeting_Tool_Lists.php:306 SD_Meeting_Tool_Lists.php:355
+#: SD_Meeting_Tool_Lists.php:358 SD_Meeting_Tool_Participants.php:149
+#: SD_Meeting_Tool_Participants.php:151 SD_Meeting_Tool_Participants.php:240
+#: SD_Meeting_Tool_Printing.php:162 SD_Meeting_Tool_Printing.php:164
+#: SD_Meeting_Tool_Printing.php:245 SD_Meeting_Tool_Printing.php:284
+#: SD_Meeting_Tool_Printing.php:328 SD_Meeting_Tool_Printing.php:331
+#: SD_Meeting_Tool_Printing.php:1192 SD_Meeting_Tool_Printing.php:1399
+#: SD_Meeting_Tool_Registrations.php:142 SD_Meeting_Tool_Registrations.php:144
+#: SD_Meeting_Tool_Registrations.php:173 SD_Meeting_Tool_Registrations.php:225
+#: SD_Meeting_Tool_Registrations.php:240 SD_Meeting_Tool_Speakers.php:275
+#: SD_Meeting_Tool_Speakers.php:277 SD_Meeting_Tool_Speakers.php:377
+#: SD_Meeting_Tool_Speakers.php:434 SD_Meeting_Tool_Speakers.php:437
+#: SD_Meeting_Tool_Speakers.php:911
+msgid "Edit"
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:161 SD_Meeting_Tool_Actions.php:163
+#: SD_Meeting_Tool_Actions.php:235 SD_Meeting_Tool_Actions.php:273
+#: SD_Meeting_Tool_Actions.php:304 SD_Meeting_Tool_Actions.php:910
+msgid "Edit action"
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:202 SD_Meeting_Tool_Agendas.php:204
+#: SD_Meeting_Tool_Agendas.php:274 SD_Meeting_Tool_Agendas.php:302
+#: SD_Meeting_Tool_Agendas.php:1098
+msgid "Edit agenda"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:293 SD_Meeting_Tool_Speakers.php:295
+#: SD_Meeting_Tool_Speakers.php:955 SD_Meeting_Tool_Speakers.php:958
+msgid "Edit display"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:177 SD_Meeting_Tool_Printing.php:179
+#: SD_Meeting_Tool_Printing.php:800
+msgid "Edit field"
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:176 SD_Meeting_Tool_Actions.php:178
+#: SD_Meeting_Tool_Actions.php:535 SD_Meeting_Tool_Agendas.php:217
+#: SD_Meeting_Tool_Agendas.php:219 SD_Meeting_Tool_Agendas.php:568
+msgid "Edit item"
+msgstr ""
+
+#: SD_Meeting_Tool_List_Sorts.php:130 SD_Meeting_Tool_List_Sorts.php:132
+#: SD_Meeting_Tool_List_Sorts.php:187 SD_Meeting_Tool_List_Sorts.php:218
+msgid "Edit list sort"
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:329
+msgid "Edit this action"
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:326
+msgid "Edit this agenda"
+msgstr ""
+
+#: SD_Meeting_Tool_Display_Formats.php:274
+msgid "Edit this display format"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:809
+msgid "Edit this field"
+msgstr ""
+
+#: SD_Meeting_Tool_Displays.php:323
+msgid "Edit this list"
+msgstr ""
+
+#: SD_Meeting_Tool_List_Sorts.php:245
+msgid "Edit this list sort"
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:192 SD_Meeting_Tool_Agendas.php:230
+#, php-format
+msgid "Editing action item: %s (%s)"
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:171
+#, php-format
+msgid "Editing action: %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:212
+#, php-format
+msgid "Editing agenda: %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:199
+#, php-format
+msgid "Editing block field: %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Display_Formats.php:162
+#, php-format
+msgid "Editing display format: %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Displays.php:209
+#, php-format
+msgid "Editing display: %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:239
+#, php-format
+msgid "Editing election: %s"
+msgstr ""
+
+#: SD_Meeting_Tool_List_Sorts.php:140
+#, php-format
+msgid "Editing list sort: %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:200
+#, php-format
+msgid "Editing list: %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Participants.php:159
+#, php-format
+msgid "Editing participant: %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:172
+#, php-format
+msgid "Editing printing template: %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Registrations.php:152
+#, php-format
+msgid "Editing registration: %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:318
+#, php-format
+msgid "Editing shortcodes for the speaker list of agenda: %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:303
+#, php-format
+msgid "Editing speaker display: %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:288 SD_Meeting_Tool_Speakers.php:1175
+#, php-format
+msgid "Editing speaker list for agenda: %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:701
+#, php-format
+msgid "Election - %s: %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:684
+#, php-format
+msgid "Election - %s: choice %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:341
+#, php-format
+msgid "Election <em>%s</em> deleted."
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:325
+#, php-format
+msgid "Election cloned! <a href=\"%s\">Edit the newly-cloned election</a>."
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:354
+#, php-format
+msgid "Election created %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:365
+#, php-format
+msgid "Election created! <a href=\"%s\">Edit the newly-created election</a>."
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1078
+msgid "Election results graph"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1082 SD_Meeting_Tool_Elections.php:1910
+msgid "Election statistics"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:553
+msgid "Election type"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:202 SD_Meeting_Tool_Elections.php:204
+#: SD_Meeting_Tool_Elections.php:205
+msgid "Elections"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:244 SD_Meeting_Tool_Elections.php:246
+#: SD_Meeting_Tool_Elections.php:435 SD_Meeting_Tool_Elections.php:438
+#: SD_Meeting_Tool_Elections.php:926
+msgid "Electoral register"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:257
+#, php-format
+msgid "Electoral register for: %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:603
+msgid "Eligible voters"
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:437 SD_Meeting_Tool_Speakers.php:478
+msgid "Empty"
+msgstr ""
+
+#: SD_Meeting_Tool_Registration_UI_Text_Searches.php:286
+msgid "Enter delay"
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:539
+msgid "Exclude the participants that are in the selected lists."
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:538
+msgid "Excluded lists"
+msgstr ""
+
+#: SD_Meeting_Tool_Registrations.php:401
+msgid "Failure action"
+msgstr ""
+
+#: SD_Meeting_Tool_List_Sorts.php:406
+msgid "Field"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:848
+msgid "Field to print"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:526
+msgid "Fields"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1043 SD_Meeting_Tool_Elections.php:1049
+#: SD_Meeting_Tool_Elections.php:1055 SD_Meeting_Tool_Elections.php:1706
+msgid "Finish registering votes"
+msgstr ""
+
+#: SD_Meeting_Tool_Registrations.php:402
+msgid "Fire this action if registration fails."
+msgstr ""
+
+#: SD_Meeting_Tool_Registrations.php:395
+msgid "Fire this action if registration succeeds."
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1886
+msgid "First vote"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:942
+msgid "Font"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:948
+msgid "Font size"
+msgstr ""
+
+#: SD_Meeting_Tool_Displays.php:436
+msgid "Footer"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:1060
+msgid "Format"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:1218
+msgid "Four columns, 10 mm per row"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:1219
+msgid "Four columns, 15 mm per row"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:1220
+msgid "Four columns, 20 mm per row"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:1217
+msgid "Four columns, 5 mm per row"
+msgstr ""
+
+#: SD_Meeting_Tool_Registration_UI_Text_Searches.php:293
+msgid "General settings"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:1229
+msgid "Generated shortcode"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1818
+msgid "Graph"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1540
+msgid "Group"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:633
+msgid "Group field"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:624
+msgid "Have voted"
+msgstr ""
+
+#: SD_Meeting_Tool_Displays.php:428
+msgid "Header"
+msgstr ""
+
+#: SD_Meeting_Tool_Registration_UI_Text_Searches.php:257
+msgid "How many in the latest list to display."
+msgstr ""
+
+#: SD_Meeting_Tool_Registration_UI_Text_Searches.php:287
+msgid "How many milliseconds to wait after a participant is successfully entered. Default is 1000."
+msgstr ""
+
+#: SD_Meeting_Tool_Registration_UI_Text_Searches.php:269
+msgid "How many milliseconds to wait between input list refreshes. Default is 5000, minimum is 500."
+msgstr ""
+
+#: SD_Meeting_Tool_Registration_UI_Text_Searches.php:278
+msgid "How many milliseconds to wait between latest list refreshes. Default is 5000, minimum is 500."
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:516
+msgid "How to display the participants in the list."
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:523
+msgid "How to sort this list."
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1700
+msgid "I am sure I want to finish registering votes"
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:683
+msgid "ID's of participants to add to the list."
+msgstr ""
+
+#: SD_Meeting_Tool_Participants.php:407
+msgid "Ignore"
+msgstr ""
+
+#: SD_Meeting_Tool_Participants.php:165 SD_Meeting_Tool_Participants.php:415
+msgid "Import"
+msgstr ""
+
+#: SD_Meeting_Tool_Participants.php:689
+#, php-format
+msgid "Import comlete. %s users created. %s users updated. %s users ignored."
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:530
+msgid "Include the participants that are in the selected lists."
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:529
+msgid "Included lists"
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:372 SD_Meeting_Tool_Agendas.php:367
+#: SD_Meeting_Tool_Display_Formats.php:316 SD_Meeting_Tool_Displays.php:365
+#: SD_Meeting_Tool_Elections.php:532 SD_Meeting_Tool_List_Sorts.php:286
+#: SD_Meeting_Tool_Lists.php:466 SD_Meeting_Tool_Printing.php:414
+#: SD_Meeting_Tool_Printing.php:849 SD_Meeting_Tool_Registrations.php:334
+#: SD_Meeting_Tool_Speakers.php:505 SD_Meeting_Tool_Speakers.php:1014
+msgid "Info"
+msgstr ""
+
+#: SD_Meeting_Tool_Registration_UI_Text_Searches.php:268
+msgid "Input list refresh"
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:622 SD_Meeting_Tool_Agendas.php:626
+msgid "Items"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:931
+msgid "Justification"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:787
+#, php-format
+msgid "Justificiation: %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:780 SD_Meeting_Tool_Printing.php:936
+msgid "Justify"
+msgstr ""
+
+#: SD_Meeting_Tool_Display_Formats.php:436 SD_Meeting_Tool_Speakers.php:1114
+msgid "Keyword"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:1109
+msgid "Keywords"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:341
+msgid "Landscape"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1891
+msgid "Last vote"
+msgstr ""
+
+#: SD_Meeting_Tool_Registration_UI_Text_Searches.php:256
+msgid "Latest count"
+msgstr ""
+
+#: SD_Meeting_Tool_Registration_UI_Text_Searches.php:247
+msgid "Latest list"
+msgstr ""
+
+#: SD_Meeting_Tool_Registration_UI_Text_Searches.php:277
+msgid "Latest list refresh"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:783 SD_Meeting_Tool_Printing.php:933
+msgid "Left"
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:776
+msgid "Link"
+msgstr ""
+
+#: SD_Meeting_Tool_Displays.php:555 SD_Meeting_Tool_Registrations.php:380
+msgid "List"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1392
+#, php-format
+msgid "List %s does not exist anymore!"
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:273
+#, php-format
+msgid "List <em>%s</em> deleted."
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:288
+#, php-format
+msgid "List <em>%s</em> emptied."
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:259
+#, php-format
+msgid "List cloned! <a href=\"%s\">Edit the newly-cloned list</a>."
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:300
+#, php-format
+msgid "List created %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:311
+#, php-format
+msgid "List created! <a href=\"%s\">Edit the newly-created list</a>."
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:642
+msgid "List settings"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:626
+msgid "List sort"
+msgstr ""
+
+#: SD_Meeting_Tool_List_Sorts.php:166
+#, php-format
+msgid "List sort <em>%s</em> deleted."
+msgstr ""
+
+#: SD_Meeting_Tool_List_Sorts.php:178
+#, php-format
+msgid "List sort created %s"
+msgstr ""
+
+#: SD_Meeting_Tool_List_Sorts.php:192
+#, php-format
+msgid "List sort created! <a href=\"%s\">Edit the newly-created list sort</a>."
+msgstr ""
+
+#: SD_Meeting_Tool_List_Sorts.php:366
+msgid "List sort settings"
+msgstr ""
+
+#: SD_Meeting_Tool_List_Sorts.php:83 SD_Meeting_Tool_List_Sorts.php:85
+#: SD_Meeting_Tool_List_Sorts.php:86
+msgid "List sorts"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:1026
+msgid "List to print"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:856
+msgid "List to use as source"
+msgstr ""
+
+#: SD_Meeting_Tool_Registrations.php:272
+#, php-format
+msgid "List: <em>%s</em>"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:904 SD_Meeting_Tool_Lists.php:120
+#: SD_Meeting_Tool_Lists.php:122 SD_Meeting_Tool_Lists.php:123
+msgid "Lists"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:972
+msgid "Make a shortcode for this display"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:241 SD_Meeting_Tool_Speakers.php:243
+#: SD_Meeting_Tool_Speakers.php:420 SD_Meeting_Tool_Speakers.php:423
+#: SD_Meeting_Tool_Speakers.php:441
+msgid "Manage speakers"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:253
+#, php-format
+msgid "Managing speakers for agenda: %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:555
+msgid "Manual"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:617
+msgid "May vote"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:1115
+msgid "Meaning"
+msgstr ""
+
+#: SD_Meeting_Tool.php:207 SD_Meeting_Tool.php:208
+msgid "Meeting Tool"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:908 SD_Meeting_Tool_Printing.php:916
+#: SD_Meeting_Tool_Printing.php:924
+msgid "Millimeters"
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:882
+msgid "Multiple lists can be selected."
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:371 SD_Meeting_Tool_Actions.php:414
+#: SD_Meeting_Tool_Agendas.php:366 SD_Meeting_Tool_Agendas.php:409
+#: SD_Meeting_Tool_Agendas.php:613 SD_Meeting_Tool_Agendas.php:769
+#: SD_Meeting_Tool_Display_Formats.php:315
+#: SD_Meeting_Tool_Display_Formats.php:355 SD_Meeting_Tool_Displays.php:364
+#: SD_Meeting_Tool_Displays.php:407 SD_Meeting_Tool_Elections.php:531
+#: SD_Meeting_Tool_Elections.php:585 SD_Meeting_Tool_Elections.php:1244
+#: SD_Meeting_Tool_List_Sorts.php:285 SD_Meeting_Tool_List_Sorts.php:325
+#: SD_Meeting_Tool_Lists.php:463 SD_Meeting_Tool_Lists.php:508
+#: SD_Meeting_Tool_Printing.php:413 SD_Meeting_Tool_Printing.php:449
+#: SD_Meeting_Tool_Registrations.php:333 SD_Meeting_Tool_Registrations.php:373
+#: SD_Meeting_Tool_Registration_UI_Text_Searches.php:176
+#: SD_Meeting_Tool_Speakers.php:1053
+msgid "Name"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:798 SD_Meeting_Tool_Elections.php:847
+msgid "Name / description of the choice."
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:1120 SD_Meeting_Tool_Printing.php:1208
+msgid "Name badge, vertical, 77mm x 112mm, 4 per page"
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:663
+msgid "Names of new items"
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:607
+msgid "New item type"
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:456
+msgid "New items have been created!"
+msgstr ""
+
+#: SD_Meeting_Tool_Display_Formats.php:245
+msgid "No display formats found!"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:377
+msgid "No elections found."
+msgstr ""
+
+#: SD_Meeting_Tool.php:269
+msgid "No overview yet."
+msgstr ""
+
+#: SD_Meeting_Tool_Participants.php:199
+msgid "No participants found! Perhaps you want to import new participants from a spreadsheet?"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:301
+msgid "No printing templates found."
+msgstr ""
+
+#: SD_Meeting_Tool_Registrations.php:209
+msgid "No registrations found!"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:928
+msgid "No speaker displays found."
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:398
+msgid "No speaker lists found. Speaker lists require at least one agenda."
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:741 SD_Meeting_Tool_Registrations.php:396
+#: SD_Meeting_Tool_Registrations.php:403
+msgid "None"
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:465
+msgid "Number of participants that are combined from any included and excluded lists."
+msgstr ""
+
+#: SD_Meeting_Tool_Participants.php:609
+msgid "One of the columns needs to have the text: id"
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:464
+msgid "Only manually added participants are counted, not participants automatically combined from included lists."
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:556
+msgid "Open"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:770
+msgid "Options"
+msgstr ""
+
+#: SD_Meeting_Tool_List_Sorts.php:407
+msgid "Order"
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:156 SD_Meeting_Tool_Agendas.php:197
+#: SD_Meeting_Tool_Display_Formats.php:147 SD_Meeting_Tool_Displays.php:194
+#: SD_Meeting_Tool_Elections.php:224 SD_Meeting_Tool_List_Sorts.php:125
+#: SD_Meeting_Tool_Lists.php:185 SD_Meeting_Tool_Participants.php:144
+#: SD_Meeting_Tool.php:256 SD_Meeting_Tool_Printing.php:157
+#: SD_Meeting_Tool_Registrations.php:122 SD_Meeting_Tool_Speakers.php:236
+msgid "Overview"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:456
+msgid "PDF template"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:899
+msgid "Page"
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:719 SD_Meeting_Tool_Displays.php:582
+#: SD_Meeting_Tool_Elections.php:1172
+msgid "Page creation"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:349
+#, php-format
+msgid "Paper: %s  %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1962 SD_Meeting_Tool_Lists.php:827
+#: SD_Meeting_Tool_Registration_UI_Text_Searches.php:376
+msgid "Participant"
+msgstr ""
+
+#: SD_Meeting_Tool_Participants.php:184
+#, php-format
+msgid "Participant <em>%s</em> deleted."
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:355
+#, php-format
+msgid "Participant blocks: %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Display_Formats.php:437 SD_Meeting_Tool_Printing.php:893
+msgid "Participant field"
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:464 SD_Meeting_Tool_Lists.php:654
+#: SD_Meeting_Tool_Lists.php:667 SD_Meeting_Tool_Participants.php:124
+#: SD_Meeting_Tool_Participants.php:126 SD_Meeting_Tool_Participants.php:127
+#: SD_Meeting_Tool_Speakers.php:839
+msgid "Participants"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:857
+msgid "Participants that have voted for this choice are put into the above list."
+msgstr ""
+
+#: SD_Meeting_Tool_Participants.php:397
+msgid "Pasted text from a spreadsheet."
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:344
+msgid "Portrait"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:204 SD_Meeting_Tool_Printing.php:206
+#: SD_Meeting_Tool_Printing.php:321
+msgid "Print"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:324 SD_Meeting_Tool_Printing.php:371
+msgid "Print a list using this template"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:462
+msgid "Print all pages"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:468
+msgid "Print even amount of pages"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:1033
+msgid "Print list"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:759
+#, php-format
+msgid "Print on page %s at x %s, y %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:137 SD_Meeting_Tool_Printing.php:139
+#: SD_Meeting_Tool_Printing.php:140
+msgid "Printing"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:250
+#, php-format
+msgid "Printing template cloned! <a href=\"%s\">Edit the newly-cloned printing template</a>."
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:278
+#, php-format
+msgid "Printing template created %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:289 SD_Meeting_Tool_Printing.php:1197
+#, php-format
+msgid "Printing template created! <a href=\"%s\">Edit the newly-created printing template</a>."
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:214
+#, php-format
+msgid "Printing using template: %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:774
+msgid "Quicksearch"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:968
+msgid "Recalculate the electoral register"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:262 SD_Meeting_Tool_Elections.php:264
+#: SD_Meeting_Tool_Elections.php:420 SD_Meeting_Tool_Registrations.php:127
+#: SD_Meeting_Tool_Registrations.php:129 SD_Meeting_Tool_Registrations.php:234
+#: SD_Meeting_Tool_Registrations.php:237
+msgid "Register"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:423 SD_Meeting_Tool_Elections.php:426
+msgid "Register votes"
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:828 SD_Meeting_Tool_Lists.php:1234
+#: SD_Meeting_Tool_Registration_UI_Text_Searches.php:177
+msgid "Registered"
+msgstr ""
+
+#: SD_Meeting_Tool_Registrations.php:137
+#, php-format
+msgid "Registering: %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:594 SD_Meeting_Tool_Elections.php:913
+msgid "Registration"
+msgstr ""
+
+#: SD_Meeting_Tool_Registrations.php:194
+#, php-format
+msgid "Registration <em>%s</em> deleted."
+msgstr ""
+
+#: SD_Meeting_Tool_Registrations.php:167
+#, php-format
+msgid "Registration created %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Registrations.php:178
+#, php-format
+msgid "Registration created! <a href=\"%s\">Edit the newly-created registration</a>."
+msgstr ""
+
+#: SD_Meeting_Tool_Registrations.php:466
+msgid "Registration settings"
+msgstr ""
+
+#: SD_Meeting_Tool_Registrations.php:102 SD_Meeting_Tool_Registrations.php:104
+#: SD_Meeting_Tool_Registrations.php:105
+msgid "Registrations"
+msgstr ""
+
+#: SD_Meeting_Tool.php:291
+msgid "Reload this page!"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:1877
+msgid "Remove 30 seconds"
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:1423
+msgid "Remove the participant from a list"
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:1424
+#, php-format
+msgid "Remove the participant from: <br /><em>%s</em>"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:774 SD_Meeting_Tool_Printing.php:934
+msgid "Right"
+msgstr ""
+
+#: SD_Meeting_Tool_Participants.php:642
+#, php-format
+msgid "Row %s does not have the same amount of columns as the first row!"
+msgstr ""
+
+#: SD_Meeting_Tool_Display_Formats.php:363
+msgid "See table below for instructions."
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:766
+msgid "Select the lists to which to copy the participants."
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:599
+msgid "Select what the new item should do"
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:370 SD_Meeting_Tool_Actions.php:578
+#: SD_Meeting_Tool_Agendas.php:365 SD_Meeting_Tool_Agendas.php:612
+#: SD_Meeting_Tool_Display_Formats.php:314 SD_Meeting_Tool_Displays.php:363
+#: SD_Meeting_Tool_Elections.php:530 SD_Meeting_Tool_List_Sorts.php:284
+#: SD_Meeting_Tool_Lists.php:462 SD_Meeting_Tool_Participants.php:292
+#: SD_Meeting_Tool_Printing.php:412 SD_Meeting_Tool_Printing.php:663
+#: SD_Meeting_Tool_Printing.php:847 SD_Meeting_Tool_Registrations.php:332
+#: SD_Meeting_Tool_Speakers.php:503 SD_Meeting_Tool_Speakers.php:1012
+msgid "Selected"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:849
+msgid "Settings"
+msgstr ""
+
+#: SD_Meeting_Tool_Registrations.php:479
+#, php-format
+msgid "Settings for %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:717 SD_Meeting_Tool_Displays.php:580
+#: SD_Meeting_Tool_Elections.php:1170 SD_Meeting_Tool_Speakers.php:743
+msgid "Shortcode"
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:710 SD_Meeting_Tool_Displays.php:573
+#: SD_Meeting_Tool_Elections.php:1163 SD_Meeting_Tool_Speakers.php:308
+#: SD_Meeting_Tool_Speakers.php:310 SD_Meeting_Tool_Speakers.php:948
+#: SD_Meeting_Tool_Speakers.php:951
+msgid "Shortcodes"
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:344
+msgid "Show all of the participants"
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:220 SD_Meeting_Tool_Lists.php:222
+#: SD_Meeting_Tool_Lists.php:341 SD_Meeting_Tool_Lists.php:344
+#: SD_Meeting_Tool_Lists.php:418
+msgid "Show participants"
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:424
+msgid "Show the combined participants"
+msgstr ""
+
+#: SD_Meeting_Tool_Registration_UI_Text_Searches.php:248
+msgid "Show the first 10 registrations of a specified list. Can be used to show the latest registrations."
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:230
+#, php-format
+msgid "Showing participants for: %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:726
+msgid "Shows the current agenda as a list."
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1142
+msgid "Shows the graph for this election."
+msgstr ""
+
+#: SD_Meeting_Tool_Displays.php:589
+msgid "Shows the selected list using this display template."
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1154
+msgid "Shows the statistics for this election.."
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:522
+msgid "Sort"
+msgstr ""
+
+#: SD_Meeting_Tool_Displays.php:421
+msgid "Sort override"
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:380
+msgid "Sort:"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:1013
+msgid "Speaker display"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:892
+#, php-format
+msgid "Speaker display <em>%s</em> deleted."
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:905
+#, php-format
+msgid "Speaker display created %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:916
+#, php-format
+msgid "Speaker display created! <a href=\"%s\">Edit the newly-created speaker display</a>."
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:504 SD_Meeting_Tool_Speakers.php:614
+#: SD_Meeting_Tool_Speakers.php:1146
+msgid "Speaker list"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:346
+#, php-format
+msgid "Speaker list <em>%s</em> deleted."
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:362
+#, php-format
+msgid "Speaker list <em>%s</em> emptied."
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:717
+msgid "Speaker list and internal display"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:382
+#, php-format
+msgid "Speaker list created! <a href=\"%s\">Edit the newly-created speaker list</a>."
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:453 SD_Meeting_Tool_Speakers.php:697
+#, php-format
+msgid "Speaker list for agenda: %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:1860
+msgid "Speaker time"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:214 SD_Meeting_Tool_Speakers.php:216
+#: SD_Meeting_Tool_Speakers.php:217
+msgid "Speakers"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:792
+#, php-format
+msgid "Speakers for <strong>%s</strong>"
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:168 SD_Meeting_Tool_Actions.php:183
+msgid "Specified action does not exist!"
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:186
+msgid "Specified action item does not exist!"
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:209 SD_Meeting_Tool_Agendas.php:224
+#: SD_Meeting_Tool_Speakers.php:285
+msgid "Specified agenda does not exist!"
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:227
+msgid "Specified agenda item does not exist!"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:190
+msgid "Specified block field does not exist!"
+msgstr ""
+
+#: SD_Meeting_Tool_Displays.php:206
+msgid "Specified display does not exist!"
+msgstr ""
+
+#: SD_Meeting_Tool_Display_Formats.php:159
+msgid "Specified display format does not exist!"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:236 SD_Meeting_Tool_Elections.php:251
+#: SD_Meeting_Tool_Elections.php:269 SD_Meeting_Tool_Elections.php:287
+msgid "Specified election does not exist!"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:254
+msgid "Specified election does not have an electoral register!"
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:197 SD_Meeting_Tool_Lists.php:212
+#: SD_Meeting_Tool_Lists.php:227
+msgid "Specified list does not exist!"
+msgstr ""
+
+#: SD_Meeting_Tool_List_Sorts.php:137
+msgid "Specified list sort does not exist!"
+msgstr ""
+
+#: SD_Meeting_Tool_Participants.php:156
+msgid "Specified participant does not exist!"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:169 SD_Meeting_Tool_Printing.php:184
+#: SD_Meeting_Tool_Printing.php:211
+msgid "Specified printing template does not exist!"
+msgstr ""
+
+#: SD_Meeting_Tool_Registrations.php:134 SD_Meeting_Tool_Registrations.php:149
+msgid "Specified registration does not exist!"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:300 SD_Meeting_Tool_Speakers.php:315
+msgid "Specified speaker display does not exist!"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:248 SD_Meeting_Tool_Speakers.php:265
+#: SD_Meeting_Tool_Speakers.php:282
+msgid "Specified speaker list does not exist!"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:1883
+msgid "Start"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:1898
+msgid "Stop"
+msgstr ""
+
+#: SD_Meeting_Tool_Registrations.php:394
+msgid "Success action"
+msgstr ""
+
+#: SD_Meeting_Tool_Base.php:409
+msgid "Super admin"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:266
+#, php-format
+msgid "Template <em>%s</em> deleted."
+msgstr ""
+
+#: SD_Meeting_Tool_Registration_UI_Text_Searches.php:490
+msgid "Text Searches"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1843
+msgid "The <em>have voted</em>-list does not exist anymore."
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1851
+msgid "The <em>have voted</em>-list is empty."
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1858
+msgid "The <em>may vote</em>-list does not exist anymore."
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:432
+msgid "The action has been updated!"
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:866
+msgid "The action item has been updated!"
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:427
+msgid "The agenda has been updated!"
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:798
+msgid "The agenda item has been updated!"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:575
+msgid "The blocks have been updated!"
+msgstr ""
+
+#: SD_Meeting_Tool.php:229
+msgid "The cache directory /cache does not exist or is not writeable. Please create it before continuing."
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1777
+#, php-format
+msgid "The choice list for <em>%s</em>, %s, does not exist anymore!"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:607
+msgid "The default amount of time for a reply."
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:599
+msgid "The default amount of time for a speaker."
+msgstr ""
+
+#: SD_Meeting_Tool_Displays.php:464
+msgid "The display has been updated!"
+msgstr ""
+
+#: SD_Meeting_Tool_Display_Formats.php:386
+msgid "The display_format has been updated!"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:716
+msgid "The election has been updated!"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1003
+msgid "The election is over and no more votes can be registered."
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:474
+msgid "The electoral register has not been calculated yet."
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:477 SD_Meeting_Tool_Elections.php:965
+#, php-format
+msgid "The electoral register was calculated at %s."
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:979
+msgid "The field has been updated!"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1557
+msgid "The following participants are allowed to vote:"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:2000
+msgid "The following participants did not vote at all"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1930 SD_Meeting_Tool_Elections.php:1974
+msgid "The following participants have voted"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:604
+msgid "The input list that specifies which participants are eligible voters. This list should contain all the eligible voters, not just those that are present."
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:567 SD_Meeting_Tool_Lists.php:605
+#: SD_Meeting_Tool_Printing.php:493
+msgid "The list has been updated!"
+msgstr ""
+
+#: SD_Meeting_Tool_List_Sorts.php:343
+msgid "The list sort has been updated!"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1520
+msgid "The may vote-list does not exist!"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:618
+msgid "The output list in which all participants who are allowed to voted are placed."
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:625
+msgid "The output list in which participants who have voted are placed."
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1404
+msgid "The participant field used for grouping does not exist anymore!"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1411
+msgid "The participant field used for the voting order does not exist anymore!"
+msgstr ""
+
+#: SD_Meeting_Tool_Participants.php:345
+msgid "The participant has been updated!"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:1121
+msgid "The participant using the display format specified in the shortcode."
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:756
+#, php-format
+msgid "The participants have been copied to %s lists!"
+msgstr ""
+
+#: SD_Meeting_Tool_Registrations.php:431
+msgid "The registration has been updated!"
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:625 SD_Meeting_Tool_Agendas.php:629
+#: SD_Meeting_Tool_List_Sorts.php:419
+msgid "The rows can be manually sorted by dragging them up and down in the table."
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:1082
+msgid "The speaker display has been updated!"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:673
+msgid "The speaker list has been updated!"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:523
+msgid "The speaker list will handle speakers for the selected agenda."
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:1509
+msgid "The template does not contain any pages! Can not continue!"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1585
+msgid "The vote count has been updated!"
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:289
+msgid "There are no actions available."
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:287
+msgid "There are no agendas available."
+msgstr ""
+
+#: SD_Meeting_Tool_Displays.php:294
+msgid "There are no displays available."
+msgstr ""
+
+#: SD_Meeting_Tool_List_Sorts.php:200
+msgid "There are no list sorts available."
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:322
+msgid "There are no lists available."
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1535
+msgid "There were not enough voters present to fill the vote quotas for the follow groups:"
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:517
+msgid "This action has no items."
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:550
+msgid "This agenda has no items."
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:1214
+msgid "Three columns, 10 mm per row"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:1215
+msgid "Three columns, 15 mm per row"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:1216
+msgid "Three columns, 20 mm per row"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:1213
+msgid "Three columns, 5 mm per row"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1896
+msgid "Time elapsed"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:1889
+msgid "Time left"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:727
+msgid "Times"
+msgstr ""
+
+#: SD_Meeting_Tool_Registration_UI_Text_Searches.php:295
+msgid "Timing settings"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1658
+msgid "To prevent the above table from being updated, keep the mouse cursor above it."
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:1210
+msgid "Two columns, 10 mm per row"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:1211
+msgid "Two columns, 15 mm per row"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:1212
+msgid "Two columns, 20 mm per row"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:1209
+msgid "Two columns, 5 mm per row"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:1206
+msgid "Type of template"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:467
+#, php-format
+msgid "Type: %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Displays.php:215 SD_Meeting_Tool_Lists.php:236
+#: SD_Meeting_Tool_Speakers.php:327
+msgid "Uninstall"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1943 SD_Meeting_Tool_Lists.php:1208
+#: SD_Meeting_Tool_Printing.php:196 SD_Meeting_Tool_Printing.php:797
+#: SD_Meeting_Tool_Registrations.php:249 SD_Meeting_Tool_Registrations.php:259
+#: SD_Meeting_Tool_Registrations.php:269 SD_Meeting_Tool_Registrations.php:281
+msgid "Unknown"
+msgstr ""
+
+#: SD_Meeting_Tool_Participants.php:408
+msgid "Update"
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:494
+msgid "Update action"
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:528
+msgid "Update agenda"
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:816
+msgid "Update agenda item"
+msgstr ""
+
+#: SD_Meeting_Tool_Displays.php:444
+msgid "Update display"
+msgstr ""
+
+#: SD_Meeting_Tool_Display_Formats.php:369
+msgid "Update display format"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:648
+msgid "Update election"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:955
+msgid "Update field"
+msgstr ""
+
+#: SD_Meeting_Tool_Lists.php:547
+msgid "Update list"
+msgstr ""
+
+#: SD_Meeting_Tool_List_Sorts.php:359
+msgid "Update list sort"
+msgstr ""
+
+#: SD_Meeting_Tool_Participants.php:375
+msgid "Update participant"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:474
+msgid "Update printing template"
+msgstr ""
+
+#: SD_Meeting_Tool_Registrations.php:487
+msgid "Update registration"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:1067
+msgid "Update speaker display settings"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:632
+msgid "Update speaker list settings"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:677
+msgid "Update the blocks"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1621
+msgid "Update the vote count"
+msgstr ""
+
+#: SD_Meeting_Tool_Registration_UI_Text_Searches.php:231
+msgid "Use AJAX to submit the registration."
+msgstr ""
+
+#: SD_Meeting_Tool_Displays.php:416
+msgid "Use display format from the list."
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:766
+#, php-format
+msgid "Use font %s at size %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Displays.php:423
+msgid "Use sort from the list."
+msgstr ""
+
+#: SD_Meeting_Tool_Display_Formats.php:417
+msgid "Use the keywords exactly as printed in the format field above and the Meeting Tool will automatically replace the keyword with the corresponding participant field."
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:621
+msgid "Use the list's display format"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:627
+msgid "Use the list's sort"
+msgstr ""
+
+#: SD_Meeting_Tool_Displays.php:415
+msgid "Use the selected display format instead of the list's default."
+msgstr ""
+
+#: SD_Meeting_Tool_Displays.php:422
+msgid "Use the selected sort instead of the list's default."
+msgstr ""
+
+#: SD_Meeting_Tool_Registrations.php:237 SD_Meeting_Tool_Registrations.php:291
+msgid "Use this registration"
+msgstr ""
+
+#: SD_Meeting_Tool_Participants.php:669
+#, php-format
+msgid "User %s already exists! Aborting import."
+msgstr ""
+
+#: SD_Meeting_Tool_Registrations.php:387
+msgid "User interface"
+msgstr ""
+
+#: SD_Meeting_Tool_Registrations.php:282
+#, php-format
+msgid "User interface: <em>%s</em>"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:258 SD_Meeting_Tool_Speakers.php:260
+#: SD_Meeting_Tool_Speakers.php:427 SD_Meeting_Tool_Speakers.php:430
+msgid "View log"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:280 SD_Meeting_Tool_Elections.php:282
+#: SD_Meeting_Tool_Elections.php:401 SD_Meeting_Tool_Elections.php:404
+#: SD_Meeting_Tool_Elections.php:407
+msgid "View results"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:290
+#, php-format
+msgid "View results for: %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Speakers.php:270
+#, php-format
+msgid "Viewing speaker list log for %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1963
+msgid "Vote"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:275
+#, php-format
+msgid "Vote registration for: %s"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1873
+msgid "Voter participation"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1541 SD_Meeting_Tool_Elections.php:1866
+msgid "Voters missing"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:610
+msgid "Voters present"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1817
+msgid "Votes"
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:1029
+msgid "Votes can only be registered when there are no further changes to be made to the election. The button below will prevent further changes to the election and allow votes to be registered."
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:640
+msgid "Voting order field"
+msgstr ""
+
+#: SD_Meeting_Tool_Participants.php:404
+msgid "What to do with existing users?"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:463
+msgid "When using a template the rest of the templates pages (after the first) will automatically be inserted after each participant block. If unselected, only the first page of the template will be used."
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:469
+msgid "When using a template, insert an empty page at the end of odd-paged templates to ensure that duplex printing works as expected."
+msgstr ""
+
+#: SD_Meeting_Tool_Registrations.php:381
+msgid "Which list to use as the source of acceptable participants."
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:611
+msgid "Which of the participant voters are present."
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:900
+msgid "Which page to print on. The first page is 1."
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:641
+msgid "Which participant field specifies the participant's voting order."
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:634
+msgid "Which participant field to group participants by."
+msgstr ""
+
+#: SD_Meeting_Tool_Elections.php:595
+msgid "Which registration setting to use when registering votes."
+msgstr ""
+
+#: SD_Meeting_Tool_Registrations.php:388
+msgid "Which user interface to use."
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:923
+msgid "Width"
+msgstr ""
+
+#: SD_Meeting_Tool_Actions.php:341 SD_Meeting_Tool_Actions.php:550
+#: SD_Meeting_Tool_Agendas.php:337 SD_Meeting_Tool_Agendas.php:585
+#: SD_Meeting_Tool_Display_Formats.php:285 SD_Meeting_Tool_Displays.php:334
+#: SD_Meeting_Tool_Elections.php:501 SD_Meeting_Tool_List_Sorts.php:256
+#: SD_Meeting_Tool_Lists.php:432 SD_Meeting_Tool_Participants.php:264
+#: SD_Meeting_Tool_Printing.php:383 SD_Meeting_Tool_Printing.php:636
+#: SD_Meeting_Tool_Printing.php:820 SD_Meeting_Tool_Registrations.php:304
+#: SD_Meeting_Tool_Speakers.php:474 SD_Meeting_Tool_Speakers.php:984
+msgid "With the selected rows"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:220
+msgid "Wizards"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:591
+msgid "X"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:664 SD_Meeting_Tool_Printing.php:907
+msgid "X offset"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:600
+msgid "Y"
+msgstr ""
+
+#: SD_Meeting_Tool_Printing.php:665 SD_Meeting_Tool_Printing.php:915
+msgid "Y offset"
+msgstr ""
+
+#: SD_Meeting_Tool_Agendas.php:629
+msgid "You can select the current item by doubleclicking the item's row. Doubleclick the same item again to deselect it."
+msgstr ""
+
+#: SD_Meeting_Tool_Participants.php:595
+msgid "You need to paste at least two columns for the import function to work!"
+msgstr ""
+
+#: SD_Meeting_Tool_Participants.php:587
+msgid "You need to paste at least two lines for the import function to work!"
+msgstr ""
+
+#: SD_Meeting_Tool_List_Sorts.php:232
+msgid "descending"
+msgstr ""
