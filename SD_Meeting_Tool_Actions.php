@@ -1,12 +1,12 @@
 <?php
 /*                                                                                                                                                                                                                                                             
 Plugin Name: SD Meeting Tool Actions
-Plugin URI: http://frimjukvara.sverigedemokraterna.se/meeting-control
+Plugin URI: https://it.sverigedemokraterna.se
 Description: Provide actions for the modules.
-Version: 1.0
+Version: 1.1
 Author: Sverigedemokraterna IT
-Author URI: http://frimjukvara.sverigedemokraterna.se
-Author Email: it@mindreantre.se
+Author URI: https://it.sverigedemokraterna.se
+Author Email: it@sverigedemokraterna.se
 */
 
 if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('You are not allowed to call this page directly.'); }
@@ -65,6 +65,11 @@ if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('You 
 /**
 	Provides action handling.
 
+	@par		Changelog
+
+	@par		1.1
+	- Version bump.
+	
 	@brief		Standard, basic and complete action handling plugin.
 	@author		Edward Plainview	edward.plainview@sverigedemokraterna.se
 **/
@@ -158,41 +163,34 @@ class SD_Meeting_Tool_Actions
 		
 		if ( isset( $_GET['tab'] ) )
 		{
-			if ( $_GET['tab'] == $this->tab_slug( $this->_('Edit action') ) )
+			if ( $_GET['tab'] == 'edit_action' )
 			{
-				$tab_data['tabs']['edit'] = $this->_( 'Edit action');
-				$tab_data['functions']['edit'] = 'admin_edit';
+				$tab_data['tabs']['edit_action'] = $this->_( 'Edit action');
+				$tab_data['functions']['edit_action'] = 'admin_edit';
 
-				$action = apply_filters( 'sd_mt_get_action', $_GET['id'] );
+				$action = $this->filters( 'sd_mt_get_action', $_GET['id'] );
 				if ( $action === false )
 					wp_die( $this->_( 'Specified action does not exist!' ) );
 
-				$tab_data['page_titles']['edit'] = sprintf(
-					$this->_( 'Editing action: %s' ),
-					$action->data->name
-				);
+				$tab_data['page_titles']['edit_action'] = $this->_( 'Editing action: %s', $action->data->name );
 			}
 
-			if ( $_GET['tab'] == $this->tab_slug( $this->_('Edit item') ) )
+			if ( $_GET['tab'] == 'edit_item' )
 			{
-				$tab_data['tabs']['edit'] = $this->_( 'Edit item');
-				$tab_data['functions']['edit'] = 'admin_edit_item';
+				$tab_data['tabs']['edit_item'] = $this->_( 'Edit item');
+				$tab_data['functions']['edit_item'] = 'admin_edit_item';
 
-				$action = apply_filters( 'sd_mt_get_action', $_GET['id'] );
+				$action = $this->filters( 'sd_mt_get_action', $_GET['id'] );
 				if ( $action === false )
 					wp_die( $this->_( 'Specified action does not exist!' ) );
 				$item_id = $_GET['item'];
 				if ( ! isset( $action->items[ $item_id ] ) )
 					wp_die( $this->_( 'Specified action item does not exist!' ) );
 				
-				$description = apply_filters( 'sd_mt_get_action_item_description', $action->items[ $item_id ] );
+				$description = $this->filters( 'sd_mt_get_action_item_description', $action->items[ $item_id ] );
 				$description = preg_replace( '/<br \/>.*/', '', $description->description );
 				$description = strip_tags( $description );
-				$tab_data['page_titles']['edit'] = sprintf(
-					$this->_( 'Editing action item: %s (%s)' ),
-					$description,
-					$item_id
-				);
+				$tab_data['page_titles']['edit_item'] = $this->_( 'Editing action item: %s (%s)', $description, $item_id );
 			}
 		}
 
@@ -207,20 +205,17 @@ class SD_Meeting_Tool_Actions
 			{
 				foreach( $_POST['actions'] as $action_id => $ignore )
 				{
-					$action = apply_filters( 'sd_mt_get_action', $action_id );
+					$action = $this->filters( 'sd_mt_get_action', $action_id );
 					if ( $action !== false )
 					{
 						$action->id = null;
-						$action->data->name = sprintf(
-							$this->_( 'Copy of %s' ),
-							$action->data->name
-						);
+						$action->data->name = $this->_( 'Copy of %s', $action->data->name );
 						
 						// When we're creating, we can't create any items until we know the id of the new action.
 						// So save the items for later.
 						$old_items = $action->items;
 						$action->items = array();
-						$action = apply_filters( 'sd_mt_update_action', $action );
+						$action = $this->filters( 'sd_mt_update_action', $action );
 						
 						// Action created, now clone the action items.
 						foreach( $old_items as $item )
@@ -229,17 +224,14 @@ class SD_Meeting_Tool_Actions
 							$item->action_id = $action->id;
 							$action->items[] = $item;
 						}
-						$action = apply_filters( 'sd_mt_update_action', $action );
+						$action = $this->filters( 'sd_mt_update_action', $action );
 
 						$edit_link = add_query_arg( array(
-							'tab' => $this->tab_slug( $this->_('Edit action') ),
+							'tab' => 'edit_action',
 							'id' => $action->id,
 						) );
 						
-						$this->message( sprintf(
-							$this->_( 'Action cloned! <a href="%s">Edit the newly-cloned action</a>.' ),
-							$edit_link
-						) );
+						$this->message( $this->_( 'Action cloned! <a href="%s">Edit the newly-cloned action</a>.', $edit_link ) );
 					}
 				}
 			}	// clone
@@ -247,14 +239,11 @@ class SD_Meeting_Tool_Actions
 			{
 				foreach( $_POST['actions'] as $action_id => $ignore )
 				{
-					$action = apply_filters( 'sd_mt_get_action', $action_id );
+					$action = $this->filters( 'sd_mt_get_action', $action_id );
 					if ( $action !== false )
 					{
-						apply_filters( 'sd_mt_delete_action', $action );
-						$this->message( sprintf(
-							$this->_( 'Action <em>%s</em> deleted.' ),
-							$action->data->name
-						) );
+						$this->filters( 'sd_mt_delete_action', $action );
+						$this->message( $this->_( 'Action <em>%s</em> deleted.', $action->data->name ) );
 					}
 				}
 			}	// delete
@@ -263,27 +252,21 @@ class SD_Meeting_Tool_Actions
 		if ( isset( $_POST['create_action'] ) )
 		{
 			$action = new SD_Meeting_Tool_Action();
-			$action->data->name = sprintf(
-				$this->_( 'Action created %s' ),
-				$this->now()
-			);
-			$action = apply_filters( 'sd_mt_update_action', $action );
+			$action->data->name = $this->_( 'Action created %s', $this->now() );
+			$action = $this->filters( 'sd_mt_update_action', $action );
 			
 			$edit_link = add_query_arg( array(
-				'tab' => $this->tab_slug( $this->_('Edit action') ),
+				'tab' => 'edit_action',
 				'id' => $action->id,
 			) );
 			
-			$this->message( sprintf(
-				$this->_( 'Action created! <a href="%s">Edit the newly-created action</a>.' ),
-				$edit_link
-			) );
+			$this->message( $this->_( 'Action created! <a href="%s">Edit the newly-created action</a>.', $edit_link ) );
 		}
 
 		$form = $this->form();
 		$returnValue = $form->start();
 
-		$actions = apply_filters( 'sd_mt_get_all_actions', array() );
+		$actions = $this->filters( 'sd_mt_get_all_actions', array() );
 		
 		if ( count( $actions ) < 1 )
 			$this->message( $this->_( 'There are no actions available.' ) );
@@ -301,7 +284,7 @@ class SD_Meeting_Tool_Actions
 				);
 				
 				$edit_link = add_query_arg( array(
-					'tab' => $this->tab_slug( $this->_('Edit action') ),
+					'tab' => 'edit_action',
 					'id' => $action->id,
 				) );
 				
@@ -316,7 +299,7 @@ class SD_Meeting_Tool_Actions
 				$info = array();
 				foreach( $action->items as $item )
 				{
-					$item = apply_filters( 'sd_mt_get_action_item_description', $item );
+					$item = $this->filters( 'sd_mt_get_action_item_description', $item );
 					$info[] = '<p>' . $item->description . '</p>';
 				}
 				$info = implode( '</div><div>', $info );
@@ -399,7 +382,7 @@ class SD_Meeting_Tool_Actions
 	}
 
 	/**
-		Edit an action.
+		@brief		Edit an action.
 	**/
 	public function admin_edit()
 	{		
@@ -423,11 +406,11 @@ class SD_Meeting_Tool_Actions
 
 			if ($result === true)
 			{
-				$action = apply_filters( 'sd_mt_get_action', $id );
+				$action = $this->filters( 'sd_mt_get_action', $id );
 				$action->id = $id;
 				$action->data->name = $_POST['name'];
 				
-				apply_filters( 'sd_mt_update_action', $action );
+				$this->filters( 'sd_mt_update_action', $action );
 				
 				$this->message( $this->_('The action has been updated!') );
 				SD_Meeting_Tool::reload_message();
@@ -440,11 +423,11 @@ class SD_Meeting_Tool_Actions
 		
 		if ( isset( $_POST['create_new_item'] ) && $_POST['new_item_type'] != '' )
 		{
-			$action = apply_filters( 'sd_mt_get_action', $id );
+			$action = $this->filters( 'sd_mt_get_action', $id );
 			$item = new SD_Meeting_Tool_Action_Item();
 			$item->type = $_POST['new_item_type'];
 			$action->items[] = $item; 
-			apply_filters( 'sd_mt_update_action', $action );
+			$this->filters( 'sd_mt_update_action', $action );
 			$this->message( $this->_('A new item has been created!') );
 		}
 
@@ -452,7 +435,7 @@ class SD_Meeting_Tool_Actions
 		{
 			if ( $_POST['mass_edit'] == 'clone' )
 			{
-				$action = apply_filters( 'sd_mt_get_action', $id );
+				$action = $this->filters( 'sd_mt_get_action', $id );
 				foreach( $_POST['items'] as $item_id => $ignore )
 				{
 					if ( isset( $action->items[ $item_id ] ) )
@@ -462,29 +445,26 @@ class SD_Meeting_Tool_Actions
 						$action->items[] = $new_item;
 					}
 				}
-				apply_filters( 'sd_mt_update_action', $action );
+				$this->filters( 'sd_mt_update_action', $action );
 			}	// clone
 
 			if ( $_POST['mass_edit'] == 'delete' )
 			{
-				$action = apply_filters( 'sd_mt_get_action', $id );
+				$action = $this->filters( 'sd_mt_get_action', $id );
 				foreach( $_POST['items'] as $item_id => $ignore )
 				{
 					if ( isset( $action->items[ $item_id ] ) )
 					{
 						$item = $action->items[ $item_id ];
 						unset( $action->items[ $item_id ] );
-						$this->message( sprintf(
-							$this->_( 'Action item <em>%s</em> deleted.' ),
-							$item->id
-						) );
+						$this->message( $this->_( 'Action item <em>%s</em> deleted.', $item->id ) );
 					}
 				}
-				apply_filters( 'sd_mt_update_action', $action );
+				$this->filters( 'sd_mt_update_action', $action );
 			}	// delete
 		}
 
-		$action = apply_filters( 'sd_mt_get_action', $id );
+		$action = $this->filters( 'sd_mt_get_action', $id );
 
 		$inputs['name']['value'] = $action->data->name;
 		
@@ -501,9 +481,7 @@ class SD_Meeting_Tool_Actions
 			
 			<h3>' . $this->_('Action settings') . '</h3>
 			
-			' . $this->display_form_table( array(
-				'inputs' => $inputs,
-			) ).'
+			' . $this->display_form_table( $inputs ) .'
 
 			<p>
 				' . $form->make_input( $input_update ) . '
@@ -532,11 +510,11 @@ class SD_Meeting_Tool_Actions
 				);
 				
 				$item_edit_url = add_query_arg( array(
-					'tab' => $this->tab_slug( $this->_('Edit item') ),
+					'tab' => 'edit_item',
 					'item' => $item->id,
 				) );
 				
-				$item = apply_filters( 'sd_mt_get_action_item_description', $item );
+				$item = $this->filters( 'sd_mt_get_action_item_description', $item );
 
 				$t_body .= '<tr action_item_id="' . $item->id . '">
 					<th scope="row" class="check-column">' . $form->make_input($input_select) . ' <span class="screen-reader-text">' . $form->make_label($input_select) . '</span></th>
@@ -588,9 +566,9 @@ class SD_Meeting_Tool_Actions
 		}
 		
 		// To create a new item, we need to know of all the types.
-		$action_item_types = apply_filters( 'sd_mt_get_action_item_types', array() );
+		$action_item_types = $this->filters( 'sd_mt_get_action_item_types', array() );
 		foreach( $action_item_types as $index => $type )
-			$action_item_types[ $index ] = apply_filters( 'sd_mt_get_action_item_description', $type );
+			$action_item_types[ $index ] = $this->filters( 'sd_mt_get_action_item_description', $type );
 		$new_item_type_options = array();
 		foreach( $action_item_types as $type)
 			$new_item_type_options[ $type->type ] = $type->description;
@@ -615,7 +593,7 @@ class SD_Meeting_Tool_Actions
 			),
 		);
 		
-		$items .= $this->display_form_table( array( 'inputs' => $inputs_create_item ) );
+		$items .= $this->display_form_table( $inputs_create_item );
 		
 		$returnValue .= '
 			
@@ -650,11 +628,11 @@ class SD_Meeting_Tool_Actions
 	}
 
 	/**
-		Edit an action item.
+		@brief		Edit an action item.
 	**/
 	public function admin_edit_item()
 	{
-		$action = apply_filters( 'sd_mt_get_action', $_GET['id'] );
+		$action = $this->filters( 'sd_mt_get_action', $_GET['id'] );
 		
 		// Ask the modules to help us configure this item.
 		do_action( 'sd_mt_configure_action_item', $action->items[ $_GET['item'] ] );
@@ -667,14 +645,14 @@ class SD_Meeting_Tool_Actions
 	// --------------------------------------------------------------------------------------------
 	
 	/**
-		Triggers an action.
+		@brief		Triggers an action.
 		
 		Given an SD_Meeting_Tool_Action_Trigger it will go through the action's items and call each item action.
 		
 		The Action Trigger must contain the action and the trigger (mostly a SD_Meeting_Tool_Participant).
 		
 		@brief		Triggers an action.
-		@param		$action_trigger		SD_Meeting_Tool_Action_Trigger		Action trigger to use.
+		@param		SD_Meeting_Tool_Action_Trigger		$action_trigger		Action trigger to use.
 	**/
 	public function sd_mt_trigger_action( $action_trigger )
 	{
@@ -766,7 +744,7 @@ class SD_Meeting_Tool_Actions
 		$returnValue = array();
 		
 		foreach( $results as $result )
-			$returnValue[ $result['id'] ] = apply_filters( 'sd_mt_get_action', $result['id'] );
+			$returnValue[ $result['id'] ] = $this->filters( 'sd_mt_get_action', $result['id'] );
 
 		return SD_Meeting_Tool::sort_data_array( $returnValue, 'name' );
 	}
@@ -808,7 +786,7 @@ class SD_Meeting_Tool_Actions
 			$this->query( $query );
 		}
 		
-		$old_action = apply_filters( 'sd_mt_get_action', $action->id );
+		$old_action = $this->filters( 'sd_mt_get_action', $action->id );
 		foreach( $old_action->items as $item_id => $item )
 		{
 			if ( !isset( $action->items[ $item_id ] ) )
@@ -824,7 +802,7 @@ class SD_Meeting_Tool_Actions
 		foreach( $action->items as $item )
 		{
 			$item->action_id = $action->id;
-			apply_filters( 'sd_mt_update_action_item', $item );
+			$this->filters( 'sd_mt_update_action_item', $item );
 		}
 		
 		return $action;
@@ -868,10 +846,10 @@ class SD_Meeting_Tool_Actions
 	// --------------------------------------------------------------------------------------------
 	
 	/**
-		Convert a row from SQL to an SD_Meeting_Tool_Action.
+		@brief		Convert a row from SQL to an SD_Meeting_Tool_Action.
 		
-		@param		$sql				array		Row from the database as an array.
-		@return		SD_Meeting_Tool_Action					Action object.
+		@param		array		$sql		Row from the database as an array.
+		@return		An SD_Meeting_Tool_Action object.
 	**/ 
 	private function action_sql_to_object( $sql )
 	{
@@ -884,8 +862,8 @@ class SD_Meeting_Tool_Actions
 	/**
 		Convert a row from SQL to an SD_Meeting_Tool_Action_Item.
 		
-		@param		$sql					array		Row from the database as an array.
-		@return		SD_Meeting_Tool_Action_Item					Action item object.
+		@param		array		$sql		Row from the database as an array.
+		@return		An SD_Meeting_Tool_Action_Item object.
 	**/ 
 	private function action_item_sql_to_object( $sql )
 	{
@@ -899,7 +877,7 @@ class SD_Meeting_Tool_Actions
 	}
 
 	/**
-		Makes a link back to the action editor.
+		@brief		Makes a link back to the action editor.
 		
 		@return		Back link string.
 	**/
@@ -907,7 +885,7 @@ class SD_Meeting_Tool_Actions
 	{
 		$url = remove_query_arg( array('item', 'tab') );
 		$url = add_query_arg( array(
-			'tab' => $this->tab_slug( $this->_( 'Edit action' ) ),
+			'tab' => 'edit_action',
 		), $url );
 		
 		return SD_Meeting_Tool::make_back_link( $this->_( 'Back to the action editor' ), $url );

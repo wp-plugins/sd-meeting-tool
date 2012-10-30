@@ -17,7 +17,7 @@ sd_meeting_tool_elections = elections = {
 	// Does a check of have voted and if there are changes will retrieve a new list.
 	fetch_participants : function()
 	{
-		options = elections.ajaxoptions;
+		options = jQuery.extend( true, {}, elections.ajaxoptions );
 		options.type = 'fetch_have_voted';
 		options.have_voted_list_hash = elections.settings.list_have_voted.hash;
 		$.post( ajaxurl, options, function(data){
@@ -78,7 +78,7 @@ sd_meeting_tool_elections = elections = {
 			var $tr = $(this).parentsUntil('tr').parent();
 			$( 'input.checkbox', $tr ).attr( 'disabled', true );
 			
-			options = elections.ajaxoptions; 
+			options = jQuery.extend( true, {}, elections.ajaxoptions ); 
 			options.type = 'set_vote';
 			options.participant_id = $(this).parent().attr('participant_id');
 			options.option_id = $(this).parent().attr('option_id');

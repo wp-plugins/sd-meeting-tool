@@ -1,12 +1,12 @@
 <?php
 /*                                                                                                                                                                                                                                                             
 Plugin Name: SD Meeting Tool Lists
-Plugin URI: http://frimjukvara.sverigedemokraterna.se/meeting-control
+Plugin URI: https://it.sverigedemokraterna.se
 Description: Simple, basic Lists module for Sd Meeting Tool.
-Version: 1.0
+Version: 1.1
 Author: Sverigedemokraterna IT
-Author URI: http://frimjukvara.sverigedemokraterna.se
-Author Email: it@mindreantre.se
+Author URI: https://it.sverigedemokraterna.se
+Author Email: it@sverigedemokraterna.se
 */
 
 if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('You are not allowed to call this page directly.'); }
@@ -69,6 +69,15 @@ if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('You 
 
 	@brief		Standard, basic and complete list handling plugin.
 	@author		Edward Plainview	edward.plainview@sverigedemokraterna.se
+	
+	@par		Changelog
+	
+	@par		1.1
+	
+	- New: sd_mt_add_list_participants function
+	- New: Particpants are shown in the participant edit textarea
+	- Fix: Lists are properly cloned
+	
 **/
 class SD_Meeting_Tool_Lists
 	extends SD_Meeting_Tool_0
@@ -86,6 +95,7 @@ class SD_Meeting_Tool_Lists
 		
 		// Internal filters
 		add_filter( 'sd_mt_add_list_participant',			array( &$this, 'sd_mt_add_list_participant' ), 10, 2 );
+		add_filter( 'sd_mt_add_list_participants',			array( &$this, 'sd_mt_add_list_participants' ), 10, 2 );
 		add_filter( 'sd_mt_clone_list',						array( &$this, 'sd_mt_clone_list') );
 		add_filter( 'sd_mt_delete_list',					array( &$this, 'sd_mt_delete_list' ) );
 		add_filter( 'sd_mt_get_all_lists',					array( &$this, 'sd_mt_get_all_lists') );
@@ -125,6 +135,9 @@ class SD_Meeting_Tool_Lists
 			'sd_mt_list',
 			array( &$this, 'admin' )
 		);			
+
+		wp_enqueue_style( 'sd_mt_lists', '/' . $this->paths['path_from_base_directory'] . '/css/SD_Meeting_Tool_Lists.css', false, '1.1', 'screen' );
+
 		return $menus;
 	}
 	
@@ -187,49 +200,40 @@ class SD_Meeting_Tool_Lists
 		
 		if ( isset( $_GET['tab'] ) )
 		{
-			if ( $_GET['tab'] == $this->tab_slug( $this->_('Edit') ) )
+			if ( $_GET['tab'] == 'edit' )
 			{
 				$tab_data['tabs']['edit'] = $this->_( 'Edit');
 				$tab_data['functions']['edit'] = 'admin_edit';
 
-				$list = apply_filters( 'sd_mt_get_list', $_GET['id'] );
+				$list = $this->filters( 'sd_mt_get_list', $_GET['id'] );
 				if ( $list === false )
 					wp_die( $this->_( 'Specified list does not exist!' ) );
 
-				$tab_data['page_titles']['edit'] = sprintf(
-					$this->_( 'Editing list: %s' ),
-					$list->data->name
-				);
+				$tab_data['page_titles']['edit'] = $this->_( 'Editing list: %s', $list->data->name );
 			}
 
-			if ( $_GET['tab'] == $this->tab_slug( $this->_('Copy participants') ) )
+			if ( $_GET['tab'] == 'copy_participants' )
 			{
 				$tab_data['tabs']['copy_participants'] = $this->_( 'Copy participants');
 				$tab_data['functions']['copy_participants'] = 'admin_copy_participants';
 
-				$list = apply_filters( 'sd_mt_get_list', $_GET['id'] );
+				$list = $this->filters( 'sd_mt_get_list', $_GET['id'] );
 				if ( $list === false )
 					wp_die( $this->_( 'Specified list does not exist!' ) );
 
-				$tab_data['page_titles']['copy_participants'] = sprintf(
-					$this->_( 'Copying participants from: %s' ),
-					$list->data->name
-				);
+				$tab_data['page_titles']['copy_participants'] = $this->_( 'Copying participants from: %s', $list->data->name );
 			}
 			
-			if ( $_GET['tab'] == $this->tab_slug( $this->_('Show participants') ) )
+			if ( $_GET['tab'] == 'show_participants' )
 			{
 				$tab_data['tabs']['show_participants'] = $this->_( 'Show participants');
 				$tab_data['functions']['show_participants'] = 'admin_show_participants';
 
-				$list = apply_filters( 'sd_mt_get_list', $_GET['id'] );
+				$list = $this->filters( 'sd_mt_get_list', $_GET['id'] );
 				if ( $list === false )
 					wp_die( $this->_( 'Specified list does not exist!' ) );
 
-				$tab_data['page_titles']['show_participants'] = sprintf(
-					$this->_( 'Showing participants for: %s' ),
-					$list->data->name
-				);
+				$tab_data['page_titles']['show_participants'] = $this->_( 'Showing participants for: %s', $list->data->name );
 			}
 		}
 
@@ -241,38 +245,38 @@ class SD_Meeting_Tool_Lists
 	
 	public function admin_overview()
 	{
+		$rv = '';
+
 		if ( isset( $_POST['action_submit'] ) && isset( $_POST['lists'] ) )
 		{
 			if ( $_POST['action'] == 'clone' )
 			{
 				foreach( $_POST['lists'] as $list_id => $ignore )
 				{
-					$list = apply_filters( 'sd_mt_get_list', $list_id );
-					$new_list = apply_filters( 'sd_mt_clone_list', $list );
+					$list = $this->filters( 'sd_mt_get_list', $list_id );
+					$new_list = $this->filters( 'sd_mt_clone_list', $list );
 					
 					$edit_link = add_query_arg( array(
-						'tab' => $this->tab_slug( $this->_('Edit') ),
+						'tab' => 'edit',
 						'id' => $new_list->id,
 					) );
 					
-					$this->message( sprintf(
-						$this->_( 'List cloned! <a href="%s">Edit the newly-cloned list</a>.' ),
-						$edit_link
-					) );
+					$this->message( $this->_( 'List cloned! <a href="%s">Edit the newly-cloned list</a>.', $edit_link ) );
 				}
 			}	// clone
+			if ( $_POST['action'] == 'compare' )
+			{
+				$rv .= $this->compare_lists( array_keys( $_POST['lists'] ) );
+			}	// compare
 			if ( $_POST['action'] == 'delete' )
 			{
 				foreach( $_POST['lists'] as $list_id => $ignore )
 				{
-					$list = apply_filters( 'sd_mt_get_list', $list_id );
+					$list = $this->filters( 'sd_mt_get_list', $list_id );
 					if ( $list !== false )
 					{
-						apply_filters( 'sd_mt_delete_list', $list );
-						$this->message( sprintf(
-							$this->_( 'List <em>%s</em> deleted.' ),
-							$list->data->name
-						) );
+						$this->filters( 'sd_mt_delete_list', $list );
+						$this->message( $this->_( 'List <em>%s</em> deleted.', $list->data->name ) );
 					}
 				}
 			}	// delete
@@ -280,14 +284,11 @@ class SD_Meeting_Tool_Lists
 			{
 				foreach( $_POST['lists'] as $list_id => $ignore )
 				{
-					$list = apply_filters( 'sd_mt_get_list', $list_id );
+					$list = $this->filters( 'sd_mt_get_list', $list_id );
 					if ( $list !== false )
 					{
-						apply_filters( 'sd_mt_remove_list_participants', $list );
-						$this->message( sprintf(
-							$this->_( 'List <em>%s</em> emptied.' ),
-							$list->data->name
-						) );
+						$this->filters( 'sd_mt_remove_list_participants', $list );
+						$this->message( $this->_( 'List <em>%s</em> emptied.', $list->data->name ) );
 					}
 				}
 			}	// empty
@@ -296,27 +297,20 @@ class SD_Meeting_Tool_Lists
 		if ( isset( $_POST['create_list'] ) )
 		{
 			$list = new SD_Meeting_Tool_List();
-			$list->data->name = sprintf(
-				$this->_( 'List created %s' ),
-				$this->now()
-			);
-			$list = apply_filters( 'sd_mt_update_list', $list );
+			$list->data->name = $this->_( 'List created %s', $this->now() );
+			$list = $this->filters( 'sd_mt_update_list', $list );
 			
 			$edit_link = add_query_arg( array(
-				'tab' => $this->tab_slug( $this->_('Edit') ),
+				'tab' => 'edit',
 				'id' => $list->id,
 			) );
 			
-			$this->message( sprintf(
-				$this->_( 'List created! <a href="%s">Edit the newly-created list</a>.' ),
-				$edit_link
-			) );
+			$this->message( $this->_( 'List created! <a href="%s">Edit the newly-created list</a>.', $edit_link ) );
 		}
 
-		$form = $this->form();
-		$returnValue = $form->start();
-		
-		$lists = apply_filters( 'sd_mt_get_all_lists', array() );
+		$form = $this->form();		
+		$rv .= $form->start();
+		$lists = $this->filters( 'sd_mt_get_all_lists', array() );
 		
 		if ( count( $lists ) < 1 )
 			$this->message( $this->_( 'There are no lists available.' ) );
@@ -327,7 +321,7 @@ class SD_Meeting_Tool_Lists
 			{
 				$input_list_select = array(
 					'type' => 'checkbox',
-					'checked' => false,
+					'checked' => isset( $_POST[ 'lists' ][ $list->id ] ),
 					'label' => $list->data->name,
 					'name' => $list->id,
 					'nameprefix' => '[lists]',
@@ -338,21 +332,21 @@ class SD_Meeting_Tool_Lists
 				
 				// Show participants action
 				$show_action_url = add_query_arg( array(
-					'tab' => $this->tab_slug( $this->_('Show participants') ),
+					'tab' => 'show_participants',
 					'id' => $list->id,
 				) );
 				$actions[] = '<a title="'. $this->_('Show all of the participants') .'" href="'.$show_action_url.'">'. $this->_('Show participants') . '</a>';
 				
 				// Copy participants action
 				$copy_action_url = add_query_arg( array(
-					'tab' => $this->tab_slug( $this->_('Copy participants') ),
+					'tab' => 'copy_participants',
 					'id' => $list->id,
 				) );
 				$actions[] = '<a href="'.$copy_action_url.'">'. $this->_('Copy participants') . '</a>';
 				
 				// Edit list action
 				$edit_action_url = add_query_arg( array(
-					'tab' => $this->tab_slug( $this->_('Edit') ),
+					'tab' => 'edit',
 					'id' => $list->id,
 				) );
 				$actions[] = '<a href="'.$edit_action_url.'">'. $this->_('Edit') . '</a>';
@@ -366,7 +360,7 @@ class SD_Meeting_Tool_Lists
 				$display_format = $list->data->display_format_id;
 				if ( $display_format > 0 )
 				{
-					$display_format = apply_filters( 'sd_mt_get_display_format', $display_format );
+					$display_format = $this->filters( 'sd_mt_get_display_format', $display_format );
 					if ( $display_format !== false )
 						$info[] = $this->_( 'Display format:' ) . ' ' . $display_format->data->name;
 				}
@@ -375,7 +369,7 @@ class SD_Meeting_Tool_Lists
 				$list_sort_id = $list->data->list_sort_id;
 				if ( $list_sort_id > 0 )
 				{
-					$list_sort = apply_filters( 'sd_mt_get_list_sort', $list_sort_id );
+					$list_sort = $this->filters( 'sd_mt_get_list_sort', $list_sort_id );
 					if ( $list_sort !== false )
 						$info[] = $this->_( 'Sort:' ) . ' ' . $list_sort->data->name;
 				}
@@ -384,7 +378,7 @@ class SD_Meeting_Tool_Lists
 				$sorted_include_list = array();
 				foreach( $list->includes as $include )
 				{
-					$included_list = apply_filters( 'sd_mt_get_list', $include );
+					$included_list = $this->filters( 'sd_mt_get_list', $include );
 					$sorted_include_list[ $included_list->data->name ] = $included_list; 
 				}
 				ksort( $sorted_include_list );
@@ -396,7 +390,7 @@ class SD_Meeting_Tool_Lists
 				$sorted_exclude_list = array();
 				foreach( $list->excludes as $exclude )
 				{
-					$excluded_list = apply_filters( 'sd_mt_get_list', $exclude );
+					$excluded_list = $this->filters( 'sd_mt_get_list', $exclude );
 					$sorted_exclude_list[ $excluded_list->data->name ] = $excluded_list; 
 				}
 				ksort( $sorted_exclude_list );
@@ -408,7 +402,7 @@ class SD_Meeting_Tool_Lists
 				
 				// Build a complete list of participants, for the sake of counting.
 				$manual_count = count( $list->participants );
-				$list = apply_filters( 'sd_mt_list_participants', $list );
+				$list = $this->filters( 'sd_mt_list_participants', $list );
 				
 				$t_body .= '<tr>
 					<th scope="row" class="check-column">' . $form->make_input($input_list_select) . ' <span class="screen-reader-text">' . $form->make_label($input_list_select) . '</span></th>
@@ -433,10 +427,12 @@ class SD_Meeting_Tool_Lists
 				'options' => array(
 					''			=> $this->_('Do nothing'),
 					'clone'		=> $this->_('Clone'),
+					'compare'	=> $this->_('Compare'),
 					'delete'	=> $this->_('Delete'),
 					'empty'		=> $this->_('Empty'),
 				),
 			);
+			$form->use_post_value( $input_actions, $_POST );
 			
 			$input_action_submit = array(
 				'type' => 'submit',
@@ -450,7 +446,7 @@ class SD_Meeting_Tool_Lists
 				'name' => 'check',
 			);
 			
-			$returnValue .= '
+			$rv .= '
 				<p>
 					' . $form->make_label( $input_actions ) . '
 					' . $form->make_input( $input_actions ) . '
@@ -481,15 +477,15 @@ class SD_Meeting_Tool_Lists
 			'css_class' => 'button-primary',
 		);
 		
-		$returnValue .= '
+		$rv .= '
 			<p>
 				' . $form->make_input( $input_list_create ) . '
 			</p>
 		';
 		
-		$returnValue .= $form->stop();
+		$rv .= $form->stop();
 		
-		echo $returnValue;
+		echo $rv;
 	}
 	
 	/**
@@ -499,7 +495,7 @@ class SD_Meeting_Tool_Lists
 	{
 		$form = $this->form();
 		$id = $_GET['id'];
-		$returnValue = '';
+		$rv = '';
 		
 		$inputs = array(
 			'name' => array(
@@ -555,14 +551,14 @@ class SD_Meeting_Tool_Lists
 
 			if ($result === true)
 			{
-				$list = apply_filters( 'sd_mt_get_list', $id );
+				$list = $this->filters( 'sd_mt_get_list', $id );
 				$list->data->name = $_POST['name'];
 				$list->includes = isset( $_POST['includes'] ) ? $_POST['includes'] : array();
 				$list->excludes = isset( $_POST['excludes'] ) ? $_POST['excludes'] : array();
 				$list->data->display_format_id = $_POST['display_format'];
 				$list->data->list_sort_id = $_POST['list_sort'];
 				
-				apply_filters( 'sd_mt_update_list', $list );
+				$this->filters( 'sd_mt_update_list', $list );
 				
 				$this->message( $this->_('The list has been updated!') );
 				SD_Meeting_Tool::reload_message();
@@ -575,7 +571,7 @@ class SD_Meeting_Tool_Lists
 
 		if ( isset( $_POST['update_participants'] ) )
 		{
-			$list = apply_filters( 'sd_mt_get_list', $id );
+			$list = $this->filters( 'sd_mt_get_list', $id );
 			switch( key( $_POST['update_participants'] ) )
 			{
 				case 'update_select':
@@ -590,7 +586,7 @@ class SD_Meeting_Tool_Lists
 					$ids = array_filter( $ids );
 					foreach( $ids as $pid )
 					{
-						$participant = apply_filters( 'sd_mt_get_participant', $pid );
+						$participant = $this->filters( 'sd_mt_get_participant', $pid );
 						if ( $participant === false )
 							continue;
 						$list->participants[ $pid ] = $pid;
@@ -601,7 +597,7 @@ class SD_Meeting_Tool_Lists
 					$list->participants = array_keys( $_POST['participants'] );
 					break;
 			}
-			apply_filters( 'sd_mt_update_list', $list );
+			$this->filters( 'sd_mt_update_list', $list );
 			$this->message( $this->_('The list has been updated!') );
 			SD_Meeting_Tool::reload_message();
 			
@@ -609,8 +605,8 @@ class SD_Meeting_Tool_Lists
 			$list->participants = array_flip( $list->participants );
 		}
 		
-		$list = apply_filters( 'sd_mt_get_list', $id );
-		$lists = apply_filters( 'sd_mt_get_all_lists', $id );
+		$list = $this->filters( 'sd_mt_get_list', $id );
+		$lists = $this->filters( 'sd_mt_get_all_lists', $id );
 		
 		// Put the options in.
 		$list_options = array();
@@ -628,32 +624,30 @@ class SD_Meeting_Tool_Lists
 		$inputs['excludes']['value'] = SD_Meeting_Tool::array_intval( $list->excludes );
 		
 		// Put the display format options in
-		$display_formats = apply_filters( 'sd_mt_get_all_display_formats', array() );
+		$display_formats = $this->filters( 'sd_mt_get_all_display_formats', array() );
 		foreach( $display_formats as $display_format )
 			$inputs['display_format']['options'][ $display_format->id ] = $display_format->data->name;
 		$inputs['display_format']['value'] = intval( $list->data->display_format_id );
 		
 		// And the sort order options
-		$list_sorts = apply_filters( 'sd_mt_get_all_list_sorts', array() );
+		$list_sorts = $this->filters( 'sd_mt_get_all_list_sorts', array() );
 		foreach( $list_sorts as $list_sort )
 			$inputs['list_sort']['options'][ $list_sort->id ] = $list_sort->data->name;
 		$inputs['list_sort']['value'] = intval( $list->data->list_sort_id );
 		
-		$returnValue .= '<h3>' . $this->_('List settings') . '</h3>';
+		$rv .= '<h3>' . $this->_('List settings') . '</h3>';
 
-		$returnValue .= '
+		$rv .= '
 			' . $form->start() . '
 			
-			' . $this->display_form_table( array(
-				'inputs' => $inputs,
-			) ). '
+			' . $this->display_form_table( $inputs ). '
 
 			' . $form->stop() . '
 		';
 		
-		$returnValue .= '<h3>' . $this->_('Participants') . '</h3>';
+		$rv .= '<h3>' . $this->_('Participants') . '</h3>';
 
-		$all_participants = apply_filters( 'sd_mt_get_all_participants', array() );
+		$all_participants = $this->filters( 'sd_mt_get_all_participants', array() );
 		
 		// Sort the participants, if possible.
 		$all_participants = $this->sort_participants( $all_participants, $list );
@@ -701,11 +695,11 @@ class SD_Meeting_Tool_Lists
 			), 
 		);
 		
-		$display_format = apply_filters( 'sd_mt_get_display_format', $list->data->display_format_id );
+		$display_format = $this->filters( 'sd_mt_get_display_format', $list->data->display_format_id );
 		
 		foreach( $all_participants as $participant )
 		{
-			$display_name = apply_filters( 'sd_mt_display_participant', $participant, $display_format );
+			$display_name = $this->filters( 'sd_mt_display_participant', $participant, $display_format );
 			$input = array(
 				'type' => 'checkbox',
 				'name' => $participant->id,
@@ -719,15 +713,14 @@ class SD_Meeting_Tool_Lists
 		
 		$inputs = array_merge( $inputs, $inputs_participants );
 		
+		$inputs['participants_textarea']['value'] = implode( "\n", array_keys( $list->participants ) );
 		$inputs['all_participants']['value'] = SD_Meeting_Tool::array_intval( array_keys( $list->participants ) );
 		
-		$returnValue .= $form->start();
-		$returnValue .= $this->display_form_table( array(
-			'inputs' => $inputs,
-		) );
-		$returnValue .= $form->stop();
+		$rv .= $form->start();
+		$rv .= $this->display_form_table( $inputs );
+		$rv .= $form->stop();
 		
-		echo $returnValue;
+		echo $rv;
 	}
 
 	/**
@@ -735,27 +728,24 @@ class SD_Meeting_Tool_Lists
 	**/
 	public function admin_copy_participants()
 	{
-		$returnValue = '';
+		$rv = '';
 		$list_id = $_GET['id'];
 		$form = $this->form();
 		
 		if ( isset( $_POST[ 'submit' ] ) && isset( $_POST[ 'to' ] ) && count( $_POST[ 'to' ] ) > 0 )
 		{
 			// Get the participants of this list.
-			$list = apply_filters( 'sd_mt_get_list', $list_id );
-			$list = apply_filters( 'sd_mt_list_participants', $list );
+			$list = $this->filters( 'sd_mt_get_list', $list_id );
+			$list = $this->filters( 'sd_mt_list_participants', $list );
 			foreach( $_POST[ 'to' ] as $target_list_id )
 			{
-				$target_list = apply_filters( 'sd_mt_get_list', $target_list_id );
+				$target_list = $this->filters( 'sd_mt_get_list', $target_list_id );
 				if ( $target_list === false )
 					continue;
 				$target_list->participants = $list->participants;
-				apply_filters( 'sd_mt_update_list', $target_list );
+				$this->filters( 'sd_mt_update_list', $target_list );
 			}
-			$this->message( sprintf(
-				$this->_ ('The participants have been copied to %s lists!' ),
-				count( $_POST[ 'to' ] )
-			) );
+			$this->message( $this->_ ('The participants have been copied to %s lists!', count( $_POST[ 'to' ] ) ) );
 		}
 		
 		$inputs = array(
@@ -777,16 +767,16 @@ class SD_Meeting_Tool_Lists
 			),
 		);
 		
-		$lists = apply_filters( 'sd_mt_get_all_lists', array() );
+		$lists = $this->filters( 'sd_mt_get_all_lists', array() );
 		foreach( $lists as $list_id => $list )
 			$inputs[ 'to' ][ 'options' ][ $list_id ] = $list->data->name;
 		
-		$returnValue .=
+		$rv .=
 			$form->start() 
-			. $this->display_form_table( array( 'inputs' => $inputs ) )
+			. $this->display_form_table( $inputs )
 			. $form->stop(); 
 		
-		echo $returnValue;
+		echo $rv;
 	}
 	
 	/**
@@ -794,18 +784,18 @@ class SD_Meeting_Tool_Lists
 	**/
 	public function admin_show_participants()
 	{
-		$returnValue = '';
+		$rv = '';
 		$list_id = $_GET['id'];
 		
-		$list = apply_filters( 'sd_mt_get_list', $list_id );
-		$list = apply_filters( 'sd_mt_list_participants', $list );
+		$list = $this->filters( 'sd_mt_get_list', $list_id );
+		$list = $this->filters( 'sd_mt_list_participants', $list );
 		
-		$display_format = apply_filters( 'sd_mt_get_display_format', $list->data->display_format_id );
+		$display_format = $this->filters( 'sd_mt_get_display_format', $list->data->display_format_id );
 		
 		$t_body = '';
 		foreach( $list->participants as $participant )
 		{
-			$display_name = apply_filters( 'sd_mt_display_participant', $participant, $display_format );
+			$display_name = $this->filters( 'sd_mt_display_participant', $participant, $display_format );
 			$t_body .= '
 				<tr>
 					<td>' . $display_name . '</td>
@@ -814,12 +804,9 @@ class SD_Meeting_Tool_Lists
 			';
 		}
 		
-		$returnValue .= '
+		$rv .= '
 			<p>
-				'. sprintf(
-					$this->_( '%s participants.' ),
-					count( $list->participants )
-				). '
+				'. $this->_( '%s participants.', count( $list->participants ) ). '
 			</p>
 			<table class="widefat">
 				<thead>
@@ -834,7 +821,7 @@ class SD_Meeting_Tool_Lists
 			</table>
 		';
 		
-		echo $returnValue;
+		echo $rv;
 	}
 	
 	// --------------------------------------------------------------------------------------------
@@ -862,14 +849,14 @@ class SD_Meeting_Tool_Lists
 					foreach( $_POST['list_id'] as $list_id )
 						$item->data->list_id[] = intval( $list_id );
 					
-					apply_filters( 'sd_mt_update_action_item', $item );
+					$this->filters( 'sd_mt_update_action_item', $item );
 					$this->message( $this->_('The action item has been updated!') ); 
 				}
 				
 				$form = $this->form();
 				
 				$label = $this->strings[ $item->type ][ 'empty' ];
-				$lists = apply_filters( 'sd_mt_get_all_lists', null );
+				$lists = $this->filters( 'sd_mt_get_all_lists', null );
 				$list_id_options = array();
 				foreach( $lists as $list )
 					$list_id_options[ $list->id ] = $list->data->name;
@@ -894,11 +881,11 @@ class SD_Meeting_Tool_Lists
 					),
 				);
 				
-				$returnValue = $form->start();
-				$returnValue .= $this->display_form_table( array( 'inputs' => $inputs ) );
-				$returnValue .= $form->stop();
+				$rv = $form->start();
+				$rv .= $this->display_form_table( $inputs );
+				$rv .= $form->stop();
 				
-				echo $returnValue;
+				echo $rv;
 				return;
 		}
 	}
@@ -921,10 +908,10 @@ class SD_Meeting_Tool_Lists
 				$participant = $item_trigger->trigger;		// Convenience.
 				foreach( $item->data->list_id as $list_id )
 				{
-					$list = apply_filters( 'sd_mt_get_list', $list_id );
+					$list = $this->filters( 'sd_mt_get_list', $list_id );
 					if ( $list === false )
 						continue;
-					apply_filters( 'sd_mt_add_list_participant', $list, $participant );
+					$this->filters( 'sd_mt_add_list_participant', $list, $participant );
 				}
 				break;
 			case 'remove_list_participant':
@@ -933,10 +920,10 @@ class SD_Meeting_Tool_Lists
 				$participant = $item_trigger->trigger;		// Convenience.
 				foreach( $item->data->list_id as $list_id )
 				{
-					$list = apply_filters( 'sd_mt_get_list', $list_id );
+					$list = $this->filters( 'sd_mt_get_list', $list_id );
 					if ( $list === false )
 						continue;
-					apply_filters( 'sd_mt_remove_list_participant', $list, $participant );
+					$this->filters( 'sd_mt_remove_list_participant', $list, $participant );
 				}
 				break;
 		}
@@ -948,19 +935,26 @@ class SD_Meeting_Tool_Lists
 	
 	public function sd_mt_add_list_participant( $SD_Meeting_Tool_List, $SD_Meeting_Tool_Participant )
 	{
-		$SD_Meeting_Tool_List->participants[ $SD_Meeting_Tool_Participant->id ] = $SD_Meeting_Tool_Participant->id;
-		apply_filters( 'sd_mt_update_list', $SD_Meeting_Tool_List );
+		$this->sd_mt_add_list_participants( $SD_Meeting_Tool_List, array( $SD_Meeting_Tool_Participant ) );
+	}
+	
+	public function sd_mt_add_list_participants( $SD_Meeting_Tool_List, $SD_Meeting_Tool_Participants )
+	{
+		foreach( $SD_Meeting_Tool_Participants as $SD_Meeting_Tool_Participant )
+			if ( is_object( $SD_Meeting_Tool_Participant ) )
+				$SD_Meeting_Tool_List->participants[ $SD_Meeting_Tool_Participant->id ] = $SD_Meeting_Tool_Participant->id;
+			else
+				$SD_Meeting_Tool_List->participants[ $SD_Meeting_Tool_Participant ] = $SD_Meeting_Tool_Participant;
+		$this->filters( 'sd_mt_update_list', $SD_Meeting_Tool_List );
 	}
 	
 	public function sd_mt_clone_list( $list )
 	{
 		// Clone the list itself.
 		$new_list = clone( $list );
-		$new_list->data->name = sprintf(
-			$this->_( 'Clone of %s' ),
-			$list->data->name
-		);
-		$new_list = apply_filters( 'sd_mt_update_list', $new_list );
+		$new_list->id = null;
+		$new_list->data->name = $this->_( 'Clone of %s', $list->data->name );
+		$new_list = $this->filters( 'sd_mt_update_list', $new_list );
 
 		$query = "INSERT INTO  `".$this->wpdb->base_prefix."sd_mt_list_participants`
 			(`id`, `participant_id`, `registered`)
@@ -1002,12 +996,12 @@ class SD_Meeting_Tool_Lists
 		global $blog_id;
 		$query = "SELECT id FROM `".$this->wpdb->base_prefix."sd_mt_lists` WHERE `blog_id` = '$blog_id'";
 		$results = $this->query( $query );
-		$returnValue = array();
+		$rv = array();
 		
 		foreach( $results as $result )
-			$returnValue[ $result['id'] ] = $this->sd_mt_get_list( $result['id'] );
+			$rv[ $result['id'] ] = $this->sd_mt_get_list( $result['id'] );
 
-		return SD_Meeting_Tool::sort_data_array( $returnValue, 'name' );
+		return SD_Meeting_Tool::sort_data_array( $rv, 'name' );
 	}
 	
 	public function sd_mt_get_list( $list_id )
@@ -1049,7 +1043,7 @@ class SD_Meeting_Tool_Lists
 		foreach( $collection->participants as $participant_id => $participant )
 		{
 			$list->participants[ $participant_id ] = (object) array_merge(
-				(array)apply_filters( 'sd_mt_get_participant', $participant_id ),
+				(array)$this->filters( 'sd_mt_get_participant', $participant_id ),
 				(array)$participant
 			);
 		}
@@ -1064,14 +1058,14 @@ class SD_Meeting_Tool_Lists
 		if ( isset( $list->participants[ $participant->id ] ) )
 		{
 			unset( $list->participants[ $participant->id ] );
-			apply_filters( 'sd_mt_update_list', $list );
+			$this->filters( 'sd_mt_update_list', $list );
 		}
 	}
 
 	public function sd_mt_remove_list_participants( $list )
 	{
 		$list->participants = array();
-		apply_filters( 'sd_mt_update_list', $list );
+		$this->filters( 'sd_mt_update_list', $list );
 	}
 
 	public function sd_mt_update_list( $list )
@@ -1188,28 +1182,28 @@ class SD_Meeting_Tool_Lists
 				
 		$item = $SD_Meeting_Tool_Action_Item;		// Convenience.
 		
-		$returnValue = '';
+		$rv = '';
 		switch( $item->type )
 		{
 			case 'add_list_participant':
 			case 'remove_list_participant':
 				if ( $item->data === null || ! isset( $item->data->list_id ) )
 				{
-					$returnValue = $this->strings[ $item->type ]['empty'];
+					$rv = $this->strings[ $item->type ]['empty'];
 				}
 				else
 				{
-					$returnValue = '';
+					$rv = '';
 					$lists = array();
 					foreach( $item->data->list_id as $list_id )
 					{
-						$list = apply_filters( 'sd_mt_get_list', $list_id );
+						$list = $this->filters( 'sd_mt_get_list', $list_id );
 						if ( $list === false )
 							$lists[] = $this->_('Unknown');
 						else
 							$lists[] = $list->data->name;
 					}
-					$returnValue .= sprintf(
+					$rv .= sprintf(
 						$this->strings[ $item->type ]['full'],
 						implode( '</em><br /><em>', $lists )
 					);
@@ -1217,7 +1211,7 @@ class SD_Meeting_Tool_Lists
 				break;
 		}
 
-		$SD_Meeting_Tool_Action_Item->description = $returnValue;
+		$SD_Meeting_Tool_Action_Item->description = $rv;
 		return $SD_Meeting_Tool_Action_Item;
 	}
 	
@@ -1272,7 +1266,7 @@ class SD_Meeting_Tool_Lists
 		{
 			$include_collection->seen = $collection->seen;
 			
-			$included_list = apply_filters( 'sd_mt_get_list', $list_id );
+			$included_list = $this->filters( 'sd_mt_get_list', $list_id );
 			$this->collect_participants( $include_collection, $included_list );
 		}		
 		$collection->seen( $include_collection->seen );
@@ -1284,11 +1278,93 @@ class SD_Meeting_Tool_Lists
 		{
 			$exclude_collection->seen = $collection->seen;
 			
-			$excluded_list = apply_filters( 'sd_mt_get_list', $list_id );
+			$excluded_list = $this->filters( 'sd_mt_get_list', $list_id );
 			$this->collect_participants( $exclude_collection, $excluded_list );
 		}
 		$collection->seen( $exclude_collection->seen );
 		$collection->exclude_participants( $exclude_collection->participants );
+	}
+	
+	/**
+		@brief		Compares several lists and shows a comparison table.
+		@param		$list_ids
+					Array of list ids.
+		
+		@return		HTML table comparing the lists.
+	**/
+	public function compare_lists( $list_ids )
+	{
+		$rv = '';
+		
+		$lists = array();
+		$participants = array();
+		foreach( $list_ids as $list_id )
+		{
+			$list = $this->filters( 'sd_mt_get_list', $list_id );
+			if ( $list === false )
+				continue;
+			$lists[] = $list;
+			$list = $this->filters( 'sd_mt_list_participants', $list );
+			$list_name = $list->data->name;
+			
+			$display_format_id = $list->display_format_id();
+			$display_format = $this->filters( 'sd_mt_get_display_format', $display_format_id );
+			
+			foreach( $list->participants as $participant )
+			{
+				$participant_id = $participant->id;
+				if ( ! isset( $participants[ $participant_id ] ) )
+				{
+					$p = new stdClass();
+					$p->name = $this->filters( 'sd_mt_display_participant', $participant, $display_format );
+					$p->lists = new stdClass();
+					$participants[ $participant_id ] = $p;
+				}
+				$participants[ $participant_id ]->lists->$list_name = $list_name;
+			}
+		}
+		
+		$t_body = array();
+		foreach( $participants as $participant_id => $participant )
+		{
+			$row = array();
+			$row[] = '<td>' . $participant_id . '</td>';
+			$row[] = '<td>' . $participant->name . '</td>';
+			foreach( $lists as $list )
+			{
+				$list_name = $list->data->name;
+				$td = sprintf( '<td title="%s" class="', $list_name ); 
+				if( isset( $participant->lists->$list_name  ) )
+					$row[] = $td . 'yes">' . $this->_( 'Yes' ) . '</td>';
+				else
+					$row[] = $td . 'no">' . $this->_( 'No' ) . '</td>';
+			}
+			$t_body[] = implode( '', $row );
+		}
+		
+		$t_head = array(
+			'<th>' . $this->_( 'ID' ) . '</th>',
+			'<th>' . $this->_( 'Participant' ) . '</th>'
+		);
+		foreach( $lists as $list )
+			$t_head[] = '<th>' . $list->data->name . '</th>';
+			
+		$rv .= '
+			<table class="widefat compare_participants">
+				<thead>
+					<tr>
+						'. implode( $t_head ) .'
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						'. implode( '</tr><tr>', $t_body ) .'
+					</tr>
+				</tbody>
+			</table>
+		';
+		
+		return $rv;
 	}
 	
 	/**
@@ -1314,7 +1390,7 @@ class SD_Meeting_Tool_Lists
 	**/
 	private function get_list_participants( $list )
 	{
-		$returnValue = array();
+		$rv = array();
 		$query = "SELECT * FROM `".$this->wpdb->base_prefix."sd_mt_list_participants` WHERE `id` = '".$list->id."'";
 		$result = $this->query( $query );
 		
@@ -1324,10 +1400,10 @@ class SD_Meeting_Tool_Lists
 			$list_participant = new SD_Meeting_Tool_List_Participant();
 			$list_participant->id = $participant_id;
 			$list_participant->registered = strtotime( $participant['registered'] );
-			$returnValue[ $participant_id ] = $list_participant;
+			$rv[ $participant_id ] = $list_participant;
 		}
 		
-		return $returnValue;
+		return $rv;
 	}
 	
 	/**
@@ -1390,8 +1466,8 @@ class SD_Meeting_Tool_Lists
 	private function sort_list( $SD_Meeting_Tool_List )
 	{
 		$list = $SD_Meeting_Tool_List;		// Convenience
-		$list_sort = apply_filters( 'sd_mt_get_list_sort', $list->data->list_sort_id );	// Convenience
-		$list = apply_filters( 'sd_mt_sort_list', $list, $list_sort );
+		$list_sort = $this->filters( 'sd_mt_get_list_sort', $list->data->list_sort_id );	// Convenience
+		$list = $this->filters( 'sd_mt_sort_list', $list, $list_sort );
 		return $list;
 	}
 	
@@ -1417,11 +1493,11 @@ class SD_Meeting_Tool_Lists
 		$this->strings = array(
 			'add_list_participant' => array(
 				'empty' => $this->_( 'Add the participant to a list' ),
-				'full' => $this->_( 'Add the participant to: <br /><em>%s</em>' ),
+				'full' => $this->_( 'Add the participant to: <br /><em>%s</em>', '%s' ),			// Observe the ugly hack to keep the %s in its place.
 			),
 			'remove_list_participant' => array(
 				'empty' => $this->_( 'Remove the participant from a list' ),
-				'full' => $this->_( 'Remove the participant from: <br /><em>%s</em>' ),
+				'full' => $this->_( 'Remove the participant from: <br /><em>%s</em>', '%s' ),		// Observe the ugly hack to keep the %s in its place.
 			),
 		);
 	}

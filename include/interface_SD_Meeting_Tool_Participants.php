@@ -6,40 +6,49 @@
 interface interface_SD_Meeting_Tool_Participants
 {
 	/**
-		Deletes a participant.
+		@brief		Completely clears the participants.
+		
+		Deletes all participants and resets the fields. 
 		
 		@wp_filter
-		@param		$SD_Meeting_Tool_Participant		Participant to delete.
 	**/
-	public function sd_mt_delete_participant( $SD_Meeting_Tool_Participant );
+	public function sd_mt_clear_participants();
 	
 	/**
-		Return a list of all the participants.
+		@brief		Deletes a participant.
+		
+		@wp_filter
+		@param		SD_Meeting_Tool_Participant		$participant		Participant to delete.
+	**/
+	public function sd_mt_delete_participant( $participant );
+	
+	/**
+		@brief		Return a list of all the participants.
 		
 		@return		Array of SD_Meeting_Tool_Participant.
 	**/
 	public function sd_mt_get_all_participants();
 	
 	/**
-		Return a specific participant.
+		@brief		Return a specific participant.
 		
 		@wp_filter
-		@param		$participant_id					Participant to get.
+		@param		int								$id					Participant to get.
 		@return		An SD_Meeting_Tool_Participant.
 	**/
-	public function sd_mt_get_participant( $participant_id );
+	public function sd_mt_get_participant( $id );
 	
 	/**
-		Return a specific participant field.
+		@brief		Return a specific participant field.
 		
 		@wp_filter
-		@param		$field_name								Participant field name to get.
+		@param		string							$field_name			Participant field name to get.
 		@return		An SD_Meeting_Tool_Participant_Field.
 	**/
 	public function sd_mt_get_participant_field( $field_name );
 	
 	/**
-		Returns an array of SD_Meeting_Tool_Participant_Field that describe which fields exist in the participant database.
+		@brief		Returns an array of SD_Meeting_Tool_Participant_Field that describe which fields exist in the participant database.
 		
 		@wp_filter
 		@return		Array of SD_Meeting_Tool_Participant_Field.
@@ -47,13 +56,12 @@ interface interface_SD_Meeting_Tool_Participants
 	public function sd_mt_get_participant_fields();
 	
 	/**
-		Creates or updates a participant.
+		@brief		Creates or updates a participant.
 		
 		If the ID is null, a new participant will be created in the database.
 		
 		@wp_filter
-		@param		$SD_Meeting_Tool_Participant		Participant to create or update.
-		@return											The complete participant.
+		@param		SD_Meeting_Tool_Participant		$participant		Participant to create or update.
 	**/
-	public function sd_mt_update_participant( $SD_Meeting_Tool_Participant );
+	public function sd_mt_update_participant( $participant );
 }

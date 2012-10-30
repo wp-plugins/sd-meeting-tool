@@ -26,7 +26,7 @@ function sd_meeting_tool_agendas()
 				var current_item_id = current_item_id.replace('items[', '').replace(']','');
 			}
 
-			options = caller.ajaxoptions;
+			options = jQuery.extend( true, {}, caller.ajaxoptions );
 			options.type = "select_current_item";
 			options.current_item_id = current_item_id;
 	

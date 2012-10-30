@@ -1,12 +1,12 @@
 <?php
 /*                                                                                                                                                                                                                                                             
 Plugin Name: SD Meeting Tool Elections
-Plugin URI: http://frimjukvara.sverigedemokraterna.se/meeting-control
+Plugin URI: https://it.sverigedemokraterna.se
 Description: Enables elections.
-Version: 1.0
+Version: 1.1
 Author: Sverigedemokraterna IT
-Author URI: http://frimjukvara.sverigedemokraterna.se
-Author Email: it@mindreantre.se
+Author URI: https://it.sverigedemokraterna.se
+Author Email: it@sverigedemokraterna.se
 */
 
 if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('You are not allowed to call this page directly.'); }
@@ -147,6 +147,12 @@ if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('You 
 /**
 	@brief		Plugin providing election services.
 	@author		Edward Plainview	edward.plainview@sverigedemokraterna.se
+	
+	@par		Changelog
+	
+	@par		1.1
+	
+	- Added participant query function
 **/
 class SD_Meeting_Tool_elections
 	extends SD_Meeting_Tool_0
@@ -212,6 +218,9 @@ class SD_Meeting_Tool_elections
 		return $menus;
 	}
 	
+	/**
+		@brief		Main admin overview.
+	**/
 	public function admin()
 	{
 		$tab_data = array(
@@ -226,76 +235,82 @@ class SD_Meeting_Tool_elections
 
 		if ( isset( $_GET['tab'] ) )
 		{
-			if ( $_GET['tab'] == $this->tab_slug( $this->_('Edit') ) )
+			if ( $_GET['tab'] == 'edit' )
 			{
 				$tab_data['tabs']['edit'] = $this->_( 'Edit' );
 				$tab_data['functions']['edit'] = 'admin_edit';
 
-				$election = apply_filters( 'sd_mt_get_election', $_GET['id'] );
+				$election = $this->filters( 'sd_mt_get_election', $_GET['id'] );
 				if ( $election === false )
 					wp_die( $this->_( 'Specified election does not exist!' ) );
 
-				$tab_data['page_titles']['edit'] = sprintf(
-					$this->_( 'Editing election: %s' ),
-					$election->data->name
-				);
+				$tab_data['page_titles']['edit'] = $this->_( 'Editing election: %s', $election->data->name );
 			}	// edit
 
-			if ( $_GET['tab'] == $this->tab_slug( $this->_('Electoral register') ) )
+			if ( $_GET['tab'] == 'electoral_register' )
 			{
-				$tab_data['tabs']['register'] = $this->_( 'Electoral register' );
-				$tab_data['functions']['register'] = 'admin_electoral_register';
+				$tab_data['tabs']['electoral_register'] = $this->_( 'Electoral register' );
+				$tab_data['functions']['electoral_register'] = 'admin_electoral_register';
 
-				$election = apply_filters( 'sd_mt_get_election', $_GET['id'] );
+				$election = $this->filters( 'sd_mt_get_election', $_GET['id'] );
 				if ( $election === false )
 					wp_die( $this->_( 'Specified election does not exist!' ) );
 
 				if ( ! $election->has_electoral_register() )
 					wp_die( $this->_( 'Specified election does not have an electoral register!' ) );
 
-				$tab_data['page_titles']['register'] = sprintf(
-					$this->_( 'Electoral register for: %s' ),
-					$election->data->name
-				);
+				$tab_data['page_titles']['electoral_register'] = $this->_( 'Electoral register for: %s', $election->data->name );
 			}	// electoral register
 
-			if ( $_GET['tab'] == $this->tab_slug( $this->_('Register') ) )
+			if ( $_GET['tab'] == 'query_register' )
+			{
+				$tab_data['tabs']['query_register'] = $this->_( 'Query electoral register' );
+				$tab_data['functions']['query_register'] = 'admin_query_register';
+
+				$election = $this->filters( 'sd_mt_get_election', $_GET['id'] );
+				if ( $election === false )
+					wp_die( $this->_( 'Specified election does not exist!' ) );
+
+				if ( ! $election->has_electoral_register() )
+					wp_die( $this->_( 'Specified election does not have an electoral register!' ) );
+
+				$tab_data['page_titles']['query_register'] = $this->_( 'Querying electoral register for: %s', $election->data->name );
+			}	// query register
+
+			if ( $_GET['tab'] == 'register' )
 			{
 				$tab_data['tabs']['register'] = $this->_( 'Register' );
 				$tab_data['functions']['register'] = 'admin_register';
 
-				$election = apply_filters( 'sd_mt_get_election', $_GET['id'] );
+				$election = $this->filters( 'sd_mt_get_election', $_GET['id'] );
 				if ( $election === false )
 					wp_die( $this->_( 'Specified election does not exist!' ) );
 				
-				$list = apply_filters( 'sd_mt_get_list', $election->data->have_voted );
-				$list = apply_filters( 'sd_mt_list_participants', $list );
+				$list = $this->filters( 'sd_mt_get_list', $election->data->have_voted );
+				$list = $this->filters( 'sd_mt_list_participants', $list );
 
-				$tab_data['page_titles']['register'] = sprintf(
-					$this->_( 'Vote registration for: %s' ),
-					$election->data->name
-				);
+				$tab_data['page_titles']['register'] = $this->_( 'Vote registration for: %s', $election->data->name );
 			}	// Register
 
-			if ( $_GET['tab'] == $this->tab_slug( $this->_('View results') ) )
+			if ( $_GET['tab'] == 'results' )
 			{
 				$tab_data['tabs']['results'] = $this->_( 'View results' );
 				$tab_data['functions']['results'] = 'admin_results';
 
-				$election = apply_filters( 'sd_mt_get_election', $_GET['id'] );
+				$election = $this->filters( 'sd_mt_get_election', $_GET['id'] );
 				if ( $election === false )
 					wp_die( $this->_( 'Specified election does not exist!' ) );
 				
-				$tab_data['page_titles']['results'] = sprintf(
-					$this->_( 'View results for: %s' ),
-					$election->data->name
-				);
+				$tab_data['page_titles']['results'] = $this->_( 'View results for: %s', $election->data->name );
 			}	// View results
 		}
 
 		$this->tabs($tab_data);
 	}
 	
+	/**
+		@brief		Overview tab.
+	**/
 	public function admin_overview()
 	{
 		if ( isset( $_POST['action_submit'] ) && isset( $_POST['elections'] ) )
@@ -304,27 +319,21 @@ class SD_Meeting_Tool_elections
 			{
 				foreach( $_POST['elections'] as $election_id => $ignore )
 				{
-					$election = apply_filters( 'sd_mt_get_election', $election_id );
+					$election = $this->filters( 'sd_mt_get_election', $election_id );
 					if ( $election !== false )
 					{
-						$election->data->name = sprintf(
-							$this->_( 'Copy of %s' ),
-							$election->data->name
-						);
+						$election->data->name = $this->_( 'Copy of %s', $election->data->name );
 						$election->uuid = null;
 						$election->data->status = 'editing';
 						$election->clear_electoral_register();
-						$election = apply_filters( 'sd_mt_update_election', $election );
+						$election = $this->filters( 'sd_mt_update_election', $election );
 
 						$edit_link = add_query_arg( array(
-							'tab' => $this->tab_slug( $this->_('Edit') ),
+							'tab' => 'edit',
 							'id' => $election->id,
 						) );
 						
-						$this->message( sprintf(
-							$this->_( 'Election cloned! <a href="%s">Edit the newly-cloned election</a>.' ),
-							$edit_link
-						) );
+						$this->message_( 'Election cloned! <a href="%s">Edit the newly-cloned election</a>.', $edit_link );
 					}
 				}
 			}	// clone
@@ -333,14 +342,11 @@ class SD_Meeting_Tool_elections
 			{
 				foreach( $_POST['elections'] as $election_id => $ignore )
 				{
-					$election = apply_filters( 'sd_mt_get_election', $election_id );
+					$election = $this->filters( 'sd_mt_get_election', $election_id );
 					if ( $election !== false )
 					{
-						apply_filters( 'sd_mt_delete_election', $election );
-						$this->message( sprintf(
-							$this->_( 'Election <em>%s</em> deleted.' ),
-							$election_id
-						) );
+						$this->filters( 'sd_mt_delete_election', $election );
+						$this->message_( 'Election <em>%s</em> deleted.', $election_id );
 					}
 				}
 			}	// delete
@@ -350,31 +356,25 @@ class SD_Meeting_Tool_elections
 		{
 			$election = new SD_Meeting_Tool_Election();
 			$election->data->type= $_POST['type'];
-			$election->data->name = sprintf(
-				$this->_( 'Election created %s' ),
-				$this->now()
-			);
-			$election = apply_filters( 'sd_mt_update_election', $election );
+			$election->data->name = $this->_( 'Election created %s', $this->now() );
+			$election = $this->filters( 'sd_mt_update_election', $election );
 			
 			$edit_link = add_query_arg( array(
-				'tab' => $this->tab_slug( $this->_('Edit') ),
+				'tab' => 'edit',
 				'id' => $election->id,
 			) );
 			
-			$this->message( sprintf(
-				$this->_( 'Election created! <a href="%s">Edit the newly-created election</a>.' ),
-				$edit_link
-			) );
+			$this->message_( 'Election created! <a href="%s">Edit the newly-created election</a>.', $edit_link );
 		}	// create election
 
 		$form = $this->form();
-		$returnValue = $form->start();
+		$rv = $form->start();
 		
-		$elections = apply_filters( 'sd_mt_get_all_elections', null );
+		$elections = $this->filters( 'sd_mt_get_all_elections', null );
 		
 		if ( count( $elections ) < 1 )
 		{
-			$this->message( $this->_( 'No elections found.' ) );
+			$this->message_( 'No elections found.' );
 		}
 		else
 		{
@@ -398,7 +398,7 @@ class SD_Meeting_Tool_elections
 				{
 					// Electoral register action
 					$results_action_url = add_query_arg( array(
-						'tab' => $this->tab_slug( $this->_('View results') ),
+						'tab' => 'results',
 						'id' => $election->id,
 					) );
 					$actions[] = '<a href="'.$results_action_url.'">'. $this->_('View results') . '</a>';
@@ -417,7 +417,7 @@ class SD_Meeting_Tool_elections
 				{
 					// Registration action
 					$register_action_url = add_query_arg( array(
-						'tab' => $this->tab_slug( $this->_('Register') ),
+						'tab' => 'register',
 						'id' => $election->id,
 					) );
 					$actions[] = '<a href="'.$register_action_url.'">'. $this->_('Register votes') . '</a>';
@@ -432,7 +432,7 @@ class SD_Meeting_Tool_elections
 				{
 					// Electoral register action
 					$electoral_register_action_url = add_query_arg( array(
-						'tab' => $this->tab_slug( $this->_('Electoral register') ),
+						'tab' => 'electoral_register',
 						'id' => $election->id,
 					) );
 					$actions[] = '<a href="'.$electoral_register_action_url.'">'. $this->_('Electoral register') . '</a>';
@@ -442,12 +442,21 @@ class SD_Meeting_Tool_elections
 							'title' => $this->_( 'Calculate the electoral register' ),
 							'url' => $electoral_register_action_url,
 						);
-					
+				}
+				
+				if ( $election->has_electoral_register() )
+				{
+					// Electoral register action
+					$query_register_action_url = add_query_arg( array(
+						'tab' => 'query_register',
+						'id' => $election->id,
+					) );
+					$actions[] = '<a href="'.$query_register_action_url.'">'. $this->_('Query register') . '</a>';
 				}
 				
 				// Edit election action
 				$edit_action_url = add_query_arg( array(
-					'tab' => $this->tab_slug( $this->_('Edit') ),
+					'tab' => 'edit',
 					'id' => $election->id,
 				) );
 				$actions[] = '<a href="'.$edit_action_url.'">'. $this->_('Edit') . '</a>';
@@ -463,20 +472,14 @@ class SD_Meeting_Tool_elections
 				// INFO time.
 				$info = array();
 
-				$info[] = sprintf(
-					$this->_('Type: %s'),
-					ucfirst($election->data->type)
-				);
+				$info[] = $this->_('Type: %s', ucfirst($election->data->type) );
 				
 				if ( $election->has_electoral_register() )
 				{
 					if ( ! $election->is_electoral_register_calculated() )
 						$info[] = $this->_( 'The electoral register has not been calculated yet.' );
 					else
-						$info[] = sprintf(
-							$this->_( 'The electoral register was calculated at %s.' ),
-							date('Y-m-d H:i:s', $election->data->electoral_register_calculated )
-						);
+						$info[] = $this->_( 'The electoral register was calculated at %s.', date('Y-m-d H:i:s', $election->data->electoral_register_calculated ) );
 				}
 
 				$info = implode( '</div><div>', $info );
@@ -518,7 +521,7 @@ class SD_Meeting_Tool_elections
 				'name' => 'check',
 			);
 			
-			$returnValue .= '
+			$rv .= '
 				<p>
 					' . $form->make_label( $input_actions ) . '
 					' . $form->make_input( $input_actions ) . '
@@ -558,22 +561,25 @@ class SD_Meeting_Tool_elections
 			),
 		);
 		
-		$returnValue .= '<h3>' . $this->_('Create a new election')  . '</h3>';
-		$returnValue .= '<p>' . $form->make_label( $input_election_type ) . ' ' . $form->make_input( $input_election_type ) . '</p>';
+		$rv .= '<h3>' . $this->_('Create a new election')  . '</h3>';
+		$rv .= '<p>' . $form->make_label( $input_election_type ) . ' ' . $form->make_input( $input_election_type ) . '</p>';
 
-		$returnValue .= '<p>' . $form->make_input( $input_election_create ) . '</p>';
+		$rv .= '<p>' . $form->make_input( $input_election_create ) . '</p>';
 
-		$returnValue .= $form->stop();
+		$rv .= $form->stop();
 		
-		echo $returnValue;
+		echo $rv;
 	}
 
+	/**
+		@brief		Election edit tab.
+	**/
 	public function admin_edit()
 	{
 		$form = $this->form();
 		$id = $_GET['id'];
-		$election = apply_filters( 'sd_mt_get_election', $id );
-		$returnValue = '';
+		$election = $this->filters( 'sd_mt_get_election', $id );
+		$rv = '';
 		
 		$list_inputs = array( 'eligible_voters', 'voters_present', 'may_vote', 'have_voted' );
 		$electoral_register_inputs = array( 'group_field', 'voting_order_field' );
@@ -662,7 +668,7 @@ class SD_Meeting_Tool_elections
 
 			if ($result === true)
 			{
-				$election = apply_filters( 'sd_mt_get_election', $id );
+				$election = $this->filters( 'sd_mt_get_election', $id );
 				$election->data->name = $_POST['name'];
 				
 				// Choices
@@ -680,11 +686,7 @@ class SD_Meeting_Tool_elections
 					$choice->name = $choice_name;
 					if ( ! $election->is_manual() && ! $election->is_anonymous() )
 					{
-						$new_list_name = sprintf(
-							$this->_( 'Election - %s: choice %s' ),
-							$election->data->name,
-							$choice->name
-						);
+						$new_list_name = $this->_( 'Election - %s: choice %s', $election->data->name, $choice->name );
 						$choice->list_id = $this->maybe_create_list( $choice_data['list_id'], $new_list_name);
 					}
 					$new_choices[] = $choice;
@@ -697,23 +699,19 @@ class SD_Meeting_Tool_elections
 					
 					foreach( $list_inputs as $input )
 					{
-						$new_list_name = sprintf(
-							$this->_( 'Election - %s: %s' ),
-							$election->data->name,
-							$inputs[ $input ]['label']
-						);
+						$new_list_name = $this->_( 'Election - %s: %s', $election->data->name, $inputs[ $input ]['label'] );
 						$election->data->$input = $this->maybe_create_list( $_POST[ $input ], $new_list_name );
 					}
 					foreach( $electoral_register_inputs as $input )
 						$election->data->$input = $_POST[ $input ];
 					
 					$election->clear_electoral_register();
-					$may_vote_list = apply_filters( 'sd_mt_get_list', $election->data->may_vote );
-					apply_filters( 'sd_mt_remove_list_participants', $may_vote_list );
+					$may_vote_list = $this->filters( 'sd_mt_get_list', $election->data->may_vote );
+					$this->filters( 'sd_mt_remove_list_participants', $may_vote_list );
 				}
-				apply_filters( 'sd_mt_update_election', $election );
+				$this->filters( 'sd_mt_update_election', $election );
 				
-				$this->message( $this->_('The election has been updated!') );
+				$this->message_( 'The election has been updated!');
 				SD_Meeting_Tool::reload_message();
 			}
 			else
@@ -725,19 +723,19 @@ class SD_Meeting_Tool_elections
 		if ( $display_lists )
 		{
 			// Lists
-			$all_lists = apply_filters( 'sd_mt_get_all_lists', array() );
+			$all_lists = $this->filters( 'sd_mt_get_all_lists', array() );
 			$lists = array();
 			foreach( $all_lists as $list )
 				$lists[ $list->id ] = $list->data->name;
 
 			// Registration
-			$all_registrations = apply_filters( 'sd_mt_get_all_registrations', array() );
+			$all_registrations = $this->filters( 'sd_mt_get_all_registrations', array() );
 			$registrations = array();
 			foreach( $all_registrations as $registration )
 				$inputs[ 'registration' ][ 'options' ][ $registration->id ] = $registration->data->name;
 				
 			// Fields
-			$participant_fields = apply_filters( 'sd_mt_get_participant_fields', array() );
+			$participant_fields = $this->filters( 'sd_mt_get_participant_fields', array() );
 			$fields = array( ''  => $this->_('None') );
 			foreach( $participant_fields as $field )
 				$fields[ $field->name ] = $field->description;
@@ -753,21 +751,19 @@ class SD_Meeting_Tool_elections
 				unset( $inputs[ $list ] );
 		}
 
-		$election = apply_filters( 'sd_mt_get_election', $id );
+		$election = $this->filters( 'sd_mt_get_election', $id );
 		
 		$inputs['name']['value'] = $election->data->name;
 		$inputs['type']['value'] = $election->data->type;
 		
-		$returnValue .= '
+		$rv .= '
 			' . $form->start() . '
 			
-			' . $this->display_form_table( array( 'inputs' => array(
-					$inputs['name'],
-				) ) ) . '
+			' . $this->display_form_table( array( $inputs['name'] ) ) . '
 		';
 		
 		// Choices
-		$returnValue .= '<h3>' . $this->_('Options') . '</h3>';
+		$rv .= '<h3>' . $this->_('Options') . '</h3>';
 		$choices = $election->data->choices;
 		if ( $election->is_editing() )
 		{
@@ -814,7 +810,7 @@ class SD_Meeting_Tool_elections
 		
 		if ( $election->is_manual() || $election->is_anonymous() )
 		{
-			$returnValue .= '
+			$rv .= '
 				<table class="widefat">
 					<thead>
 						<tr>
@@ -876,7 +872,7 @@ class SD_Meeting_Tool_elections
 					</tr>
 				';
 			}
-			$returnValue .= '
+			$rv .= '
 				<table class="widefat">
 					<thead>
 						<tr>
@@ -901,8 +897,8 @@ class SD_Meeting_Tool_elections
 				$inputs_to_display[] = $inputs[$list];
 			}
 				
-			$returnValue .= '<h3>' . $this->_('Lists') . '</h3>
-				' . $this->display_form_table( array( 'inputs' => $inputs_to_display ) ) . '
+			$rv .= '<h3>' . $this->_('Lists') . '</h3>
+				' . $this->display_form_table( $inputs_to_display ) . '
 			';
 
 			// Registration
@@ -910,8 +906,8 @@ class SD_Meeting_Tool_elections
 			$inputs_to_display = array(
 				$inputs['registration']
 			);
-			$returnValue .= '<h3>' . $this->_('Registration') . '</h3>
-				' . $this->display_form_table( array( 'inputs' => $inputs_to_display ) ) . '
+			$rv .= '<h3>' . $this->_('Registration') . '</h3>
+				' . $this->display_form_table( $inputs_to_display ) . '
 			';
 			
 			// Fields
@@ -923,94 +919,185 @@ class SD_Meeting_Tool_elections
 				$inputs_to_display[] = $inputs[ $input ];
 			}
 
-			$returnValue .= '<h3>' . $this->_('Electoral register') . '</h3>
-				' . $this->display_form_table( array( 'inputs' => $inputs_to_display ) ) . '
+			$rv .= '<h3>' . $this->_('Electoral register') . '</h3>
+				' . $this->display_form_table( $inputs_to_display ) . '
 			';
 		}
 		
 		if ( $editing )
-			$returnValue .= $this->display_form_table( array( 'inputs' => array(
-						$inputs['update'],
-					) ) );
+			$rv .= $this->display_form_table( array( $inputs['update'] ) );
 
-		$returnValue .= $form->stop();
+		$rv .= $form->stop();
 		
-		echo $returnValue;
+		echo $rv;
 	}
 	
+	/**
+		@brief		Electoral register tab.
+	**/
 	public function admin_electoral_register()
 	{
 		$form = $this->form();
 		$id = $_GET['id'];
-		$election = apply_filters( 'sd_mt_get_election', $id );
-		$returnValue = '';
+		$election = $this->filters( 'sd_mt_get_election', $id );
+		$rv = '';
 		
-		if ( isset( $_POST['calculate_electoral_register'] ) && ! $election->is_finished() )
+		if ( isset( $_POST['generate_electoral_register'] ) && ! $election->is_finished() )
 		{
-			$returnValue .= $this->calculate_electoral_register( $election );
+			$rv .= $this->generate_electoral_register( $election );
 		}
 		
 		$inputs = array(
-			'calculate_electoral_register' => array(
-				'name' => 'calculate_electoral_register',
+			'generate_electoral_register' => array(
+				'name' => 'generate_electoral_register',
 				'type' => 'submit',
-				'value' => $this->_( 'Calculate the electoral register' ),
+				'value' => $this->_( 'Generate the electoral register' ),
 				'css_class' => 'button-primary',
 			),
 		);
 		
 		if ( $election->is_electoral_register_calculated() )
 		{
-			$returnValue .= '<p>' . sprintf(
-				$this->_( 'The electoral register was calculated at %s.' ),
-				date('Y-m-d H:i:s', $election->data->electoral_register_calculated )
-			) . '</p>';
-			$inputs[ 'calculate_electoral_register' ][ 'value' ] = $this->_( 'Recalculate the electoral register' );
+			$rv .= '<p>' . $this->_( 'The electoral register was generated at %s.', date('Y-m-d H:i:s', $election->data->electoral_register_calculated ) ) . '</p>';
+			$inputs[ 'generate_electoral_register' ][ 'value' ] = $this->_( 'Regenerate the electoral register' );
 		}
 		
 		if ( ! $election->is_finished() )
 		{
-			$returnValue .= $form->start();
+			$rv .= $form->start();
 			
-			$returnValue .= $this->display_form_table( array( 'inputs' => $inputs ) );		
+			$rv .= $this->display_form_table( $inputs );		
 			
-			$returnValue .= $form->stop();
+			$rv .= $form->stop();
 		}
 		
 		// Display the register
-		$returnValue .= $this->display_electoral_register( $election );
+		$rv .= $this->display_electoral_register( $election );
 		
-		echo $returnValue;
+		echo $rv;
 	}
 	
+	/**
+		@brief		Queries the voting status of a participant.
+	**/
+	public function admin_query_register()
+	{
+		$rv = '';
+		$form = $this->form();
+		
+		$id = $_GET['id'];
+		$election = $this->filters( 'sd_mt_get_election', $id );
+		
+		$eligible_voters_id = $election->data->eligible_voters;
+		$eligible_voters = $this->filters( 'sd_mt_get_list', $eligible_voters_id );
+		$eligible_voters = $this->filters( 'sd_mt_list_participants', $eligible_voters );
+		$display_format = $eligible_voters->get_display_format();
+		
+		$participants_autocomplete = array();
+		$participant_options = array();
+
+		foreach( $eligible_voters->participants as $participant )
+		{
+			$id = $participant->id;
+			$name = $this->filters( 'sd_mt_display_participant', $participant, $display_format );
+			$participant_options[ $id ] = $name;
+			$participants_autocomplete[ $id ] = $id . ' ' . $name;
+		}
+		
+		$inputs = array(
+			'participant' => array(
+				'css_class' => 'participant',
+				'label' => $this->_( 'Participant to query' ),
+				'name' => 'participant',
+				'size' => 40,
+				'type' => 'text',
+			),
+			'participants' => array(
+				'label' => $this->_( 'Participant to query' ),
+				'name' => 'participants',
+				'options' => $participant_options,
+				'type' => 'select',
+			),
+			'query_participant' => array(
+				'css_class' => 'button-primary',
+				'name' => 'query_participant',
+				'type' => 'submit',
+				'value' => $this->_( 'Query the participant' ),
+			),
+		);
+		
+		foreach( $inputs as $index => $input )
+			$form->use_post_value( $inputs[ $index ], $_POST );
+		
+		wp_print_scripts('jquery-ui-autocomplete');
+		
+		$participants_autocomplete = '"' . implode( '", "', $participants_autocomplete ) . '"';
+		
+		if ( isset( $_POST[ 'query_participant' ] ) )
+		{
+			$id = $_POST[ 'participants' ];
+			if ( $_POST[ 'participant' ] != '' )
+			{
+				$int = preg_replace( '/ .*/', '', $_POST[ 'participant' ] );
+				$int = intval( $int );
+				if ( isset( $eligible_voters->participants[ $int ] ) )
+					$id = $int;
+			}
+			$rv .= $this->query_participant( $election, $id );
+		}
+		
+		$rv .= $this->p_( 'Select the participant that is to join / leave the electoral register. This can be done by typing in his ID or selecting him from the select box. Press the button and any changes to the electoral register will be shown as a preview.' );
+		
+		$rv .= $form->start();
+		$rv .= $this->display_form_table( $inputs );
+		$rv .= $form->stop();
+		
+		$rv .= '
+			<script type="text/javascript" src="'. $this->paths['url'] . '/js/sd_meeting_tool_elections.js' .'"></script>
+			<script type="text/javascript">
+				jQuery(function( $ )
+				{
+					$( "input.participant" ).autocomplete({
+						"source" : [' . $participants_autocomplete .']
+					});
+				});
+			</script>
+		';
+		
+		echo $rv;
+	}
+	
+	/**
+		@brief		Register votes tab.
+	**/
 	public function admin_register()
 	{
 		$id = $_GET['id'];
-		$returnValue = '';
+		$rv = '';
 		$form = $this->form();
-		$election = apply_filters( 'sd_mt_get_election', $id );
+		$election = $this->filters( 'sd_mt_get_election', $id );
 		
 		if ( isset( $_POST['finish_registering'] ) && isset( $_POST['sure'] ) )
 		{
 			$election->finish();
-			apply_filters( 'sd_mt_update_election', $election );
+			$this->filters( 'sd_mt_update_election', $election );
 		}
 		
 		if ( $election->is_finished() )
 		{
-			$returnValue .= '
+			$rv .= '
 				<p>
 					' . $this->_( 'The election is over and no more votes can be registered.' ) . '
 				</p>
 			';
-			echo $returnValue;
+			echo $rv;
 			return;
 		}
 		
 		if ( isset( $_POST['begin_registering'] ) )
 		{
 			$election->begin_registration();
-			apply_filters( 'sd_mt_update_election', $election );
+			$this->filters( 'sd_mt_update_election', $election );
 		}
 		
 		// Election must be marked as registering before we can register votes. 
@@ -1023,8 +1110,8 @@ class SD_Meeting_Tool_elections
 				'css_class' => 'button-primary',
 			);
 			
-			$returnValue .= $form->start();
-			$returnValue .= '
+			$rv .= $form->start();
+			$rv .= '
 				<p>
 					'. $this->_('Votes can only be registered when there are no further changes to be made to the election. The button below will prevent further changes to the election and allow votes to be registered.') . '
 				</p>
@@ -1032,40 +1119,43 @@ class SD_Meeting_Tool_elections
 					'. $form->make_input( $input_submit ) . '
 				</p>
 			';
-			$returnValue .= $form->stop();
+			$rv .= $form->stop();
 		}
 		else
 		{
 			switch( $election->data->type )
 			{
 				case 'manual':
-					$returnValue .= $this->register_manual_votes( $election );
-					$returnValue .= '<h3>' . $this->_( 'Finish registering votes' ) . '</h3>';
-					$returnValue .= $this->register_finish( $election );
+					$rv .= $this->register_manual_votes( $election );
+					$rv .= '<h3>' . $this->_( 'Finish registering votes' ) . '</h3>';
+					$rv .= $this->register_finish( $election );
 					break;
 				case 'anonymous':
-					$returnValue .= $this->register_votes( $election );
-					$returnValue .= $this->register_manual_votes( $election );
-					$returnValue .= '<h3>' . $this->_( 'Finish registering votes' ) . '</h3>';
-					$returnValue .= $this->register_finish( $election );
+					$rv .= $this->register_votes( $election );
+					$rv .= $this->register_manual_votes( $election );
+					$rv .= '<h3>' . $this->_( 'Finish registering votes' ) . '</h3>';
+					$rv .= $this->register_finish( $election );
 					break;
 				case 'open':
-					$returnValue .= $this->register_votes( $election );
-					$returnValue .= $this->register_voter_options( $election );
-					$returnValue .= '<h3>' . $this->_( 'Finish registering votes' ) . '</h3>';
-					$returnValue .= $this->register_finish( $election );
+					$rv .= $this->register_votes( $election );
+					$rv .= $this->register_voter_options( $election );
+					$rv .= '<h3>' . $this->_( 'Finish registering votes' ) . '</h3>';
+					$rv .= $this->register_finish( $election );
 					break;
 			}
 		}
-		echo $returnValue;
+		echo $rv;
 	}
 
+	/**
+		@brief		Display results tab.
+	**/
 	public function admin_results()
 	{
 		$id = $_GET['id'];
-		$returnValue = '';
+		$rv = '';
 		$form = $this->form();
-		$election = apply_filters( 'sd_mt_get_election', $id );
+		$election = $this->filters( 'sd_mt_get_election', $id );
 
 		// Automatically create a new page with a shortcode. Note that we need $election beforehand.
 		if ( isset( $_POST['create_shortcode_page'] ) )
@@ -1096,23 +1186,22 @@ class SD_Meeting_Tool_elections
 					'post_status' => 'publish',
 					'post_author' => $user->data->ID,
 				));
-				$this->message( sprintf(
-					$this->_( 'A new page has been created! You can now %sedit the page%s or %sview the page%s.' ),
+				$this->message_( 'A new page has been created! You can now %sedit the page%s or %sview the page%s.',
 					'<a href="' . add_query_arg( array( 'post' => $page_id), 'post.php?action=edit' ) . '">',
 					'</a>',
 					'<a href="' . add_query_arg( array( 'p' => $page_id), get_bloginfo('url') ) . '">',
 					'</a>'
-				) );
+				);
 			}
 		}
 		
-		$returnValue .= $this->display_election_graph( $election );
+		$rv .= $this->display_election_graph( $election );
 		
 		if ( ! $election->is_manual() )
 		{
-			$returnValue .= $this->display_election_statistics( $election );
-			$returnValue .= $this->display_election_voters( $election );
-			$returnValue .= $this->display_election_nonvoters( $election );
+			$rv .= $this->display_election_statistics( $election );
+			$rv .= $this->display_election_voters( $election );
+			$rv .= $this->display_election_nonvoters( $election );
 		}
 				
 		// Shortcodes
@@ -1158,7 +1247,7 @@ class SD_Meeting_Tool_elections
 			';
 		}
 		
-		$returnValue .= '
+		$rv .= '
 			
 			<h3>' . $this->_('Shortcodes') . '</h3>
 
@@ -1180,19 +1269,22 @@ class SD_Meeting_Tool_elections
 			' . $form->stop() . '
 		';
 		
-		echo $returnValue;
+		echo $rv;
 	}
 		
 	// --------------------------------------------------------------------------------------------
 	// ----------------------------------------- Ajax
 	// --------------------------------------------------------------------------------------------
 
+	/**
+		@brief		Ajax functions.
+	**/
 	public function ajax_sd_mt_elections()
 	{
 		if ( ! SD_Meeting_Tool::check_admin_referrer( 'ajax_sd_mt_elections' ) )
 			die();
 		
-		$election = apply_filters( 'sd_mt_get_election', $_POST['election_id'] );
+		$election = $this->filters( 'sd_mt_get_election', $_POST['election_id'] );
 		if ( $election === false )
 			die();
 		
@@ -1200,18 +1292,18 @@ class SD_Meeting_Tool_elections
 		{
 			case 'fetch_have_voted':
 				$form = $this->form();
-				$list = apply_filters( 'sd_mt_get_list', $election->data->have_voted );
-				$list = apply_filters( 'sd_mt_list_participants', $list );
+				$list = $this->filters( 'sd_mt_get_list', $election->data->have_voted );
+				$list = $this->filters( 'sd_mt_list_participants', $list );
 				$have_voted = $list->participants;
 
-				$display_format = apply_filters( 'sd_mt_get_display_format', $list->data->display_format_id );
+				$display_format = $this->filters( 'sd_mt_get_display_format', $list->data->display_format_id );
 				
 				$t_headers = '';
 				$choices = $election->data->choices;		// Conv
 				foreach( $choices as $index => $choice )
 				{
-					$list = apply_filters( 'sd_mt_get_list', $choice->list_id );
-					$list = apply_filters( 'sd_mt_list_participants', $list );
+					$list = $this->filters( 'sd_mt_get_list', $choice->list_id );
+					$list = $this->filters( 'sd_mt_list_participants', $list );
 					$choices[ $index ]->participants = $list->participants;
 					$t_headers .= '<th class="option">' . $choice->name . '</th>'; 
 				}
@@ -1219,7 +1311,7 @@ class SD_Meeting_Tool_elections
 				$t_body = '';
 				foreach( $have_voted as $participant )
 				{
-					$t_body .= '<tr><td>' . apply_filters( 'sd_mt_display_participant', $participant, $display_format) .'</td>';
+					$t_body .= '<tr><td>' . $this->filters( 'sd_mt_display_participant', $participant, $display_format) .'</td>';
 					$input_selected = array(
 						'name' => $participant->id,
 						'nameprefix' => '[participants]',
@@ -1251,42 +1343,42 @@ class SD_Meeting_Tool_elections
 					</table>
 				';
 
-				$returnValue = array(
+				$rv = array(
 					'hash' => $this->hash( $text ),
 					'text' => $text,
 				);
 				
-				if ( $returnValue['hash'] == $_POST['have_voted_list_hash'] )
-					$returnValue['text'] = '';
-				echo json_encode( $returnValue );
+				if ( $rv['hash'] == $_POST['have_voted_list_hash'] )
+					$rv['text'] = '';
+				echo json_encode( $rv );
 				break;
 			case 'set_vote':
-				$returnValue = array();
-				$participant = apply_filters( 'sd_mt_get_participant', $_POST['participant_id'] );
+				$rv = array();
+				$participant = $this->filters( 'sd_mt_get_participant', $_POST['participant_id'] );
 
 				// Find this option.
 				foreach( $election->data->choices as $choice )
 				{
-					$list = apply_filters( 'sd_mt_get_list', $choice->list_id );
-					$list = apply_filters( 'sd_mt_list_participants', $list );
+					$list = $this->filters( 'sd_mt_get_list', $choice->list_id );
+					$list = $this->filters( 'sd_mt_list_participants', $list );
 					if ( $choice->uuid == $_POST['option_id'] )
 					{
 						if ( isset( $list->participants[ $participant->id ] ) )
-							apply_filters( 'sd_mt_remove_list_participant', $list, $participant );
+							$this->filters( 'sd_mt_remove_list_participant', $list, $participant );
 						else
-							apply_filters( 'sd_mt_add_list_participant', $list, $participant );
+							$this->filters( 'sd_mt_add_list_participant', $list, $participant );
 					}
 					else
-						apply_filters( 'sd_mt_remove_list_participant', $list, $participant );
+						$this->filters( 'sd_mt_remove_list_participant', $list, $participant );
 				}
-				$returnValue = array( 'result' => 'ok' );
+				$rv = array( 'result' => 'ok' );
 
 				$election = $this->maybe_finish_election( $election );				
 				if ( $election->is_finished() )
 				{
-					$returnValue = array( 'result' => 'reload' );
+					$rv = array( 'result' => 'reload' );
 				} 
-				echo json_encode( $returnValue );
+				echo json_encode( $rv );
 				break;
 		}
 		die();
@@ -1296,6 +1388,11 @@ class SD_Meeting_Tool_elections
 	// ----------------------------------------- Filters
 	// --------------------------------------------------------------------------------------------
 
+	/**
+		@brief		Delete an election.
+		
+		@param		SD_Meeting_Tool_Election	$SD_Meeting_Tool_Election		Election to delete.
+	**/
 	public function sd_mt_delete_election( $SD_Meeting_Tool_Election )
 	{
 		global $blog_id;
@@ -1306,23 +1403,34 @@ class SD_Meeting_Tool_elections
 		$this->query( $query );
 	}
 	
+	/**
+		@brief		List all elections.
+		
+		@return		An array of {SD_Meeting_Tool_Election}s.
+	**/
 	public function sd_mt_get_all_elections()
 	{
 		global $blog_id;
 		$query = "SELECT id FROM `".$this->wpdb->base_prefix."sd_mt_elections` WHERE `blog_id` = '$blog_id'";
 		$results = $this->query( $query );
-		$returnValue = array();
+		$rv = array();
 		
 		foreach( $results as $result )
-			$returnValue[ $result['id'] ] = $this->sd_mt_get_election( $result['id'] );
+			$rv[ $result['id'] ] = $this->sd_mt_get_election( $result['id'] );
 
-		return SD_Meeting_Tool::sort_data_array( $returnValue, 'name' );
+		return SD_Meeting_Tool::sort_data_array( $rv, 'name' );
 	}
 	
-	public function sd_mt_get_election( $SD_Meeting_Tool_Election_ID )
+	/**
+		@brief		Retrieves an election.
+		
+		@param		int		$id		The ID of the election to retrieve.
+		@return		The SD_Meeting_Tool_Election object, or FALSE if no election with this ID was found.
+	**/
+	public function sd_mt_get_election( $id )
 	{
 		global $blog_id;
-		$query = "SELECT * FROM `".$this->wpdb->base_prefix."sd_mt_elections` WHERE `id` = '$SD_Meeting_Tool_Election_ID' AND `blog_id` = '$blog_id'";
+		$query = "SELECT * FROM `".$this->wpdb->base_prefix."sd_mt_elections` WHERE `id` = '$id' AND `blog_id` = '$blog_id'";
 		$result = $this->query_single( $query );
 		if ( $result === false )
 			return false;
@@ -1330,6 +1438,11 @@ class SD_Meeting_Tool_elections
 		return $this->election_sql_to_object( $result );
 	}
 	
+	/**
+		@brief		Update an election.
+		
+		@param		SD_Meeting_Tool_Election	$SD_Meeting_Tool_Election		The election to update.
+	**/
 	public function sd_mt_update_election( $SD_Meeting_Tool_Election )
 	{
 		global $blog_id;
@@ -1367,8 +1480,8 @@ class SD_Meeting_Tool_elections
 	/**
 		Convert a election row from SQL to an SD_Meeting_Tool_Election.
 		
-		@param		$sql		Row from the database as an array.
-		@return					A complete SD_Meeting_Tool_election object.
+		@param		array	$sql		Row from the database as an array.
+		@return		A complete SD_Meeting_Tool_Election object.
 	**/ 
 	private function election_sql_to_object( $sql )
 	{
@@ -1378,6 +1491,21 @@ class SD_Meeting_Tool_elections
 		return $election;
 	}
 	
+	/**
+		@brief		Calculate the electoral register for an election.
+		
+		The SD_Meeting_Tool_Election must include the following variables:
+		
+		- eligible_voters	A SD_Meeting_Tool_List of the eligible voters (including all participants).
+		- voters_present	A SD_Meeting_Tool_List of the voters present (including all participants).
+		
+		The returned SD_Meeting_Tool_Election will have the following variables:
+		
+		- may_vote			An array of participant IDs that are allowed to vote in this election.
+		
+		@param		SD_Meeting_Tool_Election $SD_Meeting_Tool_Election		The election to use.		
+		@return		The modified, unsaved SD_Meeting_Tool_Election.
+	**/
 	public function calculate_electoral_register( $SD_Meeting_Tool_Election )
 	{
 		$election  = $SD_Meeting_Tool_Election;			// Convenience.
@@ -1385,40 +1513,33 @@ class SD_Meeting_Tool_elections
 		// Check for existence of all lists
 		foreach( $election->lists() as $list_id )
 		{
-			$list = apply_filters( 'sd_mt_get_list', $list_id );
+			$list = $this->filters( 'sd_mt_get_list', $list_id );
 			if ( $list == false )
-			{
-				$this->error( sprintf(
-					$this->_( 'List %s does not exist anymore!' ),
-					$list_id
-				) );
-				return;
-			}
+				throw new Exception( $this->_( 'List %s does not exist anymore!', $list_id ) );
 		}
 		
 		// Lists are good. How about the fields?
 		$group = $election->data->group_field;		// Convenience.
-		$field = apply_filters( 'sd_mt_get_participant_field', $group );
+		$field = $this->filters( 'sd_mt_get_participant_field', $group );
 		if ( $field === false )
-		{
-			$this->error( $this->_( 'The participant field used for grouping does not exist anymore!' ) );
-			return;
-		}
+			throw new Exception( $this->_( 'The participant field used for grouping does not exist anymore!' ) );
+			
 		$voting_order = $election->data->voting_order_field;		// Convenience
-		$field = apply_filters( 'sd_mt_get_participant_field', $voting_order );
+		$field = $this->filters( 'sd_mt_get_participant_field', $voting_order );
 		if ( $field === false )
-		{
-			$this->error( $this->_( 'The participant field used for the voting order does not exist anymore!' ) );
-			return;
-		}
+			throw new Exception( $this->_( 'The participant field used for the voting order does not exist anymore!' ) );
+		
+		if ( ! is_object( $election->eligible_voters ) )
+			throw new Exception( 'No list of eligible voters!' );
+		
+		if ( ! is_object( $election->voters_present ) )
+			throw new Exception( 'No list of voters present!' );
 		
 		// Excellent! Everything is ready.
 		
-		$list = apply_filters( 'sd_mt_get_list', $election->data->eligible_voters );
-		$eligible_voters = apply_filters( 'sd_mt_list_participants', $list );
-		$list = apply_filters( 'sd_mt_get_list', $election->data->voters_present );
-		$voters_present = apply_filters( 'sd_mt_list_participants', $list );
-
+		$eligible_voters = $election->eligible_voters;
+		$voters_present = $election->voters_present;
+		
 		// Calculate the max votes of all participants and put them into groups and such.
 		$max_votes = array();
 		foreach( $eligible_voters->participants as $participant )
@@ -1434,7 +1555,10 @@ class SD_Meeting_Tool_elections
 			
 			$max_votes[ $participant_group ]++;
 		}
-		$election->data->voters_missing = $max_votes;		// Keep track of how many voters are missing in each group.
+		ksort( $max_votes );
+
+		$election->clear_electoral_register();
+		$election->data->groups_incomplete = $max_votes;		// Keep track of how many voters are missing in each group. Just copy the max votes array to incomplete and decrease it later.
 		
 		$voter_orders = array();
 		foreach( $voters_present->participants as $participant )
@@ -1460,7 +1584,7 @@ class SD_Meeting_Tool_elections
 		
 		// And now we have a voter pool!
 		// Empty the pool!
-		$may_voters = array();
+		$may_vote = array();
 		foreach( $max_votes as $group => $votes )
 		{
 			for ( $counter = 0; $counter < $votes; $counter ++ )
@@ -1476,9 +1600,9 @@ class SD_Meeting_Tool_elections
 					{
 						// We have to unset it from the source, not the array copies we have here.
 						unset( $voter_orders[ $group ][$order][$index] );
-						$may_voters[] = $voter;
+						$may_vote[] = $voter;
 						$found = true;
-						$election->data->voters_missing[ $group ]--;
+						$election->data->groups_incomplete[ $group ]--;
 						break;
 					}
 					if ( $found )
@@ -1486,51 +1610,55 @@ class SD_Meeting_Tool_elections
 				}
 			}
 		}
+		$election->may_vote = $may_vote;
 		
-		// We're done! Put the voters into the may vote list.
-		$may_vote_list = apply_filters( 'sd_mt_get_list', $election->data->may_vote );
-		apply_filters( 'sd_mt_remove_list_participants', $may_vote_list );
-		foreach( $may_voters as $may_voter )
-		{
-			$participant = apply_filters( 'sd_mt_get_participant', $may_voter );
-			apply_filters( 'sd_mt_add_list_participant', $may_vote_list, $participant );
-		}
-		
-		// Clear the missing groups if necessary.
-		$missing = false;
-		foreach( $election->data->voters_missing as $group => $missing )
+		// Clear the incomplete groups if necessary.
+		foreach( $election->data->groups_incomplete as $group => $missing )
 			if ( $missing < 1 )
-				unset( $election->data->voters_missing[ $group ] );
+			{
+				$election->data->groups_complete[ $group ] = $group;
+				unset( $election->data->groups_incomplete[ $group ] );
+			}
+		ksort( $election->data->groups_complete );
+		ksort( $election->data->groups_incomplete );
 		
-		$election->electoral_register_calculated( time() );
 		
-		// And update the election
-		apply_filters( 'sd_mt_update_election', $election );
+		$election->electoral_register_calculated( $this->time() );
+		
+		return $election;		
 	}
+	
+	/**
+		@brief		Display an electoral register.
 		
+		@param		SD_Meeting_Tool_Election	$SD_Meeting_Tool_Election		The election from which to display the electoral register.
+		@return		A HTML string containing all the info about the electoral register of an election.
+	**/
 	public function display_electoral_register( $SD_Meeting_Tool_Election )
 	{
 		$election  = $SD_Meeting_Tool_Election;			// Convenience.
-		$returnValue = '';
+		$rv = '';
 		
 		// Get the "may vote" list.
-		$may_voters = apply_filters( 'sd_mt_get_list', $election->data->may_vote );
+		$may_voters = $this->filters( 'sd_mt_get_list', $election->data->may_vote );
 		if ( $may_voters === false )
 		{
 			$this->error( $this->_('The may vote-list does not exist!' ) );
 			return;
 		}
+		$may_voters = $this->filters( 'sd_mt_list_participants', $may_voters );
 		
-		if ( count( $election->data->voters_missing ) > 0 )
+		if ( count( $election->data->groups_incomplete ) > 0 )
 		{
-			$t_body = '';
-			// Display the list of missing voters?
-			foreach( $election->data->voters_missing as $group => $missing )
-				$t_body .= '<tr><td>' . $group . '</td><td>' . $missing . '</td></tr>';
+			$t_body = array();
+			// Display the list of incomplete groups?
+			foreach( $election->data->groups_incomplete as $group => $missing )
+				$t_body[ $group ] .= '<tr><td>' . $group . '</td><td>' . $missing . '</td></tr>';
+			$t_body = implode( '', $t_body );
 			
 			if ( $t_body != '' )
 			{
-				$returnValue .= '
+				$rv .= '
 					<p>
 						' . $this->_( 'There were not enough voters present to fill the vote quotas for the follow groups:' )  . '
 					</p>
@@ -1549,10 +1677,18 @@ class SD_Meeting_Tool_elections
 			}
 		}
 		
-		$may_voters = apply_filters( 'sd_mt_get_list_participants', $may_voters );
-		$display_format = apply_filters( 'sd_mt_get_display_format', $may_voters->display_format_id() );
+		if ( count( $election->data->groups_complete ) > 0 )
+		{
+			$rv .= wpautop( $this->_( 'The following groups have enough voters present:' ) );
+			$rv .= '<ul>';
+			$rv .= '<li>' . implode( '</li><li>', $election->data->groups_complete ) . '</li>';
+			$rv .= '</ul>';
+		}
 		
-		$returnValue .= '
+		$may_voters = $this->filters( 'sd_mt_get_list_participants', $may_voters );
+		$display_format = $this->filters( 'sd_mt_get_display_format', $may_voters->display_format_id() );
+		
+		$rv .= '
 			<p>
 				' . $this->_( 'The following participants are allowed to vote:' ) . '
 			</p>
@@ -1560,29 +1696,154 @@ class SD_Meeting_Tool_elections
 		';
 		foreach( $may_voters->participants as $participant )
 		{
-			$participant = apply_filters( 'sd_mt_get_participant', $participant->id );
-			$display_name = apply_filters( 'sd_mt_display_participant', $participant, $display_format );
-			$returnValue .= '<li>' . $display_name . '</li>';
+			$participant = $this->filters( 'sd_mt_get_participant', $participant->id );
+			$display_name = $this->filters( 'sd_mt_display_participant', $participant, $display_format );
+			$rv .= '<li>' . $display_name . '</li>';
 		}
-		$returnValue .= '</ul>';
-		return $returnValue;
+		$rv .= '</ul>';
+		return $rv;
 	}
 	
 	/**
-		Allows registration of votes in a manual election.
+		@brief		Generate an electoral register for an election.
+		
+		Will empty and refill the may_vote list.
+		
+		@param		$SD_Meeting_Tool_Election		SD_Meeting_Tool_Election for which to generate the electoral register.
+		@return		An HTML message.
+	**/
+	public function generate_electoral_register( $SD_Meeting_Tool_Election )
+	{
+		$rv = '';
+		$election  = $SD_Meeting_Tool_Election;			// Convenience.
+		
+		try
+		{
+			$list = $this->filters( 'sd_mt_get_list', $election->data->eligible_voters );
+			$election->eligible_voters = $this->filters( 'sd_mt_list_participants', $list );
+			$list = $this->filters( 'sd_mt_get_list', $election->data->voters_present );
+			$election->voters_present = $this->filters( 'sd_mt_list_participants', $list );
+	
+			$election = $this->calculate_electoral_register( $election );
+			
+			// We're done! Put the voters into the may vote list.
+			$may_vote_list = $this->filters( 'sd_mt_get_list', $election->data->may_vote );
+			$this->filters( 'sd_mt_remove_list_participants', $may_vote_list );
+			$this->filters( 'sd_mt_add_list_participants', $may_vote_list, $election->may_vote );
+			
+			// And update the election
+			$this->filters( 'sd_mt_update_election', $election );
+			
+			$rv .= $this->message( 'The electoral register has been calculated!' ); 
+		}
+		catch ( Exception $e )
+		{
+			$rv .= $this->error( $e->getMessage() );
+		}
+		
+		return $rv;
+	}
+	
+	/**
+		@brief		Queries the voting status of a participant.
+		
+		Returns what would happen if the participant were to join / leave the electoral register.
+		
+		@param		SD_Meeting_Tool_Election	$SD_Meeting_Tool_Election		The election on which to base the query.
+		@param		int							$participant_id					ID of participant to query.
+		@return		A HTML string containing a message() or error().
+	**/
+	public function query_participant( $SD_Meeting_Tool_Election, $participant_id )
+	{
+		$election = $SD_Meeting_Tool_Election;
+		
+		try
+		{
+			$list = $this->filters( 'sd_mt_get_list', $election->data->eligible_voters );
+			$election->eligible_voters = $this->filters( 'sd_mt_list_participants', $list );
+			$list = $this->filters( 'sd_mt_get_list', $election->data->voters_present );
+			$election->voters_present = $this->filters( 'sd_mt_list_participants', $list );
+			
+			// Get the may vote list, so that we can use its display format later.
+			$may_vote_list = $this->filters( 'sd_mt_get_list', $election->data->may_vote );
+			$may_vote_display_format = $may_vote_list->get_display_format();
+	
+			// What do we do with this participant?
+			$participant_present = isset( $election->voters_present->participants[ $participant_id ] );
+			$participant = $this->filters( 'sd_mt_get_participant', $participant_id );
+			$participant_name = $this->filters( 'sd_mt_display_participant', $participant, $may_vote_display_format );
+			
+			$election = $this->calculate_electoral_register( $election );
+
+			if ( $participant_present )
+				unset( $election->voters_present->participants[ $participant_id ] );
+			else
+				$election->voters_present->participants[ $participant_id ] = $participant;
+
+			$may_vote_before = $election->may_vote;
+			$election = $this->calculate_electoral_register( $election );
+			$may_vote_after = $election->may_vote;
+
+			// Find the changes in the electoral registers.
+			$changes = array();
+			
+			// Which people have disappeared from the register?
+			$changes[ 'old' ] = array_diff( $may_vote_before, $may_vote_after );
+			// Which new people have appeared in the new register?
+			$changes[ 'new' ] = array_diff( $may_vote_after, $may_vote_before );
+			
+			if ( $participant_present )
+				$rv .= $this->p_( 'If %s was to leave the electoral register:', '<em>' . $participant_name . '</em>' );
+			else
+				$rv .= $this->p_( 'If %s was to join the electoral register:', '<em>' . $participant_name . '</em>' );
+			
+			if ( count( $changes[ 'old' ] ) + count( $changes[ 'new' ] ) < 1 )
+			{
+				$rv .= $this->p_( 'The participant does not affect the electoral register.' );
+			}
+			else
+			{
+				$strings = array();
+				foreach( $changes[ 'new' ] as $change )
+				{
+					$participant = $this->filters( 'sd_mt_get_participant', $change );
+					$name = $this->filters( 'sd_mt_display_participant', $participant, $may_vote_display_format );
+					$strings[] = $this->p_( '%s would be allowed to vote.', '<em>' . $name . '</em>' );
+				}
+				foreach( $changes[ 'old' ] as $change )
+				{
+					$participant = $this->filters( 'sd_mt_get_participant', $change );
+					$name = $this->filters( 'sd_mt_display_participant', $participant, $may_vote_display_format );
+					$strings[] = $this->p_( '%s would no longer be allowed to vote.', '<em>' . $name . '</em>' );
+				}
+				$rv .= '<ul><li>' . implode( '</li><li>', $strings ) . '</li></ul>';
+			}
+			$rv = $this->message( $rv );
+		}
+		catch ( Exception $e )
+		{
+			$rv .= $this->error( $e->getMessage() );
+		}
+		return $rv;
+	}
+	
+	/**
+		@brief		Register votes in a manual election.
+		
+		@param		SD_Meeting_Tool_Election	$election		Election in which to register votes.
 	**/
 	public function register_manual_votes( $election )
 	{
 		$form = $this->form();
-		$returnValue = '';
+		$rv = '';
 		
 		if ( isset( $_POST['update_vote_count'] ) )
 		{
 			foreach( $election->data->choices as $choice )
 				if ( isset( $_POST[ $choice->uuid ] ) )
 					$choice->count = intval( $_POST[ $choice->uuid ] );
-			apply_filters( 'sd_mt_update_election', $election );
-			$this->message( $this->_('The vote count has been updated!') );
+			$this->filters( 'sd_mt_update_election', $election );
+			$this->message_( 'The vote count has been updated!');
 		}
 		
 		if ( $election->is_anonymous() )
@@ -1592,14 +1853,10 @@ class SD_Meeting_Tool_elections
 			foreach( $election->data->choices as $choice )
 				$count += $choice->count;
 			$have_voted = $election->data->have_voted;
-			$have_voted = apply_filters( 'sd_mt_get_list', $have_voted );
-			$have_voted = apply_filters( 'sd_mt_list_participants', $have_voted );
+			$have_voted = $this->filters( 'sd_mt_get_list', $have_voted );
+			$have_voted = $this->filters( 'sd_mt_list_participants', $have_voted );
 			if ( $count > count( $have_voted->participants ) )
-				$this->error( sprintf(
-					$this->_( '%s participants have physically voted but there are %s votes registered by the functionary.' ),
-					count( $have_voted->participants ),
-					$count
-				) );
+				$this->error( $this->_( '%s participants have physically voted but there are %s votes registered by the functionary.', count( $have_voted->participants ), $count ) );
 		}
 		
 		$inputs = array();
@@ -1622,36 +1879,40 @@ class SD_Meeting_Tool_elections
 			'css_class' => 'button-primary',
 		);
 		
-		$returnValue .= '
+		$rv .= '
 			'.$form->start().'
-			' . $this->display_form_table( array( 'inputs' => $inputs ) ). '
+			' . $this->display_form_table( $inputs ). '
 			'.$form->stop().'
 		';
 
-		return $returnValue;
+		return $rv;
 	}
 	
 	/**
-		Allows registration of votes.
+		@brief		Register votes in an election.
+		
+		@param		SD_Meeting_Tool_Election	$election		Election in which to register votes.
 	**/
 	public function register_votes( $election )
 	{
-		$registration = apply_filters( 'sd_mt_get_registration', $election->data->registration );
-		apply_filters( 'sd_mt_process_registration', $registration );
-		$returnValue = apply_filters( 'sd_mt_display_registration', $registration );
+		$registration = $this->filters( 'sd_mt_get_registration', $election->data->registration );
+		$this->filters( 'sd_mt_process_registration', $registration );
+		$rv = $this->filters( 'sd_mt_display_registration', $registration );
 
-		return $returnValue;
+		return $rv;
 	}
 	
 	/**
-		Shows the vote option UI
+		@brief		Shows the register UI of an election.
+		
+		@param		SD_Meeting_Tool_Election	$election		Election in which to register votes.
 	**/
 	public function register_voter_options( $election )
 	{
-		$returnValue = '';
+		$rv = '';
 		
 		$form = $this->form();
-		$returnValue .= '
+		$rv .= '
 			<div id="have_voted">
 			</div>
 			<p>
@@ -1679,18 +1940,17 @@ class SD_Meeting_Tool_elections
 			'.$form->stop().'
 		';
 
-		return $returnValue;
+		return $rv;
 	}
 	
 	/**
-		Display a "finish this election" box.
+		@brief		Display a query box allowing the user to finish the election.
 		
-		@param	$SD_Meeting_Tool_Election		Election to display finish box for.
+		@param		SD_Meeting_Tool_Election	$election		Election to finish.
 	**/
-	function register_finish( $SD_Meeting_Tool_Election )
+	function register_finish( $election )
 	{
-		$election = $SD_Meeting_Tool_Election;		// Conv
-		$returnValue = '';
+		$rv = '';
 		$form = $this->form();
 		
 		$inputs = array(
@@ -1708,16 +1968,17 @@ class SD_Meeting_Tool_elections
 			),
 		);		
 		
-		$returnValue .= '<p>' . $form->start() . $this->display_form_table( array( 'inputs' => $inputs ) ) . $form->stop() . '</p>';
+		$rv .= '<p>' . $form->start() . $this->display_form_table( $inputs ) . $form->stop() . '</p>';
 		
-		return $returnValue;
+		return $rv;
 	}
 	
 	/**
-		Decide, from the post value, whether to create a list.
-		@param	$post_value		Either 'create', to create a list or just a number.
-		@param	$new_list_name	The name of the new list, if it is to be created.
-		@return					Either the newly-created list's ID, or the integerized value from the post.
+		@brief		Decide, from the post value, whether to create a list.
+		
+		@param		string		$post_value			Either 'create', to create a list or just a number.
+		@param		string		$new_list_name		The name of the new list, if it is to be created.
+		@return		Either the newly-created list's ID, or the integerized value from the post.
 	**/
 	public function maybe_create_list( $post_value, $new_list_name )
 	{
@@ -1725,18 +1986,19 @@ class SD_Meeting_Tool_elections
 		{
 			$new_list = new SD_Meeting_Tool_List();
 			$new_list->data->name = $new_list_name;
-			$new_list = apply_filters( 'sd_mt_update_list', $new_list );
+			$new_list = $this->filters( 'sd_mt_update_list', $new_list );
 			$post_value = $new_list->id;
 		}
-		
 		return intval( $post_value );	
 	}
 	
 	/**
-		Decide whether to finish this election. It's time to finish when all eligible voters have voted.
+		@brief		Decide whether to finish this election.
 		
-		@param	$SD_Meeting_Tool_Election		Election to analyze.
-		@®eturn									The election in return, maybe in a finished state.
+		It's time to finish when all eligible voters have voted.
+		
+		@param		SD_Meeting_Tool_Election		$SD_Meeting_Tool_Election		Election to analyze.
+		@return		The election in return, maybe in a finished state.
 	**/
 	private function maybe_finish_election( $SD_Meeting_Tool_Election )
 	{
@@ -1746,41 +2008,43 @@ class SD_Meeting_Tool_elections
 		// Have all the people voted?
 		foreach( $election->data->choices as $choice )
 		{
-			$list = apply_filters( 'sd_mt_get_list', $choice->list_id );
-			$list = apply_filters( 'sd_mt_list_participants', $list );
+			$list = $this->filters( 'sd_mt_get_list', $choice->list_id );
+			$list = $this->filters( 'sd_mt_list_participants', $list );
 			$voters += count( $list->participants );
 		}
 		
-		$all_voters = apply_filters( 'sd_mt_get_list', $election->data->may_vote );
-		$all_voters = apply_filters( 'sd_mt_list_participants', $all_voters );
+		$all_voters = $this->filters( 'sd_mt_get_list', $election->data->may_vote );
+		$all_voters = $this->filters( 'sd_mt_list_participants', $all_voters );
 		if ( $voters == count( $all_voters->participants ) )
 		{
 			$election->finish();
-			apply_filters( 'sd_mt_update_election', $election );
+			$this->filters( 'sd_mt_update_election', $election );
 		}
 		return $election;
 	}
 	
+	/**
+		@brief		Display a results graph for an election.
+		
+		@param		SD_Meeting_Tool_Election		$election		Election for which to display the results graph.
+		@return		A HTML string containing the results graph for the election.
+	**/
 	private function display_election_graph( $election )
 	{
-		$returnValue = '';
+		$rv = '';
 		
 		if ( ! $election->is_manual() && ! $election->is_anonymous() )
 		{
 			// Temporarily fill the options with values.
 			foreach( $election->data->choices as $choice )
 			{
-				$list = apply_filters( 'sd_mt_get_list', $choice->list_id );
+				$list = $this->filters( 'sd_mt_get_list', $choice->list_id );
 				if ( $list === false )
 				{
-					$this->error( sprintf(
-						$this->_('The choice list for <em>%s</em>, %s, does not exist anymore!' ),
-						$choice->name,
-						$choice->list_id
-					) );
+					$this->error( $this->_('The choice list for <em>%s</em>, %s, does not exist anymore!', $choice->name, $choice->list_id ) );
 					return;
 				} 
-				$list = apply_filters( 'sd_mt_list_participants', $list );
+				$list = $this->filters( 'sd_mt_list_participants', $list );
 				$choice->count = count( $list->participants );
 			}
 		}
@@ -1809,7 +2073,7 @@ class SD_Meeting_Tool_elections
 			';
 		}
 
-		$returnValue .= '
+		$rv .= '
 			<table class="widefat election_graph">
 				<thead>
 					<tr>
@@ -1824,12 +2088,18 @@ class SD_Meeting_Tool_elections
 			</table>
 		';
 		
-		return $returnValue;
+		return $rv;
 	}
 	
+	/**
+		@brief		Display voting statistics for an election.
+		
+		@param		SD_Meeting_Tool_Election		$election		Election for which to display the statistics.
+		@return		A HTML string containing the voting statistics for the election.
+	**/
 	private function display_election_statistics( $election )
 	{
-		$returnValue = '';
+		$rv = '';
 		
 		if ( $election->is_manual() )
 			return '';
@@ -1837,13 +2107,13 @@ class SD_Meeting_Tool_elections
 		// Time for some statistics?
 		$statistics = array();
 
-		$list = apply_filters( 'sd_mt_get_list', $election->data->have_voted );
+		$list = $this->filters( 'sd_mt_get_list', $election->data->have_voted );
 		if ( $list === false )
 		{
 			$this->error( $this->_( 'The <em>have voted</em>-list does not exist anymore.' ) );
 			return;
 		}
-		$have_voted = apply_filters( 'sd_mt_list_participants', $list );
+		$have_voted = $this->filters( 'sd_mt_list_participants', $list );
 		
 		// Is it broken?
 		if ( count($have_voted->participants) < 1 )
@@ -1852,13 +2122,13 @@ class SD_Meeting_Tool_elections
 			return;
 		}
 
-		$list = apply_filters( 'sd_mt_get_list', $election->data->may_vote );
+		$list = $this->filters( 'sd_mt_get_list', $election->data->may_vote );
 		if ( $list === false )
 		{
 			$this->error( $this->_( 'The <em>may vote</em>-list does not exist anymore.' ) );
 			return;
 		}
-		$may_vote = apply_filters( 'sd_mt_list_participants', $list );
+		$may_vote = $this->filters( 'sd_mt_list_participants', $list );
 		
 		// Are we missing anyone?
 		$missing_count = count( $may_vote->participants ) - count( $have_voted->participants );
@@ -1905,38 +2175,44 @@ class SD_Meeting_Tool_elections
 			$t_body .= '<td>' . $statistic->data . '</td>';
 			$t_body .= '</tr>';
 		}
-		$returnValue .= '
+		$rv .= '
 			<table class="widefat election_statistics">
 				<caption>' . $this->_( 'Election statistics' ) . '</caption>
 				'. $t_body .'
 			</table>
 		';
 		
-		return $returnValue;
+		return $rv;
 	}
 	
+	/**
+		@brief		Display who voted in an election.
+		
+		@param		SD_Meeting_Tool_Election		$election		Election for which to display the voters.
+		@return		A HTML string showing who voted in the election.
+	**/
 	private function display_election_voters( $election )
 	{
-		$returnValue = '';
-		$list = apply_filters( 'sd_mt_get_list', $election->data->have_voted );
-		$have_voted = apply_filters( 'sd_mt_list_participants', $list );
-		$list = apply_filters( 'sd_mt_get_list', $election->data->may_vote );
-		$may_vote = apply_filters( 'sd_mt_list_participants', $list );
+		$rv = '';
+		$list = $this->filters( 'sd_mt_get_list', $election->data->have_voted );
+		$have_voted = $this->filters( 'sd_mt_list_participants', $list );
+		$list = $this->filters( 'sd_mt_get_list', $election->data->may_vote );
+		$may_vote = $this->filters( 'sd_mt_list_participants', $list );
 
 		switch( $election->data->type )
 		{
 			case 'open':
 				// Show who voted for what.
-				$returnValue .= '<h3>' . $this->_( 'The following participants have voted' ) . '</h3>';
+				$rv .= '<h3>' . $this->_( 'The following participants have voted' ) . '</h3>';
 
 				foreach( $election->data->choices as $choice )
 				{
-					$list = apply_filters( 'sd_mt_get_list', $choice->list_id );
-					$list = apply_filters( 'sd_mt_list_participants', $list );
+					$list = $this->filters( 'sd_mt_get_list', $choice->list_id );
+					$list = $this->filters( 'sd_mt_list_participants', $list );
 					$choice->participants = $list->participants;
 				}
 
-				$display_format = apply_filters( 'sd_mt_get_display_format', $list->data->display_format_id );
+				$display_format = $this->filters( 'sd_mt_get_display_format', $list->data->display_format_id );
 				$t_body = '';
 				foreach( $have_voted->participants as $participant )
 				{
@@ -1949,13 +2225,13 @@ class SD_Meeting_Tool_elections
 						} 
 					$t_body .= '
 						<tr>
-							<td>' . apply_filters( 'sd_mt_display_participant', $participant, $display_format ) . '</td>
+							<td>' . $this->filters( 'sd_mt_display_participant', $participant, $display_format ) . '</td>
 							<td>' . $vote . '</td>
 						</tr>
 					';
 				}
 				
-				$returnValue .= '
+				$rv .= '
 					<table class="widefat results">
 						<thead>
 							<tr>
@@ -1971,25 +2247,31 @@ class SD_Meeting_Tool_elections
 				break;
 			case 'anonymous':
 				// Show just a list of people who bothered to vote.
-				$returnValue .= '<h3>' . $this->_( 'The following participants have voted' ) . '</h3>';
+				$rv .= '<h3>' . $this->_( 'The following participants have voted' ) . '</h3>';
 				// Show who voted.
 				$t_body = '';
-				$list = apply_filters( 'sd_mt_get_list', $election->data->have_voted );
-				$have_voted = apply_filters( 'sd_mt_list_participants', $list );
-				$display_format = apply_filters( 'sd_mt_get_display_format', $list->data->display_format_id );
+				$list = $this->filters( 'sd_mt_get_list', $election->data->have_voted );
+				$have_voted = $this->filters( 'sd_mt_list_participants', $list );
+				$display_format = $this->filters( 'sd_mt_get_display_format', $list->data->display_format_id );
 				foreach( $have_voted->participants as $participant )
-					$returnValue .= apply_filters( 'sd_mt_display_participant', $participant, $display_format ) . '<br />';
+					$rv .= $this->filters( 'sd_mt_display_participant', $participant, $display_format ) . '<br />';
 
 		}
-		return $returnValue;
+		return $rv;
 	}
-
+	
+	/**
+		@brief		Display who should have, but did not vote in an election.
+		
+		@param		SD_Meeting_Tool_Election		$election		Election for which to display the non-voters.
+		@return		A HTML string showing non-voters.
+	**/
 	private function display_election_nonvoters( $election )
 	{
-		$returnValue = '';
+		$rv = '';
 
-		$list = apply_filters( 'sd_mt_get_list', $election->data->may_vote );
-		$may_vote = apply_filters( 'sd_mt_list_participants', $list );
+		$list = $this->filters( 'sd_mt_get_list', $election->data->may_vote );
+		$may_vote = $this->filters( 'sd_mt_list_participants', $list );
 
 		$non_voters = array();
 		foreach( $may_vote->participants as $participant )
@@ -1997,13 +2279,13 @@ class SD_Meeting_Tool_elections
 				$non_voters[] = $participant;
 		if ( count( $may_vote->participants ) > 0 )
 		{
-			$returnValue .= '<h3>' . $this->_( 'The following participants did not vote at all' ) . '</h3>';
-			$display_format = apply_filters( 'sd_mt_get_display_format', $list->data->display_format_id );
+			$rv .= '<h3>' . $this->_( 'The following participants did not vote at all' ) . '</h3>';
+			$display_format = $this->filters( 'sd_mt_get_display_format', $list->data->display_format_id );
 			foreach( $non_voters as $participant )
-				$returnValue .= apply_filters( 'sd_mt_display_participant', $participant, $display_format ) . '<br />';
+				$rv .= $this->filters( 'sd_mt_display_participant', $participant, $display_format ) . '<br />';
 		}
 		
-		return $returnValue;
+		return $rv;
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -2011,14 +2293,14 @@ class SD_Meeting_Tool_elections
 	// --------------------------------------------------------------------------------------------
 
 	/**
-		Shows the graph of a completed election.
+		@brief		Shows the graph of a completed election.
 		
 		@par		Attributes
 		
 		- id		Election ID. Required.
 		
-		@param		$attr		Attributes array.
-		@return					Election HTML string to display.
+		@param		array		$attr		Attributes array.
+		@return		Election HTML string to display.
 	**/
 	public function shortcode_display_election_graph( $attr )
 	{
@@ -2026,7 +2308,7 @@ class SD_Meeting_Tool_elections
 			return;
 		$id = $attr['id'];
 		
-		$election = apply_filters( 'sd_mt_get_election', $id );
+		$election = $this->filters( 'sd_mt_get_election', $id );
 		if ( $election === false )
 			return;
 		
@@ -2039,14 +2321,14 @@ class SD_Meeting_Tool_elections
 	}
 	
 	/**
-		Shows the statistics  of a completed election.
+		@brief		Shows the statistics  of a completed election.
 		
 		@par		Attributes
 		
 		- id		Election ID. Required.
 		
-		@param		$attr		Attributes array.
-		@return					Election HTML string to display.
+		@param		array		$attr		Attributes array.
+		@return		Election HTML string to display.
 	**/
 	public function shortcode_display_election_statistics( $attr )
 	{
@@ -2054,7 +2336,7 @@ class SD_Meeting_Tool_elections
 			return;
 		$id = $attr['id'];
 		
-		$election = apply_filters( 'sd_mt_get_election', $id );
+		$election = $this->filters( 'sd_mt_get_election', $id );
 		if ( $election === false )
 			return;
 		
@@ -2086,18 +2368,22 @@ class SD_Meeting_Tool_Election
 	
 	/**
 		Serialized data.
+		
+		Only this property will be saved to the DB.
+		
 		Contains:
 		
 		- @b eligible_voters List ID of eligible voters.
 		- @b electoral_register_calculated True if the electoral register has been calculated.
 		- @b group_field Which of the participants field to use as a group.
+		- @b groups_complete Array of group => $group that have filled their voter quotas.
+		- @b groups_incomplete Array of group => voter_count of groups that have not filled their voter quotas (too few voters).
 		- @b have_voted List ID of voters that have voted.
 		- @b may_vote List ID of voters that may vote.
 		- @b name Name of election.
 		- @b options Array of SD_Meeting_Tool_Election_Choices for which the voters can ... vote.
 		- @b status String status of the election: 'editing', 'registering', 'finished'.
 		- @b type The type of the election: manual, open, anonymous.
-		- @b voters_missing Array of groups => voter_count of groups that have not filled their voter quotas (too few voters).
 		- @b voters_present List ID of voters that are present and able to vote.
 		- @b voting_order_field Which participant field name specifies the order in which parts are allowed to vote.
 		
@@ -2111,6 +2397,8 @@ class SD_Meeting_Tool_Election
 		$this->data->electoral_register_calculated = false;
 		$this->data->eligible_voters = -1;
 		$this->data->group_field = -1;
+		$this->data->groups_complete = array();
+		$this->data->groups_incomplete = array();
 		$this->data->have_voted = -1;
 		$this->data->may_vote = -1;
 		$this->data->name = '';
@@ -2118,15 +2406,14 @@ class SD_Meeting_Tool_Election
 		$this->data->registration = -1;
 		$this->data->status = 'editing';
 		$this->data->type = 'manual';
-		$this->data->voters_missing = array();
 		$this->data->voters_present = -1;
 		$this->data->voting_order_field = -1;
 	}
 	
-	// Query of the type
+	// Query about the type
 	
 	/**
-		Returns whether this is an anonymous election.
+		@brief		Returns whether this is an anonymous election.
 		@return		True, if this election is anonymous.
 	**/
 	public function is_anonymous()
@@ -2135,7 +2422,7 @@ class SD_Meeting_Tool_Election
 	}
 	
 	/**
-		Returns whether this is a manual election.
+		@brief		Returns whether this is a manual election.
 		@return		True, if this election is manual.
 	**/
 	public function is_manual()
@@ -2144,7 +2431,7 @@ class SD_Meeting_Tool_Election
 	}
 
 	/**
-		Returns whether this is an open election.
+		@brief		Returns whether this is an open election.
 		@return		True, if this election is open.
 	**/
 	public function is_open()
@@ -2154,9 +2441,13 @@ class SD_Meeting_Tool_Election
 	
 	// Queries about the electoral register
 	
+	/**
+		@brief		Clears the electoral register and everything related to it.
+	**/
 	public function clear_electoral_register()
 	{
-		$this->data->voters_missing = array();
+		$this->data->groups_complete = array();
+		$this->data->groups_incomplete = array();
 		$this->data->electoral_register_calculated = false;
 	}
 	
@@ -2180,7 +2471,8 @@ class SD_Meeting_Tool_Election
 	}
 	
 	/**
-		@return		True if the electoral register has been calculated. Will return false if the election is manual.
+		@brief		Returns whether the electoral register has been calculated.
+		@return		True if the electoral register has been calculated. Will always return true if the election is manual.
 	**/
 	public function is_electoral_register_calculated()
 	{
@@ -2192,6 +2484,23 @@ class SD_Meeting_Tool_Election
 	// Status queries
 	
 	/**
+		@brief		Marks the election as being in status "registering".
+	**/
+	public function begin_registration()
+	{
+		$this->data->status = 'registering';
+	}
+
+	/**
+		@brief		Marks the election as finished.
+	**/
+	public function finish()
+	{
+		$this->data->status = 'finished';
+	}
+
+	/**
+		@brief		Return whether the election is being edited.
 		@return		True if election is in editing status.
 	**/
 	public function is_editing()
@@ -2200,14 +2509,7 @@ class SD_Meeting_Tool_Election
 	}
 	
 	/**
-		@return		True if election is in collection status.
-	**/
-	public function is_registering()
-	{
-		return $this->data->status == 'registering';
-	}
-	
-	/**
+		@brief		Return whether the election is finished.
 		@return		True if election is finished.
 	**/
 	public function is_finished()
@@ -2216,48 +2518,20 @@ class SD_Meeting_Tool_Election
 	}
 	
 	/**
-		Marks the election as being in status "registering".
+		@brief		Return whether the election is collecting votes.
+		@return		True if election is in collection status.
 	**/
-	public function begin_registration()
+	public function is_registering()
 	{
-		$this->data->status = 'registering';
+		return $this->data->status == 'registering';
 	}
-
-	/**
-		Marks the election as finished.
-	**/
-	public function finish()
-	{
-		$this->data->status = 'finished';
-	}
-
+	
 	// Misc
 	
 	/**
-		Returns a array of the list id's that this election uses.
+		@brief		A very primitive check that the election has been somewhat edited and ready to go to the next status.
 		
-		@return		An array of list id's that this election uses.
-	**/
-	public function lists()
-	{
-		$lists = array(
-			'eligible_voters',
-			'have_voted',
-			'may_vote',
-			'voters_present',
-		);
-		$returnValue = array();
-		
-		foreach( $lists as $list )
-			$returnValue[ $list ] = $this->data->$list;
-		
-		return $returnValue;
-	}
-	
-	/**
-		A very primitive check that the election has been somewhat edited and ready to go to the next status.
-		
-		Basically only checks that the lists are set and that there is more than 0 options.
+		Basically only checks that the lists are set and that there are more than 0 options.
 		
 		@return		True if the election passes simple checks to go to the next status.
 	**/
@@ -2286,22 +2560,46 @@ class SD_Meeting_Tool_Election
 		
 		return true;
 	}
+
+	/**
+		@brief		Returns a array of the list id's that this election uses.
+		
+		@return		An array of list id's that this election uses.
+	**/
+	public function lists()
+	{
+		$lists = array(
+			'eligible_voters',
+			'have_voted',
+			'may_vote',
+			'voters_present',
+		);
+		$rv = array();
+		
+		foreach( $lists as $list )
+			$rv[ $list ] = $this->data->$list;
+		
+		return $rv;
+	}
 }
 
 /**
+	@brief		A single voting choice for elections.
+
 	A multi-purpose class for election choices, used for manual, open and anon elections.
 
-	@brief		A single voting choice for elections.
 	@see		SD_Meeting_Tool_Election
 	@author		Edward Plainview	edward.plainview@sverigedemokraterna.se
 **/
 class SD_Meeting_Tool_Election_Choice
 {
 	/**
-		Name of choice.
-		@var	$name
+		How many voters voted for this option.
+		
+		This option is used when the election is manual.
+		@var	$count
 	**/
-	public $name;
+	public $count = 0;
 	
 	/**
 		Which list is associated to this option.
@@ -2313,15 +2611,13 @@ class SD_Meeting_Tool_Election_Choice
 	public $list_id;
 	
 	/**
-		How many voters voted for this option.
-		
-		This option is used when the election is manual.
-		@var	$count
+		Name / description of choice.
+		@var	$name
 	**/
-	public $count = 0;
+	public $name;
 	
 	/**
-		Unique ID for this option.
+		Unique ID for this choice.
 		$var	$uuid
 	**/
 	public $uuid;
@@ -2331,3 +2627,4 @@ class SD_Meeting_Tool_Election_Choice
 		$this->uuid = SD_Meeting_Tool::random_uuid();
 	}
 }
+

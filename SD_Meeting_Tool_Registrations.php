@@ -1,12 +1,12 @@
 <?php
 /*                                                                                                                                                                                                                                                             
 Plugin Name: SD Meeting Tool Registrations
-Plugin URI: http://frimjukvara.sverigedemokraterna.se/meeting-control
+Plugin URI: https://it.sverigedemokraterna.se
 Description: Provides participant registration
-Version: 1.0
+Version: 1.1
 Author: Sverigedemokraterna IT
-Author URI: http://frimjukvara.sverigedemokraterna.se
-Author Email: it@mindreantre.se
+Author URI: https://it.sverigedemokraterna.se
+Author Email: it@sverigedemokraterna.se
 */
 
 if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('You are not allowed to call this page directly.'); }
@@ -50,6 +50,11 @@ if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('You 
 /**
 	@brief		Plugin providing participant registrations.
 	@author		Edward Plainview	edward.plainview@sverigedemokraterna.se
+
+	@par		Changelog
+
+	@par		1.1
+	- Version bump.
 **/
 class SD_Meeting_Tool_Registrations
 	extends SD_Meeting_Tool_0
@@ -124,34 +129,28 @@ class SD_Meeting_Tool_Registrations
 
 		if ( isset( $_GET['tab'] ) )
 		{
-			if ( $_GET['tab'] == $this->tab_slug( $this->_('Register') ) )
+			if ( $_GET['tab'] == 'register' )
 			{
 				$tab_data['tabs']['register'] = $this->_( 'Register' );
 				$tab_data['functions']['register'] = 'admin_register';
 				
-				$registration = apply_filters( 'sd_mt_get_registration', $_GET['id'] );
+				$registration = $this->filters( 'sd_mt_get_registration', $_GET['id'] );
 				if ( $registration === false )
 					wp_die( $this->_( 'Specified registration does not exist!' ) );
 				
-				$tab_data['page_titles']['register'] = sprintf(
-					$this->_( 'Registering: %s' ),
-					$registration->data->name
-				);
+				$tab_data['page_titles']['register'] = $this->_( 'Registering: %s', $registration->data->name );
 			}
 
-			if ( $_GET['tab'] == $this->tab_slug( $this->_('Edit') ) )
+			if ( $_GET['tab'] == 'edit' )
 			{
 				$tab_data['tabs']['edit'] = $this->_( 'Edit' );
 				$tab_data['functions']['edit'] = 'admin_edit';
 				
-				$registration = apply_filters( 'sd_mt_get_registration', $_GET['id'] );
+				$registration = $this->filters( 'sd_mt_get_registration', $_GET['id'] );
 				if ( $registration === false )
 					wp_die( $this->_( 'Specified registration does not exist!' ) );
 				
-				$tab_data['page_titles']['edit'] = sprintf(
-					$this->_( 'Editing registration: %s' ),
-					$registration->data->name
-				);
+				$tab_data['page_titles']['edit'] = $this->_( 'Editing registration: %s', $registration->data->name );
 			}
 		}
 
@@ -163,21 +162,15 @@ class SD_Meeting_Tool_Registrations
 		if ( isset( $_POST['create_registration'] ) )
 		{
 			$registration = new SD_Meeting_Tool_Registration();
-			$registration->data->name = sprintf(
-				$this->_( 'Registration created %s' ),
-				$this->now()
-			);
-			$registration = apply_filters( 'sd_mt_update_registration', $registration );
+			$registration->data->name = $this->_( 'Registration created %s', $this->now() );
+			$registration = $this->filters( 'sd_mt_update_registration', $registration );
 			
 			$edit_link = add_query_arg( array(
-				'tab' => $this->tab_slug( $this->_('Edit') ),
+				'tab' => 'edit',
 				'id' => $registration->id,
 			) );
 			
-			$this->message( sprintf(
-				$this->_( 'Registration created! <a href="%s">Edit the newly-created registration</a>.' ),
-				$edit_link
-			) );
+			$this->message( $this->_( 'Registration created! <a href="%s">Edit the newly-created registration</a>.', $edit_link ) );
 		}
 
 		if ( isset( $_POST['action_submit'] ) && isset( $_POST['registrations'] ) )
@@ -186,14 +179,11 @@ class SD_Meeting_Tool_Registrations
 			{
 				foreach( $_POST['registrations'] as $registration_id => $ignore )
 				{
-					$registration = apply_filters( 'sd_mt_get_registration', $registration_id );
+					$registration = $this->filters( 'sd_mt_get_registration', $registration_id );
 					if ( $registration !== false )
 					{
-						apply_filters( 'sd_mt_delete_registration', $registration );
-						$this->message( sprintf(
-							$this->_( 'Registration <em>%s</em> deleted.' ),
-							$registration_id
-						) );
+						$this->filters( 'sd_mt_delete_registration', $registration );
+						$this->message( $this->_( 'Registration <em>%s</em> deleted.', $registration_id ) );
 					}
 				}
 			}	// delete
@@ -202,7 +192,7 @@ class SD_Meeting_Tool_Registrations
 		$form = $this->form();
 		$returnValue = $form->start();
 		
-		$registrations = apply_filters( 'sd_mt_get_all_registrations', array() );
+		$registrations = $this->filters( 'sd_mt_get_all_registrations', array() );
 		
 		if ( count( $registrations ) < 1 )
 		{
@@ -222,7 +212,7 @@ class SD_Meeting_Tool_Registrations
 				);
 				
 				$edit_link = add_query_arg( array(
-					'tab' => $this->tab_slug( $this->_('Edit') ),
+					'tab' => 'edit',
 					'id' => $registration->id,
 				) );
 				
@@ -231,7 +221,7 @@ class SD_Meeting_Tool_Registrations
 				
 				// Register
 				$register_link = add_query_arg( array(
-					'tab' => $this->tab_slug( $this->_('Register') ),
+					'tab' => 'register',
 					'id' => $registration->id,
 				) );
 				$row_actions[] = '<a title="' . $this->_('Use this registration'). '" href="'.$register_link.'">'. $this->_('Register') . '</a>';
@@ -244,42 +234,42 @@ class SD_Meeting_Tool_Registrations
 				$info = array();
 				if ( $registration->data->action_failure > 0 )
 				{
-					$action = apply_filters( 'sd_mt_get_action', $registration->data->action_failure ); 
+					$action = $this->filters( 'sd_mt_get_action', $registration->data->action_failure ); 
 					if ( $action === false )
 						$action_name = $this->_('Unknown');
 					else 
 						$action_name = $action->data->name;
-					$info[] = sprintf( $this->_( 'Action on failure: <em>%s</em>' ), $action_name ); 
+					$info[] = $this->_( 'Action on failure: <em>%s</em>', $action_name ); 
 				}
 
 				if ( $registration->data->action_success > 0 )
 				{
-					$action = apply_filters( 'sd_mt_get_action', $registration->data->action_success ); 
+					$action = $this->filters( 'sd_mt_get_action', $registration->data->action_success ); 
 					if ( $action === false )
 						$action_name = $this->_('Unknown');
 					else 
 						$action_name = $action->data->name;
-					$info[] = sprintf( $this->_( 'Action on success: <em>%s</em>' ), $action_name ); 
+					$info[] = $this->_( 'Action on success: <em>%s</em>', $action_name ); 
 				}
 
 				if ( $registration->data->list_id > 0 )
 				{
-					$list = apply_filters( 'sd_mt_get_list', $registration->data->list_id );
+					$list = $this->filters( 'sd_mt_get_list', $registration->data->list_id );
 					if ( $list === false )
 						$list_name = $this->_('Unknown');
 					else 
 						$list_name = $list->data->name;
-					$info[] = sprintf( $this->_( 'List: <em>%s</em>' ), $list_name );
+					$info[] = $this->_( 'List: <em>%s</em>', $list_name );
 				}
 
 				if ( $registration->data->ui != '' )
 				{
-					$ui = apply_filters( 'sd_mt_get_registration_ui', $registration->data->ui );
+					$ui = $this->filters( 'sd_mt_get_registration_ui', $registration->data->ui );
 					if ( is_a( $ui, 'SD_Meeting_Tool_Registration_UI' ) )
 						$ui_name = $ui->name;
 					else 
 						$ui_name = $this->_('Unknown');
-					$info[] = sprintf( $this->_( 'User interface: <em>%s</em>' ), $ui_name ); 
+					$info[] = $this->_( 'User interface: <em>%s</em>', $ui_name ); 
 				}
 				
 				$info = implode( '</div><div>', $info );
@@ -410,7 +400,7 @@ class SD_Meeting_Tool_Registrations
 
 			if ($result === true)
 			{
-				$registration = apply_filters( 'sd_mt_get_registration', $id );
+				$registration = $this->filters( 'sd_mt_get_registration', $id );
 				$registration->data->name = $_POST['name'];
 				$registration->data->action_failure = $_POST['action_failure'];
 				$registration->data->action_success = $_POST['action_success'];
@@ -424,9 +414,9 @@ class SD_Meeting_Tool_Registrations
 					$registration->data->ui = $ui;
 				}
 				else
-					$registration->data->ui = apply_filters( 'sd_mt_update_registration_ui', $registration->data->ui );
+					$registration->data->ui = $this->filters( 'sd_mt_update_registration_ui', $registration->data->ui );
 								
-				apply_filters( 'sd_mt_update_registration', $registration );
+				$this->filters( 'sd_mt_update_registration', $registration );
 				
 				$this->message( $this->_('The registration has been updated!') );
 				SD_Meeting_Tool::reload_message();
@@ -437,20 +427,20 @@ class SD_Meeting_Tool_Registrations
 			}
 		}
 
-		$registration = apply_filters( 'sd_mt_get_registration', $id );
+		$registration = $this->filters( 'sd_mt_get_registration', $id );
 		
 		// Lists
-		$lists = apply_filters( 'sd_mt_get_all_lists', array() );
+		$lists = $this->filters( 'sd_mt_get_all_lists', array() );
 		foreach( $lists as $list )
 			$inputs['list_id']['options'][ $list->id ] = $list->data->name;
 		
 		// UI
-		$uis = apply_filters( 'sd_mt_get_all_registration_uis', array() );
+		$uis = $this->filters( 'sd_mt_get_all_registration_uis', array() );
 		foreach( $uis as $ui )
 			$inputs['ui']['options'][ get_class($ui) ] = $ui->name;
 		
 		// Actions
-		$actions = apply_filters( 'sd_mt_get_all_actions', null );
+		$actions = $this->filters( 'sd_mt_get_all_actions', null );
 		foreach( $actions as $action )
 		{
 			$inputs['action_failure']['options'][ $action->id ] = $action->data->name;
@@ -468,17 +458,15 @@ class SD_Meeting_Tool_Registrations
 		$returnValue .= '
 			' . $form->start() . '
 			
-			' . $this->display_form_table( array(
-				'inputs' => $inputs,
-			) ). '
+			' . $this->display_form_table( $inputs ). '
 
 		';
 		
 		if ( is_object( $registration->data->ui ) )
 		{
-			$returnValue .= '<h3>' . sprintf( $this->_('Settings for %s'), $registration->data->ui->name ) . '</h3>';
+			$returnValue .= '<h3>' . $this->_('Settings for %s', $registration->data->ui->name ) . '</h3>';
 		
-			$returnValue .= apply_filters( 'sd_mt_configure_registration_ui', $registration->data->ui );		
+			$returnValue .= $this->filters( 'sd_mt_configure_registration_ui', $registration->data->ui );		
 		}
 		
 		$input_update = array(
@@ -498,10 +486,10 @@ class SD_Meeting_Tool_Registrations
 	function admin_register()
 	{
 		$id = $_GET['id'];
-		$registration = apply_filters( 'sd_mt_get_registration', $id );
+		$registration = $this->filters( 'sd_mt_get_registration', $id );
 		
-		apply_filters( 'sd_mt_process_registration', $registration );
-		$returnValue = apply_filters( 'sd_mt_display_registration', $registration );
+		$this->filters( 'sd_mt_process_registration', $registration );
+		$returnValue = $this->filters( 'sd_mt_display_registration', $registration );
 		
 		echo $returnValue; 
 	}
@@ -548,7 +536,7 @@ class SD_Meeting_Tool_Registrations
 		if ( ! is_object( $ui ) )
 			return $SD_Meeting_Tool_Registration;
 		
-		$SD_Meeting_Tool_Registration = apply_filters( 'sd_mt_process_registration_ui', $SD_Meeting_Tool_Registration );
+		$SD_Meeting_Tool_Registration = $this->filters( 'sd_mt_process_registration_ui', $SD_Meeting_Tool_Registration );
 		
 		if ( $SD_Meeting_Tool_Registration->result !== null )
 		{
@@ -560,16 +548,16 @@ class SD_Meeting_Tool_Registrations
 				return $SD_Meeting_Tool_Registration;
 			
 			if ( $result->successful() )
-				$action = apply_filters( 'sd_mt_get_action', $SD_Meeting_Tool_Registration->data->action_success );
+				$action = $this->filters( 'sd_mt_get_action', $SD_Meeting_Tool_Registration->data->action_success );
 			else
-				$action = apply_filters( 'sd_mt_get_action', $SD_Meeting_Tool_Registration->data->action_failure );
+				$action = $this->filters( 'sd_mt_get_action', $SD_Meeting_Tool_Registration->data->action_failure );
 				
 			if( $action !== false )
 			{
 				// Trigger this action!
 				$action_trigger = new SD_Meeting_Tool_Action_Trigger();
 				$action_trigger->action = $action;
-				$action_trigger->trigger = apply_filters( 'sd_mt_get_participant', $result->participant_id() );
+				$action_trigger->trigger = $this->filters( 'sd_mt_get_participant', $result->participant_id() );
 				do_action( 'sd_mt_trigger_action', $action_trigger );
 			}
 		}
@@ -581,7 +569,7 @@ class SD_Meeting_Tool_Registrations
 	{
 		$ui = $SD_Meeting_Tool_Registration->data->ui;
 		if ( is_object( $ui ) )
-			return apply_filters( 'sd_mt_display_registration_ui', $SD_Meeting_Tool_Registration );
+			return $this->filters( 'sd_mt_display_registration_ui', $SD_Meeting_Tool_Registration );
 	}
 	
 	public function sd_mt_update_registration( $SD_Meeting_Tool_Registration )

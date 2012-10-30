@@ -185,8 +185,9 @@ $input_text = array(
 		
 @par	Changelog
 	
-- 2011-08-08	More documentation
-- 2011-08-01	More documentation
+- 2012-04-14	make_input can make rawtext types.
+- 2011-08-08	More documentation.
+- 2011-08-01	More documentation.
 
 @brief	SD_Forms is a XHTML form class that handles: creation, display and validation of form elements and complete form layouts.
 @author		Edward Plainview	edward.plainview@sverigedemokraterna.se
@@ -449,6 +450,54 @@ class SD_Form
 			
 		switch ($options['type'])
 		{
+			case 'checkbox':
+				if (!isset($options['checked']))
+				{
+					$options['checked'] = (intval($options['value']) == 1);
+					if ($options['value'] == '' || $options['value'] == '0')
+						$options['value'] = 1;
+				}
+				$checked = ($options['checked'] == true ? ' checked="checked" ' : '');
+				$returnValue = '<input class="'.$classes.'" type="'.$options['type'].'" name="'.self::make_name($options).'" id="'.$this->make_id($options).'" value="'.$options['value'].'" '.$checked.' '.$extraOptions.' />';
+				break;
+			case 'file':
+				$returnValue = '<input class="'.$classes.'" type="'.$options['type'].'" name="'.self::make_name($options).'" id="'.$this->make_id($options).'" value="'.$options['value'].'" '.$extraOptions.' />';
+				break;
+			case 'hidden':
+				$returnValue = '<input class="'.$classes.'" type="'.$options['type'].'" name="'.self::make_name($options).'" value="'.$options['value'].'"'.$extraOptions.' />';
+				break;
+			case 'image':
+				$returnValue = '<input class="'.$classes.'" type="'.$options['type'].'" name="'.self::make_name($options).'[]" id="'.$this->make_id($options).'" value="'.$options['value'].'" title="'.$options['title'].'" src="'.$options['src'].'" '.$extraOptions.' />';
+				break;
+			case 'password':
+				if (isset($options['size']))
+				{
+					$options['size'] = min($options['size'], $options['maxlength']); // Size can't be bigger than maxlength
+					$text['size'] = 'size="'.$options['size'].'"';
+				}
+				$returnValue = '<input class="'.$classes.'" type="'.$options['type'].'" '.$text['size'].' maxlength="'.$options['maxlength'].'" name="'.self::make_name($options).'"  value="'.htmlspecialchars($options['value']).'" id="'.$this->make_id($options).'"'.$extraOptions.' />';
+				break;
+			case 'radio':
+				// Make the options
+				$returnValue = '';
+				$baseOptions = array_merge($this->options, $options);
+				foreach( $options['options'] as $option_value => $option_text )
+				{
+					$checked = ($option_value == $options['value']) ? 'checked="checked"' : '';
+					$option = $baseOptions;
+					$option['namesuffix'] = $option_value;
+					$option['label'] = $option_text;
+					$returnValue .= '
+						<div>
+							<input class="'.$classes.'" type="'.$options['type'].'" name="'.self::make_name($options).'" value="'.$option_value.'" id="'.$this->make_id($option).'" '.$checked.' '.$extraOptions.' />
+							'.$this->make_label($option).'
+						</div>
+					';
+				}
+				break;
+			case 'rawtext':
+				$returnValue .= '<div>' . $options[ 'value' ] . '</div>';
+				break;
 			case 'select':
 				if ($options['multiple'])
 				{
@@ -484,65 +533,19 @@ class SD_Form
 					'.$optionsText.'
 					</select>
 				';
-			break;
-			case 'radio':
-				// Make the options
-				$returnValue = '';
-				$baseOptions = array_merge($this->options, $options);
-				foreach( $options['options'] as $option_value => $option_text )
-				{
-					$checked = ($option_value == $options['value']) ? 'checked="checked"' : '';
-					$option = $baseOptions;
-					$option['namesuffix'] = $option_value;
-					$option['label'] = $option_text;
-					$returnValue .= '
-						<div>
-							<input class="'.$classes.'" type="'.$options['type'].'" name="'.self::make_name($options).'" value="'.$option_value.'" id="'.$this->make_id($option).'" '.$checked.' '.$extraOptions.' />
-							'.$this->make_label($option).'
-						</div>
-					';
-				}
-			break;
-			case 'hidden':
-				$returnValue = '<input class="'.$classes.'" type="'.$options['type'].'" name="'.self::make_name($options).'" value="'.$options['value'].'"'.$extraOptions.' />';
-			break;
-			case 'checkbox':
-				if (!isset($options['checked']))
-				{
-					$options['checked'] = (intval($options['value']) == 1);
-					if ($options['value'] == '' || $options['value'] == '0')
-						$options['value'] = 1;
-				}
-				$checked = ($options['checked'] == true ? ' checked="checked" ' : '');
-				$returnValue = '<input class="'.$classes.'" type="'.$options['type'].'" name="'.self::make_name($options).'" id="'.$this->make_id($options).'" value="'.$options['value'].'" '.$checked.' '.$extraOptions.' />';
-			break;
+				break;
 			case 'submit':
 				$returnValue = '<input class="'.$classes.'" type="'.$options['type'].'" name="'.self::make_name($options).'" id="'.$this->make_id($options).'" value="'.$options['value'].'" '.$extraOptions.' />';
-			break;
-			case 'file':
-				$returnValue = '<input class="'.$classes.'" type="'.$options['type'].'" name="'.self::make_name($options).'" id="'.$this->make_id($options).'" value="'.$options['value'].'" '.$extraOptions.' />';
-			break;
-			case 'password':
-				if (isset($options['size']))
-				{
-					$options['size'] = min($options['size'], $options['maxlength']); // Size can't be bigger than maxlength
-					$text['size'] = 'size="'.$options['size'].'"';
-				}
-				$returnValue = '<input class="'.$classes.'" type="'.$options['type'].'" '.$text['size'].' maxlength="'.$options['maxlength'].'" name="'.self::make_name($options).'"  value="'.htmlspecialchars($options['value']).'" id="'.$this->make_id($options).'"'.$extraOptions.' />';
-			break;
+				break;
 			case 'textarea':
 				$returnValue = '<textarea class="'.$classes.'" cols="'.$options['cols'].'" rows="'.$options['rows'].'" name="'.self::make_name($options).'" id="'.$this->make_id($options).'"'.$extraOptions.'>'.$options['value'].'</textarea>';
-			break;
-			case 'image':
-				$returnValue = '<input class="'.$classes.'" type="'.$options['type'].'" name="'.self::make_name($options).'[]" id="'.$this->make_id($options).'" value="'.$options['value'].'" title="'.$options['title'].'" src="'.$options['src'].'" '.$extraOptions.' />';
-			break;
+				break;
 			default:	// Default = 'text'
 				if (isset($options['size']))
 				{
 					$options['size'] = min($options['size'], $options['maxlength']); // Size can't be bigger than maxlength
 					$text['size'] = 'size="'.$options['size'].'"';
 				}
-				
 				$returnValue = '<input class="text '.$classes.'" type="text" '.$text['size'].' maxlength="'.$options['maxlength'].'" name="'.self::make_name($options).'" id="'.$this->make_id($options).'" value="'.htmlspecialchars($options['value']).'"'.$extraOptions.' />';
 		}
 		return $returnValue;
@@ -577,12 +580,15 @@ class SD_Form
 		}
 	}
 	
-	public function use_post_value(&$input, $post_data, $key)
+	public function use_post_value( &$input, $post_data = null )
 	{
 		if ($input['type']=='submit')		// Submits don't get their values posted, so return the value.
 			return $input['value'];
 			
 		$input['name'] = self::fix_name($input['name']);
+		
+		if ( $post_data === null )
+			$post_data = $_POST;
 			
 		// Merge the default options.
 		// In case this class was created with a nameprefix and the individual inputs weren't, for example.
@@ -595,28 +601,28 @@ class SD_Form
 		if ($input['nameprefix'] != '')
 		{
 			$strings = '';
-			$this->implode_array($post_data, $strings, '__', '', $this->options['class'] . '');
+			$this->implode_array( $post_data, $strings, '__', '', $this->options['class'] . '' );
 		}
 		else
 		{
-			if (isset($post_data[$input['name']]))
-				if (!is_array($post_data[$input['name']]))
-					$input['value'] = @stripslashes($post_data[$input['name']]);		// @ is for unchecked checkboxes. *sigh*
+			if ( isset( $post_data[$input['name']] ) )
+				if ( !is_array( $post_data[$input['name']] ) )
+					$input['value'] = @stripslashes( $post_data[$input['name']] );		// @ is for unchecked checkboxes. *sigh*
 				else
 				{
 					$input['value'] = array();	// Kill the value, otherwise postvalues are just appended and therefore do nothing.
-					foreach($post_data[$input['name']] as $index=>$value)
-						$input['value'][$index] = stripslashes($value);
+					foreach( $post_data[ $input['name'] ] as $index => $value )
+						$input['value'][$index] = stripslashes( $value );
 				}
 		}
 		
-		$inputID = $this->make_id($input);
-		if (isset($strings[$inputID]))
+		$inputID = $this->make_id( $input );
+		if ( isset( $strings[$inputID] ) )
 		{
 			switch($input['type'])
 			{
 				default:
-					@$input['value'] = stripslashes( $strings[$inputID] );
+					@$input[ 'value' ] = stripslashes( $strings[$inputID] );
 			}
 		}
 	}
@@ -632,7 +638,7 @@ class SD_Form
 			$input = array_merge($this->options, $input);
 			if ($input['type'] == 'rawtext')
 				$input['name'] = rand(0, time());
-			$this->use_post_value($input, $post_data, $input['name']);
+			$this->use_post_value( $input, $post_data );
 		}
 		else
 			$input = array(
@@ -756,7 +762,7 @@ class SD_Form
 				$style['sectionNameStop'] . "\n" .
 				$sectionDescription;
 				
-			$returnValue = str_replace('%%CSSCLASS%%', $sectionData['cssClass'], $returnValue);
+			$returnValue = str_replace('%%CSSCLASS%%', $sectionData['css_class'], $returnValue);
 				
 			foreach($sectionData['inputs'] as $index=>$input)
 			{

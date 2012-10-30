@@ -8,6 +8,7 @@ class SD_Meeting_Tool_0
 	protected $language_domain = 'SD_Meeting_Tool';
 	
 	/**
+		@brief		Return the cache directory for the plugin.
 		@return		The complete cache directory for the plugin.
 	**/
 	protected function cache_directory()
@@ -18,7 +19,8 @@ class SD_Meeting_Tool_0
 	}
 	
 	/**
-		Returns the name of the cache file for this session.
+		@brief		Returns the name of the cache file for this session.
+		@return		The name of the cache file for this session.
 	**/
 	protected function cache_file( $id )
 	{
@@ -26,7 +28,8 @@ class SD_Meeting_Tool_0
 	}
 	
 	/**
-		Returns the complete URL to the cache directory.
+		@brief		Returns the complete URL to the cache directory.
+		@return		The complete URL to the cache directory.
 	**/
 	protected function cache_url()
 	{
@@ -36,6 +39,7 @@ class SD_Meeting_Tool_0
 	}
 	
 	/**
+		@brief		Check whether the cache directory is OK.
 		@return		True if the cache directory exists, is a directory, and is writeable.
 	**/
 	protected function check_cache_directory()

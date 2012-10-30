@@ -1,12 +1,12 @@
 <?php
 /*                                                                                                                                                                                                                                                             
 Plugin Name: SD Meeting Tool Printing
-Plugin URI: http://frimjukvara.sverigedemokraterna.se/meeting-control
+Plugin URI: https://it.sverigedemokraterna.se
 Description: Prints participants.
-Version: 1.0
+Version: 1.1
 Author: Sverigedemokraterna IT
-Author URI: http://frimjukvara.sverigedemokraterna.se
-Author Email: it@mindreantre.se
+Author URI: https://it.sverigedemokraterna.se
+Author Email: it@sverigedemokraterna.se
 */
 
 if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('You are not allowed to call this page directly.'); }
@@ -63,8 +63,8 @@ if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('You 
 	
 	@subsection	sd_meeting_tool_printing_usage_templates	Templates
 	
-	Existing PDF files can be used as templates (backgrounds). Templates must first be uploaded to the media catalog and after
-	that they can be selected for use in a printing template.
+	Existing PDF files can be used as templates (backgrounds). Templates must first be uploaded to the media catalog, after which
+	they can be selected for use in a printing template.
 	
 	The setting under the PDF selection dropdown, print all pages, sets whether the whole PDF template (background) should be
 	printed for each participant or just those pages that are used in the fields.
@@ -88,6 +88,15 @@ if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('You 
 /**
 	@brief		Plugin providing participant printing for SD Meeting Tool.
 	@author		Edward Plainview	edward.plainview@sverigedemokraterna.se
+	
+	@par		Changelog
+	
+	@par		1.1
+	
+	- New: Wizard, 24 stickers
+	- New: Page size and orientation can be chosen
+	- New: Block and field clone functions
+	
 **/
 class SD_Meeting_Tool_Printing
 	extends SD_Meeting_Tool_0
@@ -159,27 +168,24 @@ class SD_Meeting_Tool_Printing
 
 		if ( isset( $_GET['tab'] ) )
 		{
-			if ( $_GET['tab'] == $this->tab_slug( $this->_('Edit') ) )
+			if ( $_GET['tab'] == 'edit' )
 			{
 				$tab_data['tabs']['edit'] = $this->_( 'Edit');
 				$tab_data['functions']['edit'] = 'admin_edit';
 
-				$printing_template = apply_filters( 'sd_mt_get_printing_template', $_GET['id'] );
+				$printing_template = $this->filters( 'sd_mt_get_printing_template', $_GET['id'] );
 				if ( $printing_template === false )
 					wp_die( $this->_( 'Specified printing template does not exist!' ) );
 
-				$tab_data['page_titles']['edit'] = sprintf(
-					$this->_( 'Editing printing template: %s' ),
-					$printing_template->data->name
-				);
+				$tab_data['page_titles']['edit'] = $this->_( 'Editing printing template: %s', $printing_template->data->name );
 			}
 
-			if ( $_GET['tab'] == $this->tab_slug( $this->_('Edit field') ) )
+			if ( $_GET['tab'] == 'edit_field' )
 			{
-				$tab_data['tabs']['edit'] = $this->_( 'Edit field');
-				$tab_data['functions']['edit'] = 'admin_edit_field';
+				$tab_data['tabs']['edit_field'] = $this->_( 'Edit field');
+				$tab_data['functions']['edit_field'] = 'admin_edit_field';
 
-				$printing_template = apply_filters( 'sd_mt_get_printing_template', $_GET['id'] );
+				$printing_template = $this->filters( 'sd_mt_get_printing_template', $_GET['id'] );
 				if ( $printing_template === false )
 					wp_die( $this->_( 'Specified printing template does not exist!' ) );
 				
@@ -192,28 +198,22 @@ class SD_Meeting_Tool_Printing
 				$field = $fields[ $field_id ];
 					
 				// We need the participant field's description.
-				$participant_field = apply_filters( 'sd_mt_get_participant_field', $field->participant_field );
+				$participant_field = $this->filters( 'sd_mt_get_participant_field', $field->participant_field );
 				$field_name = ( $participant_field ? $participant_field->description : $this->_( 'Unknown' ) );
 				
-				$tab_data['page_titles']['edit'] = sprintf(
-					$this->_( 'Editing block field: %s' ),
-					$field_name
-				);
+				$tab_data['page_titles']['edit_field'] = $this->_( 'Editing block field: %s', $field_name );
 			}
 
-			if ( $_GET['tab'] == $this->tab_slug( $this->_('Print') ) )
+			if ( $_GET['tab'] == 'print' )
 			{
 				$tab_data['tabs']['print'] = $this->_( 'Print' );
 				$tab_data['functions']['print'] = 'admin_print';
 
-				$printing_template = apply_filters( 'sd_mt_get_printing_template', $_GET['id'] );
+				$printing_template = $this->filters( 'sd_mt_get_printing_template', $_GET['id'] );
 				if ( $printing_template === false )
 					wp_die( $this->_( 'Specified printing template does not exist!' ) );
 
-				$tab_data['page_titles']['print'] = sprintf(
-					$this->_( 'Printing using template: %s' ),
-					$printing_template->data->name
-				);
+				$tab_data['page_titles']['print'] = $this->_( 'Printing using template: %s', $printing_template->data->name );
 			}
 		}
 
@@ -231,25 +231,19 @@ class SD_Meeting_Tool_Printing
 			{
 				foreach( $_POST['printing_templates'] as $printing_template_id => $ignore )
 				{
-					$printing_template = apply_filters( 'sd_mt_get_printing_template', $printing_template_id );
+					$printing_template = $this->filters( 'sd_mt_get_printing_template', $printing_template_id );
 					if ( $printing_template !== false )
 					{
-						$printing_template->data->name = sprintf(
-							$this->_( 'Copy of %s' ),
-							$printing_template->data->name
-						);
+						$printing_template->data->name = $this->_( 'Copy of %s', $printing_template->data->name );
 						$printing_template->id = null;
-						$printing_template = apply_filters( 'sd_mt_update_printing_template', $printing_template );
+						$printing_template = $this->filters( 'sd_mt_update_printing_template', $printing_template );
 
 						$edit_link = add_query_arg( array(
-							'tab' => $this->tab_slug( $this->_('Edit') ),
+							'tab' => 'edit',
 							'id' => $id,
 						) );
 						
-						$this->message( sprintf(
-							$this->_( 'Printing template cloned! <a href="%s">Edit the newly-cloned printing template</a>.' ),
-							$edit_link
-						) );
+						$this->message( $this->_( 'Printing template cloned! <a href="%s">Edit the newly-cloned printing template</a>.', $edit_link ) );
 					}
 				}
 			}	// clone
@@ -258,14 +252,11 @@ class SD_Meeting_Tool_Printing
 			{
 				foreach( $_POST['printing_templates'] as $printing_template_id => $ignore )
 				{
-					$printing_template = apply_filters( 'sd_mt_get_printing_template', $printing_template_id );
+					$printing_template = $this->filters( 'sd_mt_get_printing_template', $printing_template_id );
 					if ( $printing_template !== false )
 					{
-						apply_filters( 'sd_mt_delete_printing_template', $printing_template );
-						$this->message( sprintf(
-							$this->_( 'Template <em>%s</em> deleted.' ),
-							$printing_template_id
-						) );
+						$this->filters( 'sd_mt_delete_printing_template', $printing_template );
+						$this->message( $this->_( 'Template <em>%s</em> deleted.', $printing_template_id ) );
 					}
 				}
 			}	// delete
@@ -274,27 +265,21 @@ class SD_Meeting_Tool_Printing
 		if ( isset( $_POST['create_printing_template'] ) )
 		{
 			$printing_template = new SD_Meeting_Tool_Printing_Template();
-			$printing_template->data->name = sprintf(
-				$this->_( 'Printing template created %s' ),
-				$this->now()
-			);
-			$printing_template = apply_filters( 'sd_mt_update_printing_template', $printing_template );
+			$printing_template->data->name = $this->_( 'Printing template created %s', $this->now() );
+			$printing_template = $this->filters( 'sd_mt_update_printing_template', $printing_template );
 			
 			$edit_link = add_query_arg( array(
-				'tab' => $this->tab_slug( $this->_('Edit') ),
+				'tab' => 'edit',
 				'id' => $printing_template->id,
 			) );
 			
-			$this->message( sprintf(
-				$this->_( 'Printing template created! <a href="%s">Edit the newly-created printing template</a>.' ),
-				$edit_link
-			) );
+			$this->message( $this->_( 'Printing template created! <a href="%s">Edit the newly-created printing template</a>.', $edit_link ) );
 		}	// create printing template
 
 		$form = $this->form();
 		$returnValue = $form->start();
 		
-		$printing_templates = apply_filters( 'sd_mt_get_all_printing_templates', null );
+		$printing_templates = $this->filters( 'sd_mt_get_all_printing_templates', null );
 		
 		if ( count( $printing_templates ) < 1 )
 		{
@@ -318,14 +303,14 @@ class SD_Meeting_Tool_Printing
 				
 				// Print display template
 				$print_action_url = add_query_arg( array(
-					'tab' => $this->tab_slug( $this->_('Print') ),
+					'tab' => 'print',
 					'id' => $printing_template->id,
 				) );
 				$actions[] = '<a title="'. $this->_('Print a list using this template') .'" href="'.$print_action_url.'">'. $this->_('Print a list using this template') . '</a>';
 				
 				// Edit display template action
 				$edit_link = add_query_arg( array(
-					'tab' => $this->tab_slug( $this->_('Edit') ),
+					'tab' => 'edit',
 					'id' => $printing_template->id,
 				) );
 				$actions[] = '<a href="'.$edit_link.'">'. $this->_('Edit') . '</a>';
@@ -345,21 +330,11 @@ class SD_Meeting_Tool_Printing
 						break;
 				}
 				
-				$info[] = sprintf(
-					$this->_( 'Paper: %s  %s' ),
-					$printing_template->data->size,
-					$paper_orientation
-				);
+				$info[] = $this->_( 'Paper: %s  %s', $printing_template->data->size, $paper_orientation );
 				
-				$info[] = sprintf(
-					$this->_( 'Participant blocks: %s' ),
-					count( $printing_template->data->blocks )
-				);
+				$info[] = $this->_( 'Participant blocks: %s', count( $printing_template->data->blocks ) );
 				
-				$info[] = sprintf(
-					$this->_( 'Block fields: %s' ),
-					count( $printing_template->data->fields )
-				);
+				$info[] = $this->_( 'Block fields: %s', count( $printing_template->data->fields ) );
 				
 				$info = implode( '</div><div>', $info );
 				
@@ -456,6 +431,30 @@ class SD_Meeting_Tool_Printing
 				'label' => $this->_( 'PDF template' ),
 				'options' => array( '' => $this->_( 'Do not use a PDF template' ) ) + $this->get_pdf_attachments(),
 			),
+			'size' => array(
+				'name' => 'size',
+				'type' => 'text',
+				'size' => 4,
+				'maxlength' => 10,
+				'label' => $this->_( 'Size' ),
+				'description' => $this->_( 'Size of page. Default is A4' ),
+			),
+			'orientation' => array(
+				'name' => 'orientation',
+				'type' => 'select',
+				'label' => $this->_( 'Orientation' ),
+				'description' => $this->_( 'Page orientation' ),
+				'options' => array(
+					'P' => $this->_( 'Portrait' ),
+					'L' => $this->_( 'Landscape' ),
+				),
+			),
+			'print_all_pages' => array(
+				'name' => 'print_all_pages',
+				'type' => 'checkbox',
+				'label' => $this->_( 'Print all pages' ),
+				'description' => $this->_( 'When using a template the rest of the templates pages (after the first) will automatically be inserted after each participant block. If unselected, only the first page of the template will be used.' ),
+			),
 			'print_all_pages' => array(
 				'name' => 'print_all_pages',
 				'type' => 'checkbox',
@@ -482,13 +481,15 @@ class SD_Meeting_Tool_Printing
 
 			if ($result === true)
 			{
-				$printing_template = apply_filters( 'sd_mt_get_printing_template', $id );
+				$printing_template = $this->filters( 'sd_mt_get_printing_template', $id );
 				$printing_template->data->name = $_POST['name'];
 				$printing_template->data->pdf = $_POST['pdf'];
+				$printing_template->data->size = $_POST['size'];
+				$printing_template->data->orientation = $_POST['orientation'];
 				$printing_template->data->print_all_pages = isset( $_POST['print_all_pages'] );
 				$printing_template->data->print_even_pages = isset( $_POST['print_even_pages'] );
 				
-				apply_filters( 'sd_mt_update_printing_template', $printing_template );
+				$this->filters( 'sd_mt_update_printing_template', $printing_template );
 				
 				$this->message( $this->_('The list has been updated!') );
 				SD_Meeting_Tool::reload_message();
@@ -499,19 +500,19 @@ class SD_Meeting_Tool_Printing
 			}
 		}
 
-		$printing_template = apply_filters( 'sd_mt_get_printing_template', $id );
+		$printing_template = $this->filters( 'sd_mt_get_printing_template', $id );
 		
 		$inputs['name']['value'] = $printing_template->data->name;
 		$inputs['pdf']['value'] = intval( $printing_template->data->pdf );
+		$inputs['size']['value'] = $printing_template->data->size;
+		$inputs['orientation']['value'] = $printing_template->data->orientation;
 		$inputs['print_all_pages']['value'] = intval( $printing_template->data->print_all_pages );
 		$inputs['print_even_pages']['value'] = intval( $printing_template->data->print_even_pages );
 		
 		$returnValue .= '
 			' . $form->start() . '
 			
-			' . $this->display_form_table( array(
-				'inputs' => $inputs,
-			) ). '
+			' . $this->display_form_table( $inputs ). '
 
 			' . $form->stop() . '
 		';
@@ -536,6 +537,16 @@ class SD_Meeting_Tool_Printing
 		
 		if ( isset( $_POST['action_submit'] ) && isset( $_POST['blocks'] ) )
 		{
+			if ( $_POST['action'] == 'clone' )
+			{
+				foreach( $_POST['blocks'] as $block_id => $data )
+				{
+					$block = clone( $printing_template->data->blocks[ $block_id ] );
+					$printing_template->add_block( $block );
+				} 
+				$this->filters( 'sd_mt_update_printing_template', $printing_template );
+				$this->message_( 'The selected blocks have been cloned!' );
+			}	// clone
 			if ( $_POST['action'] == 'delete' )
 			{
 				foreach( $_POST['blocks'] as $block_id => $data )
@@ -543,7 +554,7 @@ class SD_Meeting_Tool_Printing
 					if ( isset( $data['selected'] ) )
 						$printing_template->remove_block( $block_id );
 				} 
-				apply_filters( 'sd_mt_update_printing_template', $printing_template );
+				$this->filters( 'sd_mt_update_printing_template', $printing_template );
 			}	// delete
 		}
 		
@@ -555,7 +566,7 @@ class SD_Meeting_Tool_Printing
 				$block = new SD_Meeting_Tool_Printing_Template_Block();
 				$printing_template->add_block( $block );
 			}
-			apply_filters( 'sd_mt_update_printing_template', $printing_template );
+			$this->filters( 'sd_mt_update_printing_template', $printing_template );
 		}	// create block
 
 		if ( isset( $_POST['update_blocks'] ) && isset( $_POST['blocks'] ) )
@@ -567,12 +578,14 @@ class SD_Meeting_Tool_Printing
 				if ( isset( $_POST['blocks'][$block->id] ) )
 				{
 					$block_data = $_POST['blocks'][ $block->id ];
+					$block_data['x'] = str_replace( ',', '.', $block_data['x'] );
+					$block_data['y'] = str_replace( ',', '.', $block_data['y'] );
 					$block->x = floatval( $block_data['x'] );
 					$block->y = floatval( $block_data['y'] );
 				}
 			}
-			apply_filters( 'sd_mt_update_printing_template', $printing_template );
-			$this->message( $this->_( 'The blocks have been updated!' ) );
+			$this->filters( 'sd_mt_update_printing_template', $printing_template );
+			$this->message_( 'The blocks have been updated!' );
 		}	// update blocks
 
 		if ( count( $printing_template->blocks() ) > 0 )
@@ -587,7 +600,7 @@ class SD_Meeting_Tool_Printing
 						'nameprefix' => $nameprefix,
 						'type' => 'text',
 						'size' => '3',
-						'maxlength' => '4',
+						'maxlength' => '6',
 						'label' => $this->_('X'),
 						'value' => $block->x,
 					),
@@ -596,7 +609,7 @@ class SD_Meeting_Tool_Printing
 						'nameprefix' => $nameprefix,
 						'type' => 'text',
 						'size' => '3',
-						'maxlength' => '4',
+						'maxlength' => '6',
 						'label' => $this->_('Y'),
 						'value' => $block->y,
 					),
@@ -635,6 +648,7 @@ class SD_Meeting_Tool_Printing
 				'name' => 'action',
 				'label' => $this->_('With the selected rows'),
 				'options' => array( '' => $this->_('Do nothing') ,
+					'clone' => $this->_('Clone'),
 					'delete' => $this->_('Delete'),
 				),
 			);
@@ -701,7 +715,7 @@ class SD_Meeting_Tool_Printing
 		$returnValue .= '
 			' . $form->start() . '
 			
-			' . $this->display_form_table( array( 'inputs' => $inputs_create ) ) . '
+			' . $this->display_form_table( $inputs_create ) . '
 			
 			' . $form->stop() . '
 		';
@@ -716,6 +730,16 @@ class SD_Meeting_Tool_Printing
 		
 		if ( isset( $_POST['action_submit'] ) && isset( $_POST['fields'] ) )
 		{
+			if ( $_POST['action'] == 'clone' )
+			{
+				foreach( $_POST['fields'] as $field_id => $data )
+				{
+					$field = clone( $printing_template->data->fields[ $field_id ] );
+					$printing_template->add_field( $field );
+				} 
+				$this->filters( 'sd_mt_update_printing_template', $printing_template );
+				$this->message_( 'The selected fields have been cloned!' );
+			}	// clone
 			if ( $_POST['action'] == 'delete' )
 			{
 				foreach( $_POST['fields'] as $field_id => $data )
@@ -723,19 +747,19 @@ class SD_Meeting_Tool_Printing
 					if ( isset( $data['selected'] ) )
 						$printing_template->remove_field( $field_id );
 				} 
-				apply_filters( 'sd_mt_update_printing_template', $printing_template );
+				$this->filters( 'sd_mt_update_printing_template', $printing_template );
 			}	// delete
 		}
 		
 		if ( isset( $_POST['create_field'] ) )
 		{
 			// Find the first, best participant field.
-			$participant_fields = apply_filters( 'sd_mt_get_participant_fields', array() );
+			$participant_fields = $this->filters( 'sd_mt_get_participant_fields', array() );
 			$participant_field = reset( $participant_fields );
 			$field = new SD_Meeting_Tool_Printing_Template_Block_Field();
 			$field->participant_field = $participant_field->name;
 			$printing_template->add_field( $field );
-			apply_filters( 'sd_mt_update_printing_template', $printing_template );
+			$this->filters( 'sd_mt_update_printing_template', $printing_template );
 		}	// create field
 
 		if ( count( $printing_template->fields() ) > 0 )
@@ -755,18 +779,9 @@ class SD_Meeting_Tool_Printing
 				// INFO time.
 				$info = array();
 				
-				$info[] = sprintf(
-					$this->_( 'Print on page %s at x %s, y %s' ),
-					$field->page,
-					$field->x,
-					$field->y
-				);
+				$info[] = $this->_( 'Print on page %s at x %s, y %s', $field->page, $field->x, $field->y );
 				
-				$info[] = sprintf(
-					$this->_( 'Use font %s at size %s' ),
-					$field->font_name,
-					$field->font_size
-				);
+				$info[] = $this->_( 'Use font %s at size %s', $field->font_name, $field->font_size );
 				
 				switch( $field->justification )
 				{
@@ -783,21 +798,18 @@ class SD_Meeting_Tool_Printing
 						$justitification = $this->_( 'Left' );
 						break;
 				}
-				$info[] = sprintf(
-					$this->_( 'Justificiation: %s' ),
-					$justitification
-				);
+				$info[] = $this->_( 'Justificiation: %s', $justitification );
 				
 				$info = implode( '</div><div>', $info );
 				
-				$participant_field = apply_filters( 'sd_mt_get_participant_field', $field->participant_field );
+				$participant_field = $this->filters( 'sd_mt_get_participant_field', $field->participant_field );
 				if ( $participant_field )
 					$field_name = $participant_field->description;
 				else
 					$field_name = $this->_( 'Unknown' );
 				
 				$edit_link = add_query_arg( array(
-					'tab' => $this->tab_slug( $this->_('Edit field') ),
+					'tab' => 'edit_field',
 					'field_id' => $field->id,
 				) );
 				
@@ -819,6 +831,7 @@ class SD_Meeting_Tool_Printing
 				'name' => 'action',
 				'label' => $this->_('With the selected rows'),
 				'options' => array( '' => $this->_('Do nothing') ,
+					'clone' => $this->_('Clone'),
 					'delete' => $this->_('Delete'),
 				),
 			);
@@ -879,12 +892,12 @@ class SD_Meeting_Tool_Printing
 		$printing_template_id = $_GET['id'];
 		$field_id = $_GET['field_id'];
 		
-		$printing_template = apply_filters( 'sd_mt_get_printing_template', $printing_template_id );
+		$printing_template = $this->filters( 'sd_mt_get_printing_template', $printing_template_id );
 		$field = $printing_template->fields();
 		$field = $field[ $field_id ];
 		
-		$participant_fields = apply_filters( 'sd_mt_get_participant_fields', array() );
-		$fonts = apply_filters( 'sd_mt_get_printing_block_field_fonts', array() );
+		$participant_fields = $this->filters( 'sd_mt_get_participant_fields', array() );
+		$fonts = $this->filters( 'sd_mt_get_printing_block_field_fonts', array() );
 
 		$inputs = array(
 			'participant_field' => array(
@@ -966,15 +979,18 @@ class SD_Meeting_Tool_Printing
 				$field->participant_field = $_POST['participant_field'];
 				$field->page = intval( $_POST['page'] );
 				$field->page = max( $field->page, 1 );
+				$_POST['x'] = str_replace( ',', '.', $_POST['x'] );
 				$field->x = floatval( $_POST['x'] );
+				$_POST['y'] = str_replace( ',', '.', $_POST['y'] );
 				$field->y = floatval( $_POST['y'] );
+				$_POST['width'] = str_replace( ',', '.', $_POST['width'] );
 				$field->width = floatval( $_POST['width'] );
 				$field->justification = $_POST['justification'];
 				$field->font_name = $_POST['font_name'];
-				$field->font_size = intval( $_POST['font_size'] );
+				$field->font_size = floatval( $_POST['font_size'] );
 				$printing_template->update_field( $field );
 
-				apply_filters( 'sd_mt_update_printing_template', $printing_template );
+				$this->filters( 'sd_mt_update_printing_template', $printing_template );
 				
 				$this->message( $this->_('The field has been updated!') );
 				SD_Meeting_Tool::reload_message();
@@ -1001,9 +1017,7 @@ class SD_Meeting_Tool_Printing
 		$returnValue .= '
 			' . $form->start() . '
 			
-			' . $this->display_form_table( array(
-				'inputs' => $inputs,
-			) ). '
+			' . $this->display_form_table( $inputs ). '
 
 			' . $form->stop() . '
 			' . $this->make_back_link_to_template_editor() . '
@@ -1017,7 +1031,7 @@ class SD_Meeting_Tool_Printing
 	{
 		$form = $this->form();
 		$returnValue = '';
-		$lists = apply_filters( 'sd_mt_get_all_lists', array() );
+		$lists = $this->filters( 'sd_mt_get_all_lists', array() );
 		
 		$inputs = array(
 			'list_id' => array(
@@ -1041,9 +1055,7 @@ class SD_Meeting_Tool_Printing
 		$returnValue .= '
 			' . $form->start() . '
 			
-			' . $this->display_form_table( array(
-				'inputs' => $inputs,
-			) ). '
+			' . $this->display_form_table( $inputs ). '
 			' . $form->stop() . '
 		';
 		
@@ -1064,6 +1076,39 @@ class SD_Meeting_Tool_Printing
 			$type = $_POST['type'];
 			switch( $type )
 			{
+				case '24_stickers':
+						$template_name = $this->_( '24 stickers' );
+						$template = new SD_Meeting_Tool_Printing_Template();
+						$template->data->name = $template_name;
+						
+						for ( $y=0; $y<297; $y+=37.125 )
+						{
+							for( $x=0; $x<210; $x+=70 )
+							{
+								$block = new SD_Meeting_Tool_Printing_Template_Block();
+								$block->x = $x;
+								$block->y = $y;
+								$template->add_block( $block );
+							}
+						}
+						// And now for some columns!
+						// We need any old field...
+						$participant_fields = $this->filters( 'sd_mt_get_participant_fields', array() );
+						$participant_field = reset( $participant_fields );
+						$participant_field = $participant_field->name;
+						
+						for( $counter=0; $counter<4; $counter++ )
+						{
+							$field = new SD_Meeting_Tool_Printing_Template_Block_Field();
+							$field->participant_field = $participant_field;
+							$field->x = 5 + $x;
+							$field->y = 5 + ($counter * 5 );
+							$field->width = 70 - 5 - 5;
+							$field->justification = 'L';
+							$field->font_size = 12;
+							$template->add_field( $field );
+						}
+					break;
 				case '2_columns_5':
 				case '2_columns_10':
 				case '2_columns_15':
@@ -1078,11 +1123,7 @@ class SD_Meeting_Tool_Printing
 				case '4_columns_20':
 					$columns = preg_replace( '/_columns.*/', '', $type );
 					$mm = preg_replace( '/.*columns_/', '', $type );
-					$template_name = sprintf(
-						$this->_( '%s columns, %s mm per row' ),
-						$columns,
-						$mm
-					);
+					$template_name = $this->_( '%s columns, %s mm per row', $columns, $mm );
 
 					$template = new SD_Meeting_Tool_Printing_Template();
 					$template->data->name = $template_name;
@@ -1097,7 +1138,7 @@ class SD_Meeting_Tool_Printing
 					
 					// And now for some columns!
 					// We need any old field...
-					$participant_fields = apply_filters( 'sd_mt_get_participant_fields', array() );
+					$participant_fields = $this->filters( 'sd_mt_get_participant_fields', array() );
 					$participant_field = reset( $participant_fields );
 					$participant_field = $participant_field->name;
 					
@@ -1113,8 +1154,7 @@ class SD_Meeting_Tool_Printing
 						$field->font_size = 12;
 						$template->add_field( $field );
 					}
-					break;
-					
+					break;					
 				case 'name_badge_4_77x112':
 					$post_id = $this->create_attachment( dirname(__FILE__) . '/extra/printing/name_badges_4_77x112.pdf' );
 					$template_name = $this->_( 'Name badge, vertical, 77mm x 112mm, 4 per page' );
@@ -1144,7 +1184,7 @@ class SD_Meeting_Tool_Printing
 					$template->add_block( $block );
 					
 					// And now for some fields!
-					$participant_fields = apply_filters( 'sd_mt_get_participant_fields', array() );
+					$participant_fields = $this->filters( 'sd_mt_get_participant_fields', array() );
 					$participant_field = reset( $participant_fields );
 					$participant_field = $participant_field->name;
 					
@@ -1185,18 +1225,93 @@ class SD_Meeting_Tool_Printing
 					$template->add_field( $field );
 					
 					break;
+				case 'name_badge_9_94x62':
+					$post_id = $this->create_attachment( dirname(__FILE__) . '/extra/printing/name_badges_9_94x62.pdf' );
+					$template_name = $this->_( 'Name badge, landscape, 94mm x 62mm, 9 per page' );
+					
+					$template = new SD_Meeting_Tool_Printing_Template();
+					$template->data->name = $template_name;
+					$template->data->pdf = $post_id;
+					$template->data->orientation = 'L';
+					
+					foreach( array( 7, 100.5, 193.5 ) as $x )
+						foreach( array( 12, 74, 136 ) as $y )
+						{
+							$block = new SD_Meeting_Tool_Printing_Template_Block();
+							$block->x = $x;
+							$block->y = $y;
+							$template->add_block( $block );
+						}
+
+					// And now for some fields!
+					$participant_fields = $this->filters( 'sd_mt_get_participant_fields', array() );
+					$participant_field = reset( $participant_fields );
+					$participant_field = $participant_field->name;
+					
+					$field = new SD_Meeting_Tool_Printing_Template_Block_Field();
+					$field->participant_field = $participant_field;
+					$field->x = 5;
+					$field->y = 5;
+					$field->width = 85;
+					$field->justification = 'C';
+					$field->font_size = 26;
+					$template->add_field( $field );
+
+					$field = new SD_Meeting_Tool_Printing_Template_Block_Field();
+					$field->participant_field = $participant_field;
+					$field->x = 5;
+					$field->y = 15;
+					$field->width = 85;
+					$field->justification = 'C';
+					$field->font_size = 26;
+					$template->add_field( $field );
+
+					$field = new SD_Meeting_Tool_Printing_Template_Block_Field();
+					$field->participant_field = $participant_field;
+					$field->x = 5;
+					$field->y = 29;
+					$field->width = 85;
+					$field->justification = 'C';
+					$field->font_size = 18;
+					$template->add_field( $field );
+
+					$field = new SD_Meeting_Tool_Printing_Template_Block_Field();
+					$field->participant_field = $participant_field;
+					$field->x = 5;
+					$field->y = 42;
+					$field->width = 32;
+					$field->justification = 'L';
+					$field->font_size = 26;
+					$template->add_field( $field );
+
+					$field = new SD_Meeting_Tool_Printing_Template_Block_Field();
+					$field->participant_field = $participant_field;
+					$field->x = 5;
+					$field->y = 48;
+					$field->width = 32;
+					$field->justification = 'L';
+					$field->font_size = 26;
+					$template->add_field( $field );
+
+					$field = new SD_Meeting_Tool_Printing_Template_Block_Field();
+					$field->participant_field = $participant_field;
+					$field->x = 5;
+					$field->y = 41;
+					$field->width = 32;
+					$field->justification = 'L';
+					$field->font_size = 8;
+					$template->add_field( $field );
+
+					break;
 			}
-			$template = apply_filters( 'sd_mt_update_printing_template', $template );
+			$template = $this->filters( 'sd_mt_update_printing_template', $template );
 			
 			$edit_link = add_query_arg( array(
-				'tab' => $this->tab_slug( $this->_('Edit') ),
+				'tab' => 'edit',
 				'id' => $template->id,
 			) );
 			
-			$this->message( sprintf(
-				$this->_( 'Printing template created! <a href="%s">Edit the newly-created printing template</a>.' ),
-				$edit_link
-			) );
+			$this->message( $this->_( 'Printing template created! <a href="%s">Edit the newly-created printing template</a>.', $edit_link ) );
 		}
 		$form = $this->form();
 		$inputs = array(
@@ -1206,6 +1321,7 @@ class SD_Meeting_Tool_Printing
 				'label' => $this->_('Type of template'),
 				'options' => array(
 					'name_badge_4_77x112' => $this->_( 'Name badge, vertical, 77mm x 112mm, 4 per page' ),
+					'name_badge_9_94x62' => $this->_( 'Name badge, landscape, 94mm x 62mm, 9 per page' ),
 					'2_columns_5' => $this->_( 'Two columns, 5 mm per row' ),
 					'2_columns_10' => $this->_( 'Two columns, 10 mm per row' ),
 					'2_columns_15' => $this->_( 'Two columns, 15 mm per row' ),
@@ -1218,6 +1334,7 @@ class SD_Meeting_Tool_Printing
 					'4_columns_10' => $this->_( 'Four columns, 10 mm per row' ),
 					'4_columns_15' => $this->_( 'Four columns, 15 mm per row' ),
 					'4_columns_20' => $this->_( 'Four columns, 20 mm per row' ),
+					'24_stickers' => $this->_( 'Stickers - 3 stickers * 8 rows' ),
 				),
 			),
 			'submit' => array(
@@ -1228,7 +1345,7 @@ class SD_Meeting_Tool_Printing
 			),
 		);
 		$returnValue = $form->start();
-		$returnValue .= $this->display_form_table( array( 'inputs' => $inputs ) );
+		$returnValue .= $this->display_form_table( $inputs );
 		$returnValue .= $form->stop();
 		echo $returnValue;
 	}
@@ -1324,7 +1441,7 @@ class SD_Meeting_Tool_Printing
 		$font = new SD_Meeting_Tool_Printing_Block_Field_Font();
 		$font->id = 'code39';
 		$font->name = 'code39';
-		$font->description = sprintf( $this->_('Barcode: %s'), $font->name );
+		$font->description = $this->_('Barcode: %s', $font->name );
 		$fonts[] = $font;
 		
 		return $fonts;
@@ -1396,7 +1513,7 @@ class SD_Meeting_Tool_Printing
 	{
 		$url = remove_query_arg( array('field_id', 'tab') );
 		$url = add_query_arg( array(
-			'tab' => $this->tab_slug( $this->_( 'Edit' ) ),
+			'tab' => 'edit',
 		), $url );
 		
 		return SD_Meeting_Tool::make_back_link( $this->_( 'Back to the template editor' ), $url );
@@ -1477,16 +1594,16 @@ class SD_Meeting_Tool_Printing
 	private function print_list( $id, $list_id )
 	{
 		// Does this template exist?
-		$printing_template = apply_filters( 'sd_mt_get_printing_template', $id );
+		$printing_template = $this->filters( 'sd_mt_get_printing_template', $id );
 		if ( ! $printing_template )
 			return;
 			
-		$list = apply_filters( 'sd_mt_get_list', $list_id );
+		$list = $this->filters( 'sd_mt_get_list', $list_id );
 		if ( ! $list )
 			return;
 		
-		$list = apply_filters( 'sd_mt_list_participants', $list );
-		$all_fonts = apply_filters( 'sd_mt_get_printing_block_field_fonts', array() );
+		$list = $this->filters( 'sd_mt_list_participants', $list );
+		$all_fonts = $this->filters( 'sd_mt_get_printing_block_field_fonts', array() );
 		$fonts = array();
 		foreach( $all_fonts as $font )
 			$fonts[ $font->id ] = $font;
