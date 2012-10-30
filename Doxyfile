@@ -1,6 +1,12 @@
-PROJECT_NAME	= Sweden&nbsp;Democrats'&nbsp;Meeting&nbsp;Tool
+PROJECT_NAME		= Sweden&nbsp;Democrats'&nbsp;Meeting&nbsp;Tool
 INPUT			= . include
 
 ALIASES			+= "sdmt=SD Meeting Tool" 
 ALIASES			+= "wp_action=@par	Wordpress\nAction" 
 ALIASES			+= "wp_filter=@par	Wordpress\nFilter" 
+
+EXTRACT_ALL		= YES
+EXTRACT_PRIVATE		= YES
+GENERATE_HTML		= YES
+GENERATE_LATEX		= NO
+HTML_OUTPUT		= apidoc

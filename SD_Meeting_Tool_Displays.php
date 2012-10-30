@@ -1,12 +1,12 @@
 <?php
 /*                                                                                                                                                                                                                                                             
 Plugin Name: SD Meeting Tool Displays
-Plugin URI: http://frimjukvara.sverigedemokraterna.se/meeting-control
+Plugin URI: https://it.sverigedemokraterna.se
 Description: Displays lists to visitors.
-Version: 1.0
+Version: 1.1
 Author: Sverigedemokraterna IT
-Author URI: http://frimjukvara.sverigedemokraterna.se
-Author Email: it@mindreantre.se
+Author URI: https://it.sverigedemokraterna.se
+Author Email: it@sverigedemokraterna.se
 */
 
 if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('You are not allowed to call this page directly.'); }
@@ -53,15 +53,15 @@ if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('You 
 	First create a display format that displays the participant something like the following: <pre><li>#first_name#</li></pre>
 	
 	Now create a display template. Set it to override the list's display format with the just created. In the header box type
-<pre>
-&lt;ol&gt;
-</pre>
+	@code
+	<ol>
+	@endcode
 
 	and in the footer box type
 
-<pre>
-&lt;/ol&gt;
-</pre>
+	@code
+	</ol>
+	@endcode
 
 	Update the display and finally create a shortcode for the list. The list participants should now be displayed in an ordered list.
 	
@@ -69,47 +69,47 @@ if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('You 
 	
 	Displaying users as tables is also possible. Just as the OL example above a display format must be created first.
 	
-<pre>
-&lt;tr&gt;
-  &lt;td&gt;#first_name#&lt;/td&gt;
-  &lt;td&gt;#last_name#&lt;/td&gt;
-&lt;/tr&gt;
-</pre>
+	@code
+	<tr>
+	  <td>#first_name#</td>
+	  <td>#last_name#</td>
+	</tr>
+	@endcode
 
 	Create a new display, use the newly created display format and the following texts in the header and footer boxes:
 	 
-<pre>
-&lt;table class="sd_mt_display"&gt;
-  &lt;thead&gt;
-  &lt;tr&gt;
-    &lt;th&gt;First name&lt;/th&gt;
-    &lt;th&gt;Last name&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-</pre>
+	@code
+	<table class="sd_mt_display">
+	  <thead>
+	  <tr>
+		<th>First name</th>
+		<th>Last name</th>
+		</tr>
+	  </thead>
+	  <tbody>
+	@endcode
 
 	and
 	
-<pre>
-  &lt;/tbody&gt;
-&lt;/table&gt;
-</pre>
+	@code
+	  </tbody>
+	</table>
+	@endcode
 
 	In between those two boxes the participant should be displayed in two table columns.
 	
 	For an extra bonus, use the included table sorting javascript to allow users to sort their tables.
 	Add the following to the footer box (you'll have to fix the path yourself, though):
 	
-<pre>
-&lt;script type="text/javascript" src="wp-content/plugins/sd-meeting-tool-base/js/jquery.tablesorter.min.js"&gt;\/script&gt;
-&lt;script type="text/javascript"&gt;
-jQuery(document).ready(function($)
-{
-$("table.sd_mt_display").tablesorter();
-});
-&lt;/script&gt;
-</pre>
+	@code
+	<script type="text/javascript" src="wp-content/plugins/sd-meeting-tool-base/js/jquery.tablesorter.min.js">\/script>
+	<script type="text/javascript">
+	jQuery(document).ready(function($)
+	{
+		$("table.sd_mt_display").tablesorter();
+	});
+	</script>
+	@endcode
 
 	@author		Edward Plainview	edward.plainview@sverigedemokraterna.se
 */
@@ -118,6 +118,11 @@ $("table.sd_mt_display").tablesorter();
 /**
 	@brief		Displays lists to visitors using templates.
 	@author		Edward Plainview	edward.plainview@sverigedemokraterna.se
+
+	@par		Changelog
+
+	@par		1.1
+	- Version bump.
 **/
 class SD_Meeting_Tool_Displays
 	extends SD_Meeting_Tool_0
@@ -196,19 +201,16 @@ class SD_Meeting_Tool_Displays
 		
 		if ( isset( $_GET['tab'] ) )
 		{
-			if ( $_GET['tab'] == $this->tab_slug( $this->_('Edit') ) )
+			if ( $_GET['tab'] == 'edit' )
 			{
 				$tab_data['tabs']['edit'] = $this->_( 'Edit');
 				$tab_data['functions']['edit'] = 'admin_edit';
 
-				$display = apply_filters( 'sd_mt_get_display', $_GET['id'] );
+				$display = $this->filters( 'sd_mt_get_display', $_GET['id'] );
 				if ( $display === false )
 					wp_die( $this->_( 'Specified display does not exist!' ) );
 
-				$tab_data['page_titles']['edit'] = sprintf(
-					$this->_( 'Editing display: %s' ),
-					$display->data->name
-				);
+				$tab_data['page_titles']['edit'] = $this->_( 'Editing display: %s', $display->data->name );
 			}
 		}
 
@@ -226,25 +228,19 @@ class SD_Meeting_Tool_Displays
 			{
 				foreach( $_POST['displays'] as $display_id => $ignore )
 				{
-					$display = apply_filters( 'sd_mt_get_display', $display_id );
+					$display = $this->filters( 'sd_mt_get_display', $display_id );
 					if ( $display !== false )
 					{
-						$display->data->name = sprintf(
-							$this->_( 'Copy of %s' ),
-							$display->data->name
-						);
+						$display->data->name = $this->_( 'Copy of %s', $display->data->name );
 						$display->id = null;
-						$display = apply_filters( 'sd_mt_update_display', $display );
+						$display = $this->filters( 'sd_mt_update_display', $display );
 
 						$edit_link = add_query_arg( array(
-							'tab' => $this->tab_slug( $this->_('Edit') ),
+							'tab' => 'edit',
 							'id' => $display->id,
 						) );
 						
-						$this->message( sprintf(
-							$this->_( 'Display cloned! <a href="%s">Edit the newly-cloned display</a>.' ),
-							$edit_link
-						) );
+						$this->message( $this->_( 'Display cloned! <a href="%s">Edit the newly-cloned display</a>.', $edit_link ) );
 					}
 				}
 			}	// clone
@@ -252,14 +248,11 @@ class SD_Meeting_Tool_Displays
 			{
 				foreach( $_POST['displays'] as $display_id => $ignore )
 				{
-					$display = apply_filters( 'sd_mt_get_display', $display_id );
+					$display = $this->filters( 'sd_mt_get_display', $display_id );
 					if ( $display !== false )
 					{
-						apply_filters( 'sd_mt_delete_display', $display );
-						$this->message( sprintf(
-							$this->_( 'Display <em>%s</em> deleted.' ),
-							$display->data->name
-						) );
+						$this->filters( 'sd_mt_delete_display', $display );
+						$this->message( $this->_( 'Display <em>%s</em> deleted.', $display->data->name ) );
 					}
 				}
 			}	// delete
@@ -268,27 +261,21 @@ class SD_Meeting_Tool_Displays
 		if ( isset( $_POST['create_display'] ) )
 		{
 			$display = new SD_Meeting_Tool_Display_Template();
-			$display->data->name = sprintf(
-				$this->_( 'Display created %s' ),
-				$this->now()
-			);
-			$display = apply_filters( 'sd_mt_update_display', $display );
+			$display->data->name = $this->_( 'Display created %s', $this->now() );
+			$display = $this->filters( 'sd_mt_update_display', $display );
 			
 			$edit_link = add_query_arg( array(
-				'tab' => $this->tab_slug( $this->_('Edit') ),
+				'tab' => 'edit',
 				'id' => $display->id,
 			) );
 			
-			$this->message( sprintf(
-				$this->_( 'Display created! <a href="%s">Edit the newly-created display</a>.' ),
-				$edit_link
-			) );
+			$this->message( $this->_( 'Display created! <a href="%s">Edit the newly-created display</a>.', $edit_link ) );
 		}
 
 		$form = $this->form();
 		$returnValue = $form->start();
 		
-		$displays = apply_filters( 'sd_mt_get_all_displays', array() );
+		$displays = $this->filters( 'sd_mt_get_all_displays', array() );
 		
 		if ( count( $displays ) < 1 )
 			$this->message( $this->_( 'There are no displays available.' ) );
@@ -306,7 +293,7 @@ class SD_Meeting_Tool_Displays
 				);
 				
 				$edit_link = add_query_arg( array(
-					'tab' => $this->tab_slug( $this->_('Edit') ),
+					'tab' => 'edit',
 					'id' => $display->id,
 				) );
 				
@@ -452,14 +439,14 @@ class SD_Meeting_Tool_Displays
 
 			if ($result === true)
 			{
-				$display = apply_filters( 'sd_mt_get_display', $id );
+				$display = $this->filters( 'sd_mt_get_display', $id );
 				$display->data->name = $_POST['name'];
 				$display->data->display_format_id = $_POST['display_format_id'];
 				$display->data->list_sort_id = $_POST['list_sort_id'];
 				$display->data->header = $_POST['header'];
 				$display->data->footer = $_POST['footer'];
 				
-				apply_filters( 'sd_mt_update_display', $display );
+				$this->filters( 'sd_mt_update_display', $display );
 				
 				$this->message( $this->_('The display has been updated!') );
 				SD_Meeting_Tool::reload_message();
@@ -470,7 +457,7 @@ class SD_Meeting_Tool_Displays
 			}
 		}
 
-		$display = apply_filters( 'sd_mt_get_display', $id );
+		$display = $this->filters( 'sd_mt_get_display', $id );
 		
 		if ( isset( $_POST['create_shortcode_page'] ) )
 		{
@@ -479,7 +466,7 @@ class SD_Meeting_Tool_Displays
 			if ( isset( $post['display_list'] ) )
 			{
 				$list = $_POST['create_shortcode_page']['list_id'];
-				$list = apply_filters( 'sd_mt_get_list', $list );
+				$list = $this->filters( 'sd_mt_get_list', $list );
 				if ( $list === false )
 					die('List does not exist!');
 				
@@ -506,8 +493,7 @@ class SD_Meeting_Tool_Displays
 					'post_status' => 'publish',
 					'post_author' => $user->data->ID,
 				));
-				$this->message( sprintf(
-					$this->_( 'A new page has been created! You can now %sedit the page%s or %sview the page%s.' ),
+				$this->message( $this->_( 'A new page has been created! You can now %sedit the page%s or %sview the page%s.',
 					'<a href="' . add_query_arg( array( 'post' => $page_id), 'post.php?action=edit' ) . '">',
 					'</a>',
 					'<a href="' . add_query_arg( array( 'p' => $page_id), get_bloginfo('url') ) . '">',
@@ -516,11 +502,11 @@ class SD_Meeting_Tool_Displays
 			}
 		}
 		
-		$display_formats = apply_filters( 'sd_mt_get_all_display_formats', array() );
+		$display_formats = $this->filters( 'sd_mt_get_all_display_formats', array() );
 		foreach( $display_formats as $display_format )
 			$inputs['display_format_id']['options'][ $display_format->id ] = $display_format->data->name;
 		
-		$list_sorts = apply_filters( 'sd_mt_get_all_list_sorts', array() );
+		$list_sorts = $this->filters( 'sd_mt_get_all_list_sorts', array() );
 		foreach( $list_sorts as $list_sort )
 			$inputs['list_sort_id']['options'][ $list_sort->id ] = $list_sort->data->name;
 		
@@ -533,9 +519,7 @@ class SD_Meeting_Tool_Displays
 		$returnValue .= '
 			' . $form->start() . '
 			
-			' . $this->display_form_table( array(
-				'inputs' => $inputs,
-			) ). '
+			' . $this->display_form_table( $inputs ). '
 
 			' . $form->stop() . '
 		';
@@ -558,7 +542,7 @@ class SD_Meeting_Tool_Displays
 		);
 		
 		// Put all the lists in the select
-		$lists = apply_filters( 'sd_mt_get_all_lists', array() );
+		$lists = $this->filters( 'sd_mt_get_all_lists', array() );
 		foreach( $lists as $list )
 			$inputs['list_id']['options'][ $list->id ] = $list->data->name;
 		
@@ -718,11 +702,11 @@ class SD_Meeting_Tool_Displays
 		$list_id = $attr['list_id'];
 		$display_id = $attr['display_id'];
 		
-		$list = apply_filters( 'sd_mt_get_list', $list_id );
+		$list = $this->filters( 'sd_mt_get_list', $list_id );
 		if ( $list === false )
 			return;
 		
-		$display = apply_filters( 'sd_mt_get_display', $display_id );
+		$display = $this->filters( 'sd_mt_get_display', $display_id );
 		if ( $display === false )
 			return;
 		
@@ -734,11 +718,11 @@ class SD_Meeting_Tool_Displays
 			$display_format_id = $attr['display_format_id'];
 		if ( !$display_format_id && $display->data->display_format_id != '' )
 			$display_format_id = $display->data->display_format_id;
-		$display_format = apply_filters( 'sd_mt_get_display_format', $display_format_id );
+		$display_format = $this->filters( 'sd_mt_get_display_format', $display_format_id );
 		if ( $display_format === false )
 		{
 			$display_format_id = $list->data->display_format_id;
-			$display_format = apply_filters( 'sd_mt_get_display_format', $display_format_id );
+			$display_format = $this->filters( 'sd_mt_get_display_format', $display_format_id );
 			if ( $display_format === false )
 				return;
 		}
@@ -753,17 +737,17 @@ class SD_Meeting_Tool_Displays
 			$list_sort_id = $display->data->list_sort_id;
 		if ( $list_sort_id !== false )
 		{
-			$list_sort = apply_filters( 'sd_mt_get_list_sort', $list_sort_id );
+			$list_sort = $this->filters( 'sd_mt_get_list_sort', $list_sort_id );
 			if ( $list_sort !== false )
 				$list->data->list_sort_id = $list_sort_id;
 		}
 		
-		$list = apply_filters( 'sd_mt_list_participants', $list );
+		$list = $this->filters( 'sd_mt_list_participants', $list );
 
 		$returnValue = $display->data->header;
 		
 		foreach( $list->participants as $participant )
-			$returnValue .= apply_filters( 'sd_mt_display_participant', $participant, $display_format );
+			$returnValue .= $this->filters( 'sd_mt_display_participant', $participant, $display_format );
 		
 		$returnValue .= $display->data->footer;
 

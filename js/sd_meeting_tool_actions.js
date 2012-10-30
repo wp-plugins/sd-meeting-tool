@@ -26,8 +26,8 @@ sd_mt_actions = actions = {
 		});
 	},
 	
-	save_item_order : function() {
-		
+	save_item_order : function()
+	{		
 		options = actions.ajaxoptions;
 		options.type = "action_items_reorder";
 		options.order = [];

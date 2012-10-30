@@ -1,0 +1,27 @@
+.wp-admin table.compare_participants tbody
+{
+	height: 30em;
+	overflow: auto;
+}
+
+.wp-admin table.compare_participants tr:hover
+{
+	font-weight: bold;
+}
+
+.wp-admin table.compare_participants td.no
+, .wp-admin table.compare_participants td.yes
+{
+	text-align: center;
+}
+
+.wp-admin table.compare_participants td.no
+{
+	background-color: #eaaeae;
+}
+
+.wp-admin table.compare_participants td.yes
+{
+	background-color: #ccf4cc;
+}
+

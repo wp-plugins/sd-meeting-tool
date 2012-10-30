@@ -1,12 +1,12 @@
 <?php
 /*                                                                                                                                                                                                                                                             
 Plugin Name: SD Meeting Tool Agendas
-Plugin URI: http://frimjukvara.sverigedemokraterna.se/meeting-control
+Plugin URI: https://it.sverigedemokraterna.se
 Description: Provides agendas.
-Version: 1.0
+Version: 1.1
 Author: Sverigedemokraterna IT
-Author URI: http://frimjukvara.sverigedemokraterna.se
-Author Email: it@mindreantre.se
+Author URI: https://it.sverigedemokraterna.se
+Author Email: it@sverigedemokraterna.se
 */
 
 if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('You are not allowed to call this page directly.'); }
@@ -40,17 +40,21 @@ if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('You 
 	
 	@par	[show_agenda]
 	
-<pre>ol.sd_mt_agenda li.current_item
-{
-    background-color: ##cceaf4;
-}</pre>
+	@code
+	ol.sd_mt_agenda li.current_item
+	{
+		background-color: #cceaf4;
+	}
+	@endcode
 
 	@par	[current_agenda_item]
 	
-<pre>span.sd_mt_agenda_item
-{
-    background-color: ##cceaf4;
-}</pre>
+	@code
+	span.sd_mt_agenda_item
+	{
+		background-color: #cceaf4;
+	}
+	@endcode
 
 	@section		sd_meeting_tool_agendas_usage	Usage
 	
@@ -99,6 +103,11 @@ if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('You 
 /**
 	@brief		Provides agenda services for SD Meeting Tool.
 	@author		Edward Plainview	edward.plainview@sverigedemokraterna.se
+
+	@par		Changelog
+
+	@par		1.1
+	- Version bump.
 **/
 class SD_Meeting_Tool_Agendas
 	extends SD_Meeting_Tool_0
@@ -199,38 +208,31 @@ class SD_Meeting_Tool_Agendas
 		
 		if ( isset( $_GET['tab'] ) )
 		{
-			if ( $_GET['tab'] == $this->tab_slug( $this->_('Edit agenda') ) )
+			if ( $_GET['tab'] == 'edit_agenda' )
 			{
-				$tab_data['tabs']['edit'] = $this->_( 'Edit agenda');
-				$tab_data['functions']['edit'] = 'admin_edit';
+				$tab_data['tabs']['edit_agenda'] = $this->_( 'Edit agenda');
+				$tab_data['functions']['edit_agenda'] = 'admin_edit';
 
-				$agenda = apply_filters( 'sd_mt_get_agenda', $_GET['id'] );
+				$agenda = $this->filters( 'sd_mt_get_agenda', $_GET['id'] );
 				if ( $agenda === false )
 					wp_die( $this->_( 'Specified agenda does not exist!' ) );
 
-				$tab_data['page_titles']['edit'] = sprintf(
-					$this->_( 'Editing agenda: %s' ),
-					$agenda->data->name
-				);
+				$tab_data['page_titles']['edit_agenda'] = $this->_( 'Editing agenda: %s', $agenda->data->name );
 			}
 
-			if ( $_GET['tab'] == $this->tab_slug( $this->_('Edit item') ) )
+			if ( $_GET['tab'] == 'edit_item' )
 			{
-				$tab_data['tabs']['edit'] = $this->_( 'Edit item');
-				$tab_data['functions']['edit'] = 'admin_edit_item';
+				$tab_data['tabs']['edit_item'] = $this->_( 'Edit item');
+				$tab_data['functions']['edit_item'] = 'admin_edit_item';
 
-				$agenda = apply_filters( 'sd_mt_get_agenda', $_GET['id'] );
+				$agenda = $this->filters( 'sd_mt_get_agenda', $_GET['id'] );
 				if ( $agenda === false )
 					wp_die( $this->_( 'Specified agenda does not exist!' ) );
 				$item_id = $_GET['item'];
 				if ( ! isset( $agenda->items[ $item_id ] ) )
 					wp_die( $this->_( 'Specified agenda item does not exist!' ) );
 				
-				$tab_data['page_titles']['edit'] = sprintf(
-					$this->_( 'Editing action item: %s (%s)' ),
-					$agenda->items[ $item_id ]->data->name,
-					$item_id
-				);
+				$tab_data['page_titles']['edit_item'] = $this->_( 'Editing action item: %s (%s)', $agenda->items[ $item_id ]->data->name, $item_id );
 			}
 		}
 
@@ -248,14 +250,11 @@ class SD_Meeting_Tool_Agendas
 			{
 				foreach( $_POST['agendas'] as $agenda_id => $ignore )
 				{
-					$agenda = apply_filters( 'sd_mt_get_agenda', $agenda_id );
+					$agenda = $this->filters( 'sd_mt_get_agenda', $agenda_id );
 					if ( $agenda !== false )
 					{
-						apply_filters( 'sd_mt_delete_agenda', $agenda );
-						$this->message( sprintf(
-							$this->_( 'Agenda <em>%s</em> deleted.' ),
-							$agenda->data->name
-						) );
+						$this->filters( 'sd_mt_delete_agenda', $agenda );
+						$this->message( $this->_( 'Agenda <em>%s</em> deleted.', $agenda->data->name ) );
 					}
 				}
 			}	// delete
@@ -264,24 +263,18 @@ class SD_Meeting_Tool_Agendas
 		if ( isset( $_POST['create_agenda'] ) )
 		{
 			$agenda = new SD_Meeting_Tool_Agenda();
-			$agenda->data->name = sprintf(
-				$this->_( 'Agenda created %s' ),
-				$this->now()
-			);
-			$agenda = apply_filters( 'sd_mt_update_agenda', $agenda );
+			$agenda->data->name = $this->_( 'Agenda created %s', $this->now() );
+			$agenda = $this->filters( 'sd_mt_update_agenda', $agenda );
 			
 			$edit_link = add_query_arg( array(
-				'tab' => $this->tab_slug( $this->_('Edit agenda') ),
+				'tab' => 'edit_agenda',
 				'id' => $agenda->id,
 			) );
 			
-			$this->message( sprintf(
-				$this->_( 'Agenda created! <a href="%s">Edit the newly-created agenda</a>.' ),
-				$edit_link
-			) );
+			$this->message( $this->_( 'Agenda created! <a href="%s">Edit the newly-created agenda</a>.', $edit_link ) );
 		}	// create agenda
 
-		$agendas = apply_filters( 'sd_mt_get_all_agendas', array() );
+		$agendas = $this->filters( 'sd_mt_get_all_agendas', array() );
 
 		if ( count( $agendas ) < 1 )
 			$this->message( $this->_( 'There are no agendas available.' ) );
@@ -299,7 +292,7 @@ class SD_Meeting_Tool_Agendas
 				);
 				
 				$edit_link = add_query_arg( array(
-					'tab' => $this->tab_slug( $this->_('Edit agenda') ),
+					'tab' => 'edit_agenda',
 					'id' => $agenda->id,
 				) );
 				
@@ -418,11 +411,11 @@ class SD_Meeting_Tool_Agendas
 
 			if ($result === true)
 			{
-				$agenda = apply_filters( 'sd_mt_get_agenda', $id );
+				$agenda = $this->filters( 'sd_mt_get_agenda', $id );
 				$agenda->id = $id;
 				$agenda->data->name = $_POST['name'];
 				
-				apply_filters( 'sd_mt_update_agenda', $agenda );
+				$this->filters( 'sd_mt_update_agenda', $agenda );
 				
 				$this->message( $this->_('The agenda has been updated!') );
 				SD_Meeting_Tool::reload_message();
@@ -435,7 +428,7 @@ class SD_Meeting_Tool_Agendas
 		
 		if ( isset( $_POST['create_submit'] ) )
 		{
-			$agenda = apply_filters( 'sd_mt_get_agenda', $id );
+			$agenda = $this->filters( 'sd_mt_get_agenda', $id );
 
 			$names = trim( $_POST['create_names'] );
 			$names = str_replace( "\r", "", $names );
@@ -451,7 +444,7 @@ class SD_Meeting_Tool_Agendas
 				$item->order = PHP_INT_MAX;
 				$agenda->items[] = $item;
 			}
-			apply_filters( 'sd_mt_update_agenda', $agenda );
+			$this->filters( 'sd_mt_update_agenda', $agenda );
 			if ( count($names) > 1 )
 				$this->message( $this->_('New items have been created!') );
 			else
@@ -462,24 +455,21 @@ class SD_Meeting_Tool_Agendas
 		{
 			if ( $_POST['mass_edit'] == 'delete' )
 			{
-				$agenda = apply_filters( 'sd_mt_get_agenda', $id );
+				$agenda = $this->filters( 'sd_mt_get_agenda', $id );
 				foreach( $_POST['items'] as $item_id => $ignore )
 				{
 					if ( isset( $agenda->items[ $item_id ] ) )
 					{
 						$item = $agenda->items[ $item_id ];
 						unset( $agenda->items[ $item_id ] );
-						$this->message( sprintf(
-							$this->_( 'Agenda item <em>%s</em> deleted.' ),
-							$item->data->name
-						) );
+						$this->message( $this->_( 'Agenda item <em>%s</em> deleted.', $item->data->name ) );
 					}
 				}
-				apply_filters( 'sd_mt_update_agenda', $agenda );
+				$this->filters( 'sd_mt_update_agenda', $agenda );
 			}	// delete
 		}
 
-		$agenda = apply_filters( 'sd_mt_get_agenda', $id );
+		$agenda = $this->filters( 'sd_mt_get_agenda', $id );
 		
 		// Automatically create a new page with a shortcode. Note that we need $agenda beforehand.
 		if ( isset( $_POST['create_shortcode_page'] ) )
@@ -510,8 +500,7 @@ class SD_Meeting_Tool_Agendas
 					'post_status' => 'publish',
 					'post_author' => $user->data->ID,
 				));
-				$this->message( sprintf(
-					$this->_( 'A new page has been created! You can now %sedit the page%s or %sview the page%s.' ),
+				$this->message( $this->_( 'A new page has been created! You can now %sedit the page%s or %sview the page%s.',
 					'<a href="' . add_query_arg( array( 'post' => $page_id), 'post.php?action=edit' ) . '">',
 					'</a>',
 					'<a href="' . add_query_arg( array( 'p' => $page_id), get_bloginfo('url') ) . '">',
@@ -534,9 +523,7 @@ class SD_Meeting_Tool_Agendas
 			
 			<h3>' . $this->_('Agenda settings') . '</h3>
 			
-			' . $this->display_form_table( array(
-				'inputs' => $inputs,
-			) ).'
+			' . $this->display_form_table( $inputs ).'
 
 			<p>
 				' . $form->make_input( $input_update ) . '
@@ -565,7 +552,7 @@ class SD_Meeting_Tool_Agendas
 				);
 				
 				$item_edit_url = add_query_arg( array(
-					'tab' => $this->tab_slug( $this->_('Edit item') ),
+					'tab' => 'edit_item',
 					'item' => $item->id,
 				) );
 				
@@ -678,9 +665,7 @@ class SD_Meeting_Tool_Agendas
 			<h3>' . $this->_('Create new item(s)') . '</h3>
 
 			' . $form->start() . '
-			' . $this->display_form_table( array(
-				'inputs' => $inputs_create,
-			) ) . '
+			' . $this->display_form_table( $inputs_create ) . '
 			' . $form->stop() . '
 		';
 		
@@ -788,12 +773,12 @@ class SD_Meeting_Tool_Agendas
 
 			if ($result === true)
 			{
-				$agenda = apply_filters( 'sd_mt_get_agenda', $id );
+				$agenda = $this->filters( 'sd_mt_get_agenda', $id );
 				$item = $agenda->items[ $item_id ];
 				$item->data->name = $_POST['name'];
 				$item->data->link = $_POST['link'];
 				
-				apply_filters( 'sd_mt_update_agenda_item', $item );
+				$this->filters( 'sd_mt_update_agenda_item', $item );
 				
 				$this->message( $this->_('The agenda item has been updated!') );
 				SD_Meeting_Tool::reload_message();
@@ -804,7 +789,7 @@ class SD_Meeting_Tool_Agendas
 			}
 		}
 		
-		$agenda = apply_filters( 'sd_mt_get_agenda', $id );
+		$agenda = $this->filters( 'sd_mt_get_agenda', $id );
 		$item = $agenda->items[ $item_id ];
 
 		$inputs['name']['value'] = $item->data->name;
@@ -822,9 +807,7 @@ class SD_Meeting_Tool_Agendas
 			
 			<h3>' . $this->_('Agenda item settings') . '</h3>
 			
-			' . $this->display_form_table( array(
-				'inputs' => $inputs,
-			) ).'
+			' . $this->display_form_table( $inputs ).'
 
 			<p>
 				' . $form->make_input( $input_update ) . '
@@ -849,7 +832,7 @@ class SD_Meeting_Tool_Agendas
 		switch ( $_POST['type'] )
 		{
 			case 'agenda_items_reorder':
-				$agenda = apply_filters( 'sd_mt_get_agenda', $_POST['agenda_id'] );
+				$agenda = $this->filters( 'sd_mt_get_agenda', $_POST['agenda_id'] );
 				if ( $agenda === false )
 					break;
 
@@ -867,12 +850,12 @@ class SD_Meeting_Tool_Agendas
 				}
 				echo json_encode( array( 'result' => 'ok' ) );
 
-				$agenda = apply_filters( 'sd_mt_get_agenda', $_POST['agenda_id'] );
+				$agenda = $this->filters( 'sd_mt_get_agenda', $_POST['agenda_id'] );
 				$this->write_cache( $agenda );
 				
 				break;
 			case 'select_current_item':
-				$agenda = apply_filters( 'sd_mt_get_agenda', $_POST['agenda_id'] );
+				$agenda = $this->filters( 'sd_mt_get_agenda', $_POST['agenda_id'] );
 				if ( $agenda === false )
 					break;
 				$current_item_id = intval( $_POST['current_item_id'] );
@@ -881,7 +864,7 @@ class SD_Meeting_Tool_Agendas
 					if ( ! isset( $agenda->items[ $current_item_id ] ) )
 						break;
 				$agenda->set_current_item_id( $current_item_id );
-				apply_filters( 'sd_mt_update_agenda', $agenda );
+				$this->filters( 'sd_mt_update_agenda', $agenda );
 				echo json_encode( array( 'result' => 'ok' ) );
 
 				$this->write_cache( $agenda );
@@ -897,7 +880,7 @@ class SD_Meeting_Tool_Agendas
 		{
 			case 'get_agenda_item':
 				$agenda_id = $_POST['agenda_id'];
-				$agenda = apply_filters( 'sd_mt_get_agenda', $agenda_id );
+				$agenda = $this->filters( 'sd_mt_get_agenda', $agenda_id );
 				if ( $agenda === false )
 					break;
 					
@@ -953,7 +936,7 @@ class SD_Meeting_Tool_Agendas
 		$returnValue = array();
 		
 		foreach( $results as $result )
-			$returnValue[ $result['id'] ] = apply_filters( 'sd_mt_get_agenda', $result['id'] );
+			$returnValue[ $result['id'] ] = $this->filters( 'sd_mt_get_agenda', $result['id'] );
 
 		return SD_Meeting_Tool::sort_data_array( $returnValue, 'name' );
 	}
@@ -985,7 +968,7 @@ class SD_Meeting_Tool_Agendas
 		}
 		$this->write_cache( $agenda );
 		
-		$old_agenda = apply_filters( 'sd_mt_get_agenda', $agenda->id );
+		$old_agenda = $this->filters( 'sd_mt_get_agenda', $agenda->id );
 		foreach( $old_agenda->items as $item_id => $item )
 		{
 			if ( !isset( $agenda->items[ $item_id ] ) )
@@ -1001,7 +984,7 @@ class SD_Meeting_Tool_Agendas
 		foreach( $agenda->items as $item )
 		{
 			$item->agenda_id = $agenda->id;
-			apply_filters( 'sd_mt_update_agenda_item', $item );
+			$this->filters( 'sd_mt_update_agenda_item', $item );
 		}
 		
 		return $agenda;
@@ -1039,7 +1022,7 @@ class SD_Meeting_Tool_Agendas
 		}
 		
 		// Write the cache, but first we need to fetch the agenda.
-		$agenda = apply_filters( 'sd_mt_get_agenda', $item->agenda_id );
+		$agenda = $this->filters( 'sd_mt_get_agenda', $item->agenda_id );
 		$this->write_cache( $agenda );
 		
 		return $item;
@@ -1050,10 +1033,10 @@ class SD_Meeting_Tool_Agendas
 	// --------------------------------------------------------------------------------------------
 
 	/**
-		Convert a row from SQL to an SD_Meeting_Tool_Agenda.
+		@brief		Convert a row from SQL to an SD_Meeting_Tool_Agenda.
 		
-		@param		$sql						Row from the database as an array.
-		@return		SD_Meeting_Tool_Agenda
+		@param		array		$sql		Row from the database as an array.
+		@return		An SD_Meeting_Tool_Agenda object.
 	**/ 
 	private function agenda_sql_to_object( $sql )
 	{
@@ -1064,10 +1047,10 @@ class SD_Meeting_Tool_Agendas
 	}
 
 	/**
-		Convert a row from SQL to an SD_Meeting_Tool_Agenda_Item.
+		@brief		Convert a row from SQL to an SD_Meeting_Tool_Agenda_Item.
 		
-		@param		$sql							Row from the database as an array.
-		@return		SD_Meeting_Tool_Agenda_Item object.
+		@param		array		$sql		Row from the database as an array.
+		@return		An SD_Meeting_Tool_Agenda_Item object.
 	**/ 
 	private function agenda_item_sql_to_object( $sql )
 	{
@@ -1079,15 +1062,19 @@ class SD_Meeting_Tool_Agendas
 		return $item;
 	}
 	
-	private function delete_cache( $SD_MT_Agenda )
+	/**
+		@brief		Delete the cache for this agenda.
+		@param		SD_Meeting_Tool_Agenda		$agenda		Agenda whose cache must be deleted.
+	**/
+	private function delete_cache( $agenda )
 	{
-		$files = glob( $this->cache_directory() . 'agendas_' . $SD_MT_Agenda->id . '_*' );
+		$files = glob( $this->cache_directory() . 'agendas_' . $agenda->id . '_*' );
 		foreach( $files as $file )
 			unlink( $file );
 	}
 	
 	/**
-		Makes a link back to the agenda editor.
+		@brief		Makes a link back to the agenda editor.
 		
 		@return		Back link string.
 	**/
@@ -1095,14 +1082,20 @@ class SD_Meeting_Tool_Agendas
 	{
 		$url = remove_query_arg( array('item', 'tab') );
 		$url = add_query_arg( array(
-			'tab' => $this->tab_slug( $this->_( 'Edit agenda' ) ),
+			'tab' => 'edit_agenda',
 		), $url );
 		
 		return SD_Meeting_Tool::make_back_link( $this->_( 'Back to the agenda editor' ), $url );
 	}
 	
 	/**
-		Displays an agenda to the user.
+		@brief		Displays an agenda to the user.
+		
+		Options array:
+		
+		- agenda	The SD_Meeting_Tool_Agenda to display.
+		
+		@param		array		$options
 	**/
 	private function display_agenda( $options )
 	{
@@ -1165,9 +1158,9 @@ class SD_Meeting_Tool_Agendas
 	}
 	
 	/**
-		Write the current agenda and current_agenda_item to the cache.
+		@brief		Write the current agenda and current_agenda_item to the cache.
 
-		@param	$SD_MT_Agenda		Agenda data to write.
+		@param		SD_Meeting_Tool_Agenda		$SD_MT_Agenda		Agenda data to write.
 	**/
 	private function write_cache( $SD_MT_Agenda )
 	{
@@ -1203,7 +1196,7 @@ class SD_Meeting_Tool_Agendas
 	// --------------------------------------------------------------------------------------------
 
 	/**
-		Shows an agenda.
+		@brief		Shows an agenda.
 		
 		The agenda is shown as an ordered list. Multiple agendas can be shown at the same time.
 		
@@ -1212,8 +1205,8 @@ class SD_Meeting_Tool_Agendas
 		- autorefresh	Refresh the agenda automatically using javacsript. Default "no".
 		- id			Agenda ID. Required.
 		
-		@param		$attr		Attributes array.
-		@return					Agenda HTML string to display.
+		@param		array		$attr		Attributes array.
+		@return		Agenda HTML string to display.
 	**/
 	public function shortcode_show_agenda( $attr )
 	{
@@ -1222,7 +1215,7 @@ class SD_Meeting_Tool_Agendas
 		$id = $attr['id'];
 		$autorefresh = isset( $attr['autorefresh'] ) && $attr['autorefresh'] == 'yes';
 		
-		$agenda = apply_filters( 'sd_mt_get_agenda', $id );
+		$agenda = $this->filters( 'sd_mt_get_agenda', $id );
 		if ( $agenda === false )
 			return;
 		
@@ -1263,7 +1256,7 @@ class SD_Meeting_Tool_Agendas
 	}
 	
 	/**
-		Shows the current agenda item.
+		@brief		Shows the current agenda item.
 		
 		@par		Attributes
 		
@@ -1273,8 +1266,8 @@ class SD_Meeting_Tool_Agendas
 		- number		Put a number in front of the agenda item, according to its position in the agenda. Default "no".
 		- text			Show the agenda item text. Default "no".
 		
-		@param		$attr		Attributes array.
-		@return					Agenda item HTML string to display.
+		@param		array		$attr		Attributes array.
+		@return		Agenda item HTML string to display.
 	**/
 	public function shortcode_current_agenda_item( $attr )
 	{
@@ -1286,7 +1279,7 @@ class SD_Meeting_Tool_Agendas
 		$text = isset( $attr['text'] ) && $attr['text'] == 'yes';
 		$number = isset( $attr['number'] ) && $attr['number'] == 'yes';
 		
-		$agenda = apply_filters( 'sd_mt_get_agenda', $id );
+		$agenda = $this->filters( 'sd_mt_get_agenda', $id );
 		if ( $agenda === false )
 			return;
 		

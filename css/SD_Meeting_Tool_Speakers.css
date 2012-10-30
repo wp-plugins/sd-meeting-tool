@@ -57,58 +57,41 @@
 	height: 100%;
 }
 
-.wp-admin .manage_speakers .overview_left_content .speakers .inside
-{
-	overflow-y: auto;
-}
-
 .wp-admin .manage_speakers .overview_left_content .speaker
 {
-	width: 20em;
+	width: 30em;
 }
 
 /**
-	Right
+	Only show the quick add when the mouse is hovering over the participant's name.
 **/
-.manage_speakers #participant_list .inside
+.wp-admin .manage_speakers .overview_left_content .speaker .quick_add
 {
-	padding: 0;
-	height: 100%;
+	background-color: #ddd;
+	display: none;
+	float: right;
+	font-weight: bold;
+	padding: 4px;
 }
 
-.manage_speakers #participant_list ul
+.wp-admin .manage_speakers .overview_left_content .speaker .header:hover .quick_add
 {
-	overflow-y: scroll;
-	height: 100%;
+	display: block;
 }
 
-.wp-admin .manage_speakers .overview_right_content .participant_search input.text
+.wp-admin .manage_speakers .overview_left_content .speaker .header.clicked:hover .quick_add
 {
-	width: 99%;
+	color: black;
 }
-
-.wp-admin .manage_speakers .overview_right_content .participant_list ul li
-{
-	padding: 2px 5px;
-}
-
-.wp-admin .manage_speakers .overview_right_content .participant_list ul li:hover
-{
-	background-color: #0099cc;
-	color: white;
-	cursor: pointer;
-}
-
-
 
 /**
 	The speakers themselves
 **/
 .manage_speakers .speaker_group div.speaker
 {
-	width: 20em;
 	border: solid #666 thin;
 	cursor: pointer;
+	width: 20em;
 }
 
 .manage_speakers .speaker_group .speaker .extra_rows
@@ -118,13 +101,13 @@
 
 .manage_speakers .speakers .inside
 {
+	overflow-y: auto;
 	position: relative;
 }
 
 .manage_speakers .speakers  #__delete_speaker
 {
 	position: absolute;
-	top: 15px;
 	right: 15px;
 }
 
@@ -146,14 +129,14 @@
 }
 
 .manage_speakers .loading h3,
-.manage_speakers .speaker_group .speaking > .participant_name
+.manage_speakers .speaker_group .speaking > .header
 {
 	background-image: url("../images/mozilla_blu.gif");
 	background-position: 99% center;
 	background-repeat: no-repeat;
 }
 
-.manage_speakers .speaker_group .spoken > .participant_name
+.manage_speakers .speaker_group .spoken > .header
 {
 	background-color: #4dcc00;
 }
@@ -162,6 +145,7 @@
 .manage_speakers .speaker_group .extra_rows
 {
 	padding: 5px;
+	overflow: hidden;
 }
 
 .manage_speakers .speaker_group .time_controls
@@ -169,14 +153,14 @@
 	overflow: hidden;
 }
 
-.manage_speakers .speaker_group .time_control,
-.manage_speakers .speaker_group .time_left
+.manage_speakers .speaker_group .time_control
+, .manage_speakers .speaker_group .time_left
 {
 	float: left;
 }
 
-.manage_speakers .speaker_group .time,
-.manage_speakers .speaker_group .time_left
+.manage_speakers .speaker_group .time
+, .manage_speakers .speaker_group .time_left
 {
 	line-height: 15px;
 	margin-top: 3px;
@@ -184,14 +168,15 @@
 	text-align: center;
 }
 
-.manage_speakers .speaker_group .time input,
-.manage_speakers .speaker_group .time_left input,
+.manage_speakers .speaker_group .time input
+, .manage_speakers .speaker_group .time_left input
 {
 	text-align: center;
 }
 
-.manage_speakers .speaker_group .time_start,
-.manage_speakers .speaker_group .time_stop
+.manage_speakers .speaker_group .time_start
+, .manage_speakers .speaker_group .time_stop
+, .manage_speakers .speaker_group .time_restop
 {
 	float: right;
 }
@@ -204,10 +189,30 @@
 }
 
 /**
+	Right
+**/
+.manage_speakers #participant_list ul
+{
+	overflow-y: scroll;
+}
+
+.wp-admin .manage_speakers .overview_right_content #participant_search input.text
+{
+	max-width: 100%;
+}
+
+.wp-admin .manage_speakers .overview_right_content .participant_list ul li:hover
+{
+	background-color: #0099cc;
+	color: white;
+	cursor: pointer;
+}
+
+/**
 	Log
 **/
-.wp-admin ul.log,
-.wp-admin ul.log ul
+.wp-admin ul.log
+, .wp-admin ul.log ul
 {
 	margin-left: 1em;
 }
@@ -221,4 +226,15 @@
 .wp-admin ul.log
 {
 	list-style-type: square;
+}
+
+.wp-admin ul.log li .column
+{
+	display: inline-block;
+	min-width: 20%;
+}
+
+.wp-admin ul.log li .comma
+{
+	color: transparent;
 }

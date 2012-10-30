@@ -1,12 +1,12 @@
 <?php
 /*                                                                                                                                                                                                                                                             
 Plugin Name: SD Meeting Tool Speakers
-Plugin URI: http://frimjukvara.sverigedemokraterna.se/meeting-control
+Plugin URI: https://it.sverigedemokraterna.se
 Description: Provides speakers for each agenda item.
-Version: 1.0
+Version: 1.1
 Author: Sverigedemokraterna IT
-Author URI: http://frimjukvara.sverigedemokraterna.se
-Author Email: it@mindreantre.se
+Author URI: https://it.sverigedemokraterna.se
+Author Email: it@sverigedemokraterna.se
 */
 
 if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('You are not allowed to call this page directly.'); }
@@ -120,6 +120,20 @@ if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('You 
 	
 	@brief		Extends agendas with speaker services.
 	@author		Edward Plainview	edward.plainview@sverigedemokraterna.se
+	
+	@par		Changelog
+	
+	@par		1.1
+	
+	- New: Restop: updates the time the user stopped speaking to the current time.
+	- New: Delete button follows current speaker.
+	- New: Added first setting: default speaker time.
+	- New: Able to change current agenda item using a button.
+	- New: Cursor keys can be used to select agenda item (after first selecting the select box).
+	- Fix: Speaker list can be editing by several people simultaneously.
+	- Fix: Size of management panel should be maximized without becoming too big.
+	- Fix: Speaker log shortcode no longer returns description of log.
+	- Fix: Prevent speaker from expanding when dragging.
 **/
 class SD_Meeting_Tool_Speakers
 	extends SD_Meeting_Tool_0
@@ -153,6 +167,7 @@ class SD_Meeting_Tool_Speakers
 		// Shortcodes
 		add_shortcode('current_speaker',					array( &$this, 'shortcode_current_speaker') );
 		add_shortcode('current_speaker_list',				array( &$this, 'shortcode_current_speaker_list') );
+		add_shortcode('speaker_list_log',					array( &$this, 'shortcode_speaker_list_log') );
 		
 		// External actions
 		add_filter( 'sd_mt_admin_menu',						array( &$this, 'sd_mt_admin_menu' ) );
@@ -220,7 +235,8 @@ class SD_Meeting_Tool_Speakers
 			array( &$this, 'admin' )
 		);
 
-		wp_enqueue_style( 'sd_mt_voting', '/' . $this->paths['path_from_base_directory'] . '/css/SD_Meeting_Tool_Speakers.css', false, '1.0', 'screen' );
+		wp_enqueue_style( 'sd_mt_speakers', '/' . $this->paths['path_from_base_directory'] . '/css/SD_Meeting_Tool_Speakers.css', false, '1.0', 'screen' );
+		wp_enqueue_style( 'sd_mt_speakers_jquery_ui', '/' . $this->paths['path_from_base_directory'] . '/css/jquery-ui-1.8.16.custom.css', false, '1.0', 'screen' );
 		return $menus;
 	}
 
@@ -238,86 +254,70 @@ class SD_Meeting_Tool_Speakers
 
 		if ( isset( $_GET['tab'] ) )
 		{
-			if ( $_GET['tab'] == $this->tab_slug( $this->_('Manage speakers') ) )
+			if ( $_GET['tab'] == 'manage' )
 			{
 				$tab_data['tabs']['manage'] = $this->_( 'Manage speakers' );
 				$tab_data['functions']['manage'] = 'admin_manage';
 
-				$speaker_list = apply_filters( 'sd_mt_get_speaker_list', $_GET['id'] );
+				$speaker_list = $this->filters( 'sd_mt_get_speaker_list', $_GET['id'] );
 				if ( $speaker_list === false )
 					wp_die( $this->_( 'Specified speaker list does not exist!' ) );
 				
-				$agenda = apply_filters( 'sd_mt_get_agenda', $speaker_list->data->agenda_id );
+				$agenda = $this->filters( 'sd_mt_get_agenda', $speaker_list->data->agenda_id );
 
-				$tab_data['page_titles']['manage'] = sprintf(
-					$this->_( 'Managing speakers for agenda: %s' ),
-					$agenda->data->name
-				);
+				$tab_data['page_titles']['manage'] = $this->_( 'Managing speakers for agenda: %s', $agenda->data->name );
 			}	// manage
 
-			if ( $_GET['tab'] == $this->tab_slug( $this->_('View log') ) )
+			if ( $_GET['tab'] == 'log' )
 			{
-				$tab_data['tabs']['manage'] = $this->_( 'View log' );
-				$tab_data['functions']['manage'] = 'admin_view_log';
+				$tab_data['tabs']['log'] = $this->_( 'View log' );
+				$tab_data['functions']['log'] = 'admin_view_log';
 
-				$speaker_list = apply_filters( 'sd_mt_get_speaker_list', $_GET['id'] );
+				$speaker_list = $this->filters( 'sd_mt_get_speaker_list', $_GET['id'] );
 				if ( $speaker_list === false )
 					wp_die( $this->_( 'Specified speaker list does not exist!' ) );
 				
-				$agenda = apply_filters( 'sd_mt_get_agenda', $speaker_list->data->agenda_id );
-
-				$tab_data['page_titles']['manage'] = sprintf(
-					$this->_( 'Viewing speaker list log for %s' ),
-					$agenda->data->name
-				);
+				$agenda = $this->filters( 'sd_mt_get_agenda', $speaker_list->data->agenda_id );
+				$tab_data['page_titles']['log'] = $this->_( 'Viewing speaker list log for %s', $agenda->data->name );
 			}	// manage
 
-			if ( $_GET['tab'] == $this->tab_slug( $this->_('Edit') ) )
+			if ( $_GET['tab'] == 'edit' )
 			{
 				$tab_data['tabs']['edit'] = $this->_( 'Edit' );
 				$tab_data['functions']['edit'] = 'admin_edit';
 
-				$speaker_list = apply_filters( 'sd_mt_get_speaker_list', $_GET['id'] );
+				$speaker_list = $this->filters( 'sd_mt_get_speaker_list', $_GET['id'] );
 				if ( $speaker_list === false )
 					wp_die( $this->_( 'Specified speaker list does not exist!' ) );
-				$agenda = apply_filters( 'sd_mt_get_agenda', $speaker_list->data->agenda_id );
+				$agenda = $this->filters( 'sd_mt_get_agenda', $speaker_list->data->agenda_id );
 				if ( $agenda === false )
 					wp_die( $this->_( 'Specified agenda does not exist!' ) );
 
-				$tab_data['page_titles']['edit'] = sprintf(
-					$this->_( 'Editing speaker list for agenda: %s' ),
-					$agenda->data->name
-				);
+				$tab_data['page_titles']['edit'] = $this->_( 'Editing speaker list for agenda: %s', $agenda->data->name );
 			}	// edit
 
-			if ( $_GET['tab'] == $this->tab_slug( $this->_('Edit display') ) )
+			if ( $_GET['tab'] == 'edit_display' )
 			{
-				$tab_data['tabs']['edit'] = $this->_( 'Edit display' );
-				$tab_data['functions']['edit'] = 'admin_display_edit';
+				$tab_data['tabs']['edit_display'] = $this->_( 'Edit display' );
+				$tab_data['functions']['edit_display'] = 'admin_display_edit';
 
-				$speaker_display = apply_filters( 'sd_mt_get_speaker_display', $_GET['id'] );
+				$speaker_display = $this->filters( 'sd_mt_get_speaker_display', $_GET['id'] );
 				if ( $speaker_display === false )
 					wp_die( $this->_( 'Specified speaker display does not exist!' ) );
 
-				$tab_data['page_titles']['edit'] = sprintf(
-					$this->_( 'Editing speaker display: %s' ),
-					$speaker_display->data->name
-				);
+				$tab_data['page_titles']['edit_display'] = $this->_( 'Editing speaker display: %s', $speaker_display->data->name );
 			}	// edit
 
-			if ( $_GET['tab'] == $this->tab_slug( $this->_('Shortcodes') ) )
+			if ( $_GET['tab'] == 'shortcodes' )
 			{
 				$tab_data['tabs']['shortcodes'] = $this->_( 'Shortcodes' );
 				$tab_data['functions']['shortcodes'] = 'admin_display_shortcodes';
 
-				$speaker_display = apply_filters( 'sd_mt_get_speaker_display', $_GET['id'] );
+				$speaker_display = $this->filters( 'sd_mt_get_speaker_display', $_GET['id'] );
 				if ( $speaker_display === false )
 					wp_die( $this->_( 'Specified speaker display does not exist!' ) );
 
-				$tab_data['page_titles']['shortcodes'] = sprintf(
-					$this->_( 'Editing shortcodes for the speaker list of agenda: %s' ),
-					$speaker_display->data->name
-				);
+				$tab_data['page_titles']['shortcodes'] = $this->_( 'Editing shortcodes for the speaker list of agenda: %s', $speaker_display->data->name );
 			}	// Shortcodes
 		}
 
@@ -338,14 +338,11 @@ class SD_Meeting_Tool_Speakers
 			{
 				foreach( $_POST['speaker_lists'] as $speaker_list => $ignore )
 				{
-					$speaker_list = apply_filters( 'sd_mt_get_speaker_list', $speaker_list );
+					$speaker_list = $this->filters( 'sd_mt_get_speaker_list', $speaker_list );
 					if ( $speaker_list !== false )
 					{
-						apply_filters( 'sd_mt_delete_speaker_list', $speaker_list );
-						$this->message( sprintf(
-							$this->_( 'Speaker list <em>%s</em> deleted.' ),
-							$speaker_list->id
-						) );
+						$this->filters( 'sd_mt_delete_speaker_list', $speaker_list );
+						$this->message( $this->_( 'Speaker list <em>%s</em> deleted.', $speaker_list->id ) );
 					}
 				}
 			}	// delete
@@ -354,14 +351,11 @@ class SD_Meeting_Tool_Speakers
 			{
 				foreach( $_POST['speaker_lists'] as $speaker_list => $ignore )
 				{
-					$speaker_list = apply_filters( 'sd_mt_get_speaker_list', $speaker_list );
+					$speaker_list = $this->filters( 'sd_mt_get_speaker_list', $speaker_list );
 					if ( $speaker_list !== false )
 					{
-						apply_filters( 'sd_mt_empty_speaker_list', $speaker_list );
-						$this->message( sprintf(
-							$this->_( 'Speaker list <em>%s</em> emptied.' ),
-							$speaker_list->id
-						) );
+						$this->filters( 'sd_mt_empty_speaker_list', $speaker_list );
+						$this->message( $this->_( 'Speaker list <em>%s</em> emptied.', $speaker_list->id ) );
 					}
 				}
 			}	// empty
@@ -371,24 +365,21 @@ class SD_Meeting_Tool_Speakers
 		{
 			$speaker_list = new SD_Meeting_Tool_Speaker_List();
 			$speaker_list->data->agenda_id = $_POST['agenda'];
-			$speaker_list = apply_filters( 'sd_mt_create_speaker_list', $speaker_list );
+			$speaker_list = $this->filters( 'sd_mt_create_speaker_list', $speaker_list );
 			
 			$edit_link = add_query_arg( array(
-				'tab' => $this->tab_slug( $this->_('Edit') ),
+				'tab' => 'edit',
 				'id' => $speaker_list->id,
 			) );
 			
-			$this->message( sprintf(
-				$this->_( 'Speaker list created! <a href="%s">Edit the newly-created speaker list</a>.' ),
-				$edit_link
-			) );
+			$this->message( $this->_( 'Speaker list created! <a href="%s">Edit the newly-created speaker list</a>.', $edit_link ) );
 		}	// create speaker list
 
 		$form = $this->form();
-		$returnValue = $form->start();
+		$rv = $form->start();
 		
-		$speaker_lists = apply_filters( 'sd_mt_get_all_speaker_lists', array() );
-		$all_agendas = apply_filters( 'sd_mt_get_all_agendas', array() );
+		$speaker_lists = $this->filters( 'sd_mt_get_all_speaker_lists', array() );
+		$all_agendas = $this->filters( 'sd_mt_get_all_agendas', array() );
 		$agendas = array();
 		foreach( $all_agendas as $agenda )
 			$agendas[ $agenda->id ] = $agenda->data->name;
@@ -417,21 +408,21 @@ class SD_Meeting_Tool_Speakers
 				
 				// Manage speakers
 				$manage_action_url = add_query_arg( array(
-					'tab' => $this->tab_slug( $this->_('Manage speakers') ),
+					'tab' => 'manage',
 					'id' => $speaker_list->id,
 				) );
 				$actions[] = '<a href="'.$manage_action_url.'">'. $this->_('Manage speakers') . '</a>';
 				
 				// View log
 				$view_action_url = add_query_arg( array(
-					'tab' => $this->tab_slug( $this->_('View log') ),
+					'tab' => 'log',
 					'id' => $speaker_list->id,
 				) );
 				$actions[] = '<a href="'.$view_action_url.'">'. $this->_('View log') . '</a>';
 				
 				// Edit speaker list
 				$edit_action_url = add_query_arg( array(
-					'tab' => $this->tab_slug( $this->_('Edit') ),
+					'tab' => 'edit',
 					'id' => $speaker_list->id,
 				) );
 				$actions[] = '<a href="'.$edit_action_url.'">'. $this->_('Edit') . '</a>';
@@ -449,10 +440,7 @@ class SD_Meeting_Tool_Speakers
 
 				$info = implode( '</div><div>', $info );
 				
-				$speaker_list_name = sprintf(
-					$this->_( 'Speaker list for agenda: %s' ),
-					$agendas[ $speaker_list->data->agenda_id ]
-				);
+				$speaker_list_name = $this->_( 'Speaker list for agenda: %s', $agendas[ $speaker_list->data->agenda_id ] );
 				
 				$t_body .= '<tr>
 					<th scope="row" class="check-column">' . $form->make_input($input_speaker_list_select) . ' <span class="screen-reader-text">' . $form->make_label($input_speaker_list_select) . '</span></th>
@@ -491,7 +479,7 @@ class SD_Meeting_Tool_Speakers
 				'name' => 'check',
 			);
 			
-			$returnValue .= '
+			$rv .= '
 				<p>
 					' . $form->make_label( $input_actions ) . '
 					' . $form->make_input( $input_actions ) . '
@@ -531,65 +519,39 @@ class SD_Meeting_Tool_Speakers
 				),
 			);
 	
-			$returnValue .= '<h3>' . $this->_('Create a new speaker list')  . '</h3>';
+			$rv .= '<h3>' . $this->_('Create a new speaker list')  . '</h3>';
 			
-			$returnValue .= $this->display_form_table( array( 'inputs' => $inputs_create ) );
+			$rv .= $this->display_form_table( $inputs_create );
 		}
 
-		$returnValue .= $form->stop();
+		$rv .= $form->stop();
 		
-		echo $returnValue;
+		echo $rv;
 	}
 
 	public function admin_view_log()
 	{
 		$id = $_GET['id'];
-		$speaker_list = apply_filters( 'sd_mt_get_speaker_list', $id );
-		$agenda = apply_filters( 'sd_mt_get_agenda', $speaker_list->data->agenda_id );
-		$returnValue = '
+		$speaker_list = $this->filters( 'sd_mt_get_speaker_list', $id );
+		
+		$rv = '
 			<p>
 				' . $this->_( "Each agenda item has a list of speakers. The speaker row is comma-separated into the following: The speaker's name, time allocated, start time, stop time and time spoken." ) . '
 			</p>
 		';
 		
-		foreach( $agenda->items as $agenda_item )
-		{
-			$returnValue .= '<h3>' . $agenda_item->data->name . '</h3>';
-			
-			$speakers = apply_filters( 'sd_mt_get_speakers', $speaker_list, $agenda_item->id );
-			$speakers = SD_Meeting_Tool::sort_data_array( $speakers, 'order' );
-			// Put the speakers in a tree. K-i-s-s-i-n-g...
-			require_once( 'include/sd_tree.php' );
-			$tree = new sd_tree();
-			foreach( $speakers as $speaker )
-			{
-				$speaker_id = intval( $speaker->id );
-				$parent = $speaker->data->parent > 0 ? $speaker->data->parent : null ;
-				$tree->add( $speaker_id, $speaker, $parent );
-			}
-			$options = new stdClass();
-			$options->speaker_list = $speaker_list;
-			$options->display_format = $this->get_preferred_display_format( $speaker_list );
-			$options->tree = $tree;
-			$options->depth = 1;
-			$options->keys = $tree->get_subnodes();
-				
-			$returnValue .= '<ul class="log">';
-			$returnValue .= $this->display_logged_speakers( $options );
-			$returnValue .= '</ul>';
-		}
+		$rv .= $this->get_speaker_list_log( $speaker_list );		
 		
-		
-		echo $returnValue;
+		echo $rv;
 	}
-		
+	
 	public function admin_edit()
 	{
 		$form = $this->form();
 		$id = $_GET['id'];
-		$returnValue = '';
+		$rv = '';
 		
-		$speaker_list = apply_filters( 'sd_mt_get_speaker_list', $id );
+		$speaker_list = $this->filters( 'sd_mt_get_speaker_list', $id );
 		
 		$inputs = array(
 			'default_time_speaker' => array(
@@ -645,15 +607,15 @@ class SD_Meeting_Tool_Speakers
 			),
 		);
 		
-		$all_lists = apply_filters( 'sd_mt_get_all_lists', array() );
+		$all_lists = $this->filters( 'sd_mt_get_all_lists', array() );
 		foreach( $all_lists as $list )
 			$inputs[ 'list_id']['options'][ $list->id ] = $list->data->name;
 
-		$display_formats = apply_filters( 'sd_mt_get_all_display_formats', array() );
+		$display_formats = $this->filters( 'sd_mt_get_all_display_formats', array() );
 		foreach( $display_formats as $display_format )
 			$inputs[ 'display_format_id']['options'][ $display_format->id ] = $display_format->data->name;
 
-		$list_sorts = apply_filters( 'sd_mt_get_all_list_sorts', array() );
+		$list_sorts = $this->filters( 'sd_mt_get_all_list_sorts', array() );
 		foreach( $list_sorts as $list_sort )
 			$inputs[ 'list_sort_id']['options'][ $list_sort->id ] = $list_sort->data->name;
 
@@ -668,7 +630,7 @@ class SD_Meeting_Tool_Speakers
 				$speaker_list->data->list_id = intval( $_POST[ 'list_id' ] );
 				$speaker_list->data->display_format_id = intval( $_POST[ 'display_format_id' ] );
 				$speaker_list->data->list_sort_id = intval( $_POST[ 'list_sort_id' ] );
-				apply_filters( 'sd_mt_update_speaker_list', $speaker_list );
+				$this->filters( 'sd_mt_update_speaker_list', $speaker_list );
 				
 				$this->message( $this->_('The speaker list has been updated!') );
 				SD_Meeting_Tool::reload_message();
@@ -688,22 +650,18 @@ class SD_Meeting_Tool_Speakers
 		
 		if ( isset( $_POST[ 'create_current_speaker_list_shortcode'] ) )
 		{
-			$agenda = apply_filters( 'sd_mt_get_agenda', $speaker_list->data->agenda_id );
+			$agenda = $this->filters( 'sd_mt_get_agenda', $speaker_list->data->agenda_id );
 			$post = new stdClass();
 			$post->post_type = 'page';
 			$user = wp_get_current_user();
 			$page_id = wp_insert_post(array(
-				'post_title' => sprintf(
-					$this->_( 'Speaker list for agenda: %s' ),
-					$agenda->data->name
-				),
+				'post_title' => $this->_( 'Speaker list for agenda: %s', $agenda->data->name ),
 				'post_type' => 'page',
 				'post_content' => '[current_speaker_list speaker_list_id="' . $speaker_list->id . '" display_format_id="'. $_POST['current_speaker_list_shortcode_display_format']. '"]',
 				'post_status' => 'publish',
 				'post_author' => $user->data->ID,
 			));
-				$this->message( sprintf(
-					$this->_( 'A new page has been created! You can now %sedit the page%s or %sview the page%s.' ),
+				$this->message( $this->_( 'A new page has been created! You can now %sedit the page%s or %sview the page%s.',
 					'<a href="' . add_query_arg( array( 'post' => $page_id), 'post.php?action=edit' ) . '">',
 					'</a>',
 					'<a href="' . add_query_arg( array( 'p' => $page_id), get_bloginfo('url') ) . '">',
@@ -711,27 +669,23 @@ class SD_Meeting_Tool_Speakers
 				) );
 		}
 		
-		$returnValue .= '
+		$rv .= '
 			' . $form->start() . '
 			
 			<h3>' . $this->_( 'Speaker list and internal display' ). '</h3>
 			
 			' . $this->display_form_table( array(
-				'inputs' => array(
 					$inputs['list_id'],
 					$inputs['display_format_id'],
 					$inputs['list_sort_id'],
-				),
-			) ). '
+				) ). '
 
 			<h3>' . $this->_( 'Times' ). '</h3>
 
 			' . $this->display_form_table( array(
-				'inputs' => array(
 					$inputs['default_time_speaker'],
 					$inputs['default_time_reply'],
-				),
-			) ). '
+				) ). '
 			
 			<p>
 				' . $form->make_input( $inputs[ 'update' ] ) . '
@@ -740,20 +694,26 @@ class SD_Meeting_Tool_Speakers
 			' . $form->stop() . '
 			' . $form->start() . '
 
-			<h3>' . $this->_( 'Shortcode' ). '</h3>
+			<h3>' . $this->_( 'Shortcodes' ). '</h3>
+			
+			<h2>' . $this->_( 'Speaker list' ). '</h2>
 			
 			' . $this->display_form_table( array(
-				'inputs' => array(
 					$inputs['current_speaker_list_shortcode_display_format'],
 					$inputs['create_current_speaker_list_shortcode'],
-				),
-			) ). '
+				) ). '
 
+			<h2>' . $this->_( 'Speaker list log' ). '</h2>
+			
+			' . $this->_( 'The speaker list log is the same log shown to the administrator. To include the log on a page, use the shortcode %s',
+				'<code>[speaker_list_log speaker_list_id=' . $id . ']</code>'
+			) . '
+			
 			' . $form->stop() . '
 		';
 
 
-		echo $returnValue;
+		echo $rv;
 	}
 
 	public function admin_manage()
@@ -761,11 +721,30 @@ class SD_Meeting_Tool_Speakers
 		$form = $this->form();
 		$id = $_GET['id'];
 
-		$speaker_list = apply_filters( 'sd_mt_get_speaker_list', $id );
+		$speaker_list = $this->filters( 'sd_mt_get_speaker_list', $id );
 		
-		$agenda = apply_filters( 'sd_mt_get_agenda', $speaker_list->data->agenda_id );
+		$agenda = $this->filters( 'sd_mt_get_agenda', $speaker_list->data->agenda_id );
 
+		$speaker_list = $this->filters( 'sd_mt_get_speaker_list', $id );
+		
 		$inputs = array(
+			'change_agenda_item' => array(
+				'css_class' => 'button-secondary',
+				'name' => 'change_agenda_item',
+				'title' => $this->_( 'Make this agenda item the current item' ),
+				'type' => 'submit',
+				'value' => $this->_( 'Make current' ),
+			),
+			'default_time' => array(
+				'description' => $this->_( 'The speaking time for a speaker set when adding a speaker. Leave empty to use the default time. Specify the time in MM:SS.' ),
+				'label' => $this->_( 'Speaker time' ),
+				'maxlength' => 6,
+				'name' => 'default_time',
+				'size' => 6,
+				'type' => 'text',
+				'validation' => array( 'empty' => true ),
+				'value' => '',		// Leave empty else all newly created speakers will have this time, even if they're replies and what not.
+			),
 			'participant_search' => array(
 				'type' => 'text',
 				'name' => 'participant_search',
@@ -775,10 +754,10 @@ class SD_Meeting_Tool_Speakers
 				'validation' => array( 'empty' => true ),
 			),
 			'delete_speaker' => array(
+				'css_class' => 'button-secondary',
 				'type' => 'submit',
 				'name' => 'delete_speaker',
 				'value' => $this->_( 'Delete speaker' ),
-				'css_class' => 'button-secondary',
 			),
 			'agenda_items' => array(
 				'type' => 'select',
@@ -788,14 +767,12 @@ class SD_Meeting_Tool_Speakers
 			),
 		);
 		
-		$speakers_label = sprintf(
-			$this->_( 'Speakers for <strong>%s</strong>' ),
-			$agenda->data->name
-		);
+		$speakers_label = $this->_( 'Speakers for <strong>%s</strong>', $agenda->data->name );
 
+		wp_enqueue_script( 'jquery-ui-dialog' );
 		wp_enqueue_script( 'jquery-ui-sortable' );
 		
-		$returnValue = '
+		$rv = '
 			<div class="manage_speakers metabox-holder">
 				<div class="overview_division overview_left">
 					<div class="overview_division_content overview_left_content">
@@ -817,6 +794,7 @@ class SD_Meeting_Tool_Speakers
 								<div class="inside">
 								<p>
 									' . $this->get_admin_agenda( $speaker_list ) . '
+									' . $form->make_input( $inputs['change_agenda_item'] ) . '
 								</p>
 								</div>
 							</div>
@@ -826,34 +804,29 @@ class SD_Meeting_Tool_Speakers
 				</div>
 				<div class="overview_division overview_right">
 					<div class="overview_division_content overview_right_content">
-						<div id="participant_search" class="participant_search stuffbox">
-							<h3 class="hndle"><span>' . $form->make_label( $inputs[ 'participant_search' ] ) . '</span></h3>
-							<div class="inside">
-								<p>
-									' . $form->make_input( $inputs[ 'participant_search' ] ) . '
-								</p>
-							</div>
-						</div>
 
 						<div id="participant_list" class="participant_list stuffbox">
 							<h3 class="hndle"><span>' . $this->_( 'Participants' ) . '</span></h3>
 							<div class="inside">
+								<p id="participant_search">
+									' . $form->make_label( $inputs[ 'participant_search' ] ) . '
+									' . $form->make_input( $inputs[ 'participant_search' ] ) . '
+								</p>
 								<ul>
 								</ul>
 							</div>
 						</div>
 						
-						<div class="bottom">
-
-							<div id="settings" class="settings stuffbox">
-								<h3 class="hndle"><span>' . $this->_( 'Settings' ) . '</span></h3>
-								<div class="inside">
-								<p>123</p>
+						<div id="settings" class="settings stuffbox">
+							<h3 class="hndle"><span>' . $this->_( 'Settings' ) . '</span></h3>
+							<div class="inside">
+								<div id="settings_dialog" style="display: none;" title="' . $this->_( 'Settings' ) . '">
+									<p>
+										' . $this->display_form_table( array( $inputs[ 'default_time' ] ) ). '
+									</p>
 								</div>
 							</div>
-	
 						</div>
-
 					</div>
 				</div>
 			</div>
@@ -873,7 +846,12 @@ class SD_Meeting_Tool_Speakers
 			</script>
 			'.$form->stop().'
 		';
-		echo $returnValue;
+		echo $rv;
+/*		
+										' . $form->make_label( $inputs[ 'default_time' ] ) . '
+										' . $form->make_input( $inputs[ 'default_time' ] ) . '
+										' . $form->make_description( $inputs[ 'default_time' ] ) . '
+*/										
 	}
 
 	public function admin_displays_overview()
@@ -884,14 +862,11 @@ class SD_Meeting_Tool_Speakers
 			{
 				foreach( $_POST['speaker_displays'] as $speaker_display => $ignore )
 				{
-					$speaker_display = apply_filters( 'sd_mt_get_speaker_display', $speaker_display );
+					$speaker_display = $this->filters( 'sd_mt_get_speaker_display', $speaker_display );
 					if ( $speaker_display !== false )
 					{
-						apply_filters( 'sd_mt_delete_speaker_display', $speaker_display );
-						$this->message( sprintf(
-							$this->_( 'Speaker display <em>%s</em> deleted.' ),
-							$speaker_display->id
-						) );
+						$this->filters( 'sd_mt_delete_speaker_display', $speaker_display );
+						$this->message( $this->_( 'Speaker display <em>%s</em> deleted.', $speaker_display->id ) );
 					}
 				}
 			}	// delete
@@ -901,27 +876,21 @@ class SD_Meeting_Tool_Speakers
 		if ( isset( $_POST['create_speaker_display'] ) )
 		{
 			$speaker_display = new SD_Meeting_Tool_Speaker_Display();
-			$speaker_display->data->name = sprintf(
-				$this->_( 'Speaker display created %s' ),
-				date( 'Y-m-d H:i:s' )
-			);
-			$speaker_display = apply_filters( 'sd_mt_update_speaker_display', $speaker_display );
+			$speaker_display->data->name = $this->_( 'Speaker display created %s', date( 'Y-m-d H:i:s' ) );
+			$speaker_display = $this->filters( 'sd_mt_update_speaker_display', $speaker_display );
 			
 			$edit_link = add_query_arg( array(
-				'tab' => $this->tab_slug( $this->_('Edit') ),
+				'tab' => 'edit',
 				'id' => $speaker_display->id,
 			) );
 			
-			$this->message( sprintf(
-				$this->_( 'Speaker display created! <a href="%s">Edit the newly-created speaker display</a>.' ),
-				$edit_link
-			) );
+			$this->message( $this->_( 'Speaker display created! <a href="%s">Edit the newly-created speaker display</a>.', $edit_link ) );
 		}	// create display
 
 		$form = $this->form();
-		$returnValue = $form->start();
+		$rv = $form->start();
 		
-		$speaker_displays = apply_filters( 'sd_mt_get_all_speaker_displays', array() );
+		$speaker_displays = $this->filters( 'sd_mt_get_all_speaker_displays', array() );
 		
 		if ( count( $speaker_displays ) < 1 )
 		{
@@ -945,14 +914,14 @@ class SD_Meeting_Tool_Speakers
 				
 				// Shortcodes
 				$shortcode_action_url = add_query_arg( array(
-					'tab' => $this->tab_slug( $this->_('Shortcodes') ),
+					'tab' => 'shortcodes',
 					'id' => $speaker_display->id,
 				) );
 				$actions[] = '<a href="'.$shortcode_action_url.'">'. $this->_('Shortcodes') . '</a>';
 				
 				// Edit speaker list
 				$edit_action_url = add_query_arg( array(
-					'tab' => $this->tab_slug( $this->_('Edit display') ),
+					'tab' => 'edit_display',
 					'id' => $speaker_display->id,
 				) );
 				$actions[] = '<a href="'.$edit_action_url.'">'. $this->_('Edit display') . '</a>';
@@ -1000,7 +969,7 @@ class SD_Meeting_Tool_Speakers
 				'name' => 'check',
 			);
 			
-			$returnValue .= '
+			$rv .= '
 				<p>
 					' . $form->make_label( $input_actions ) . '
 					' . $form->make_input( $input_actions ) . '
@@ -1029,22 +998,22 @@ class SD_Meeting_Tool_Speakers
 			'css_class' => 'button-primary',
 		);
 		
-		$returnValue .= '<h3>' . $this->_('Create a new speaker display')  . '</h3>';
+		$rv .= '<h3>' . $this->_('Create a new speaker display')  . '</h3>';
 
-		$returnValue .= '<p>' . $form->make_input( $input_speaker_display_create ) . '</p>';
+		$rv .= '<p>' . $form->make_input( $input_speaker_display_create ) . '</p>';
 
-		$returnValue .= $form->stop();
+		$rv .= $form->stop();
 		
-		echo $returnValue;
+		echo $rv;
 	}
 
 	public function admin_display_edit()
 	{
 		$form = $this->form();
 		$id = $_GET['id'];
-		$returnValue = '';
+		$rv = '';
 		
-		$speaker_display = apply_filters( 'sd_mt_get_speaker_display', $id );
+		$speaker_display = $this->filters( 'sd_mt_get_speaker_display', $id );
 		
 		$inputs = array(
 			'name' => array(
@@ -1077,7 +1046,7 @@ class SD_Meeting_Tool_Speakers
 			{
 				$speaker_display->data->name = $_POST[ 'name' ];
 				$speaker_display->data->format = stripslashes( $_POST[ 'format' ] );
-				apply_filters( 'sd_mt_update_speaker_display', $speaker_display );
+				$this->filters( 'sd_mt_update_speaker_display', $speaker_display );
 				
 				$this->message( $this->_('The speaker display has been updated!') );
 				SD_Meeting_Tool::reload_message();
@@ -1090,15 +1059,13 @@ class SD_Meeting_Tool_Speakers
 		$inputs['name']['value'] = $speaker_display->data->name;
 		$inputs['format']['value'] = $speaker_display->data->format;
 		
-		$returnValue .= '
+		$rv .= '
 			' . $form->start() . '
 			
 			' . $this->display_form_table( array(
-				'inputs' => array(
 					$inputs['name'],
 					$inputs['format'],
-				),
-			) ). '
+				) ). '
 
 			<p>
 				' . $form->make_input( $inputs[ 'update' ] ) . '
@@ -1128,16 +1095,16 @@ class SD_Meeting_Tool_Speakers
 			</table>
 		';
 
-		echo $returnValue;
+		echo $rv;
 	}
 	
 	public function admin_display_shortcodes()
 	{
 		$form = $this->form();
 		$id = $_GET['id'];
-		$returnValue = '';
+		$rv = '';
 		
-		$speaker_display = apply_filters( 'sd_mt_get_speaker_display', $id );
+		$speaker_display = $this->filters( 'sd_mt_get_speaker_display', $id );
 		
 		$inputs = array(
 			'speaker_list' => array(
@@ -1165,19 +1132,16 @@ class SD_Meeting_Tool_Speakers
 			),
 		);
 		
-		$all_agendas = apply_filters( 'sd_mt_get_all_agendas', array() );
+		$all_agendas = $this->filters( 'sd_mt_get_all_agendas', array() );
 					
-		$speaker_lists = apply_filters( 'sd_mt_get_all_speaker_lists', array() );
+		$speaker_lists = $this->filters( 'sd_mt_get_all_speaker_lists', array() );
 		foreach( $speaker_lists as $speaker_list )
 		{
 			$agenda = $all_agendas[ $speaker_list->data->agenda_id ];
-			$inputs['speaker_list']['options'][ "0" . $speaker_list->id ] = sprintf( 
-				$this->_( 'Editing speaker list for agenda: %s' ),
-				$agenda->data->name
-			);
+			$inputs['speaker_list']['options'][ "0" . $speaker_list->id ] = $this->_( 'Editing speaker list for agenda: %s', $agenda->data->name );
 		}
 
-		$display_formats = apply_filters( 'sd_mt_get_all_display_formats', array() );
+		$display_formats = $this->filters( 'sd_mt_get_all_display_formats', array() );
 		foreach( $display_formats as $display_format )
 			$inputs['display_format']['options'][ "0" . $display_format->id ] = $display_format->data->name;
 
@@ -1214,8 +1178,7 @@ class SD_Meeting_Tool_Speakers
 					'post_status' => 'publish',
 					'post_author' => $user->data->ID,
 				));
-				$this->message( sprintf(
-					$this->_( 'A new page has been created! You can now %sedit the page%s or %sview the page%s.' ),
+				$this->message( $this->_( 'A new page has been created! You can now %sedit the page%s or %sview the page%s.',
 					'<a href="' . add_query_arg( array( 'post' => $page_id), 'post.php?action=edit' ) . '">',
 					'</a>',
 					'<a href="' . add_query_arg( array( 'p' => $page_id), get_bloginfo('url') ) . '">',
@@ -1245,18 +1208,16 @@ class SD_Meeting_Tool_Speakers
 		foreach( $inputs_to_display as $input_name )
 			$form_inputs[] = $inputs[ $input_name ];
 		
-		$returnValue .= '
+		$rv .= '
 			
 			' . $form->start() . '
 			
-			' . $this->display_form_table( array(
-				'inputs' => $form_inputs,
-			) ). '
+			' . $this->display_form_table( $form_inputs ) . '
 
 			' . $form->stop() . '
 		';
 		
-		echo $returnValue;
+		echo $rv;
 	}
 		
 	// --------------------------------------------------------------------------------------------
@@ -1268,15 +1229,23 @@ class SD_Meeting_Tool_Speakers
 		if ( ! SD_Meeting_Tool::check_admin_referrer( 'ajax_sd_mt_speakers' ) )
 			die();
 		
-		$speaker_list = apply_filters( 'sd_mt_get_speaker_list', $_POST['speaker_list'] );
+		$speaker_list = $this->filters( 'sd_mt_get_speaker_list', $_POST['speaker_list'] );
 		if ( $speaker_list === false )
 			die();
 		
 		switch( $_POST['type'] )
 		{
-			case 'get_agenda':				
-				$response['data'] = $this->get_admin_agenda( $speaker_list );
-				SD_Meeting_Tool::optimize_response( $response, $_POST['hash'] );
+			case 'change_agenda_item':
+				$agenda_item_id = intval( $_POST[ 'agenda_item_id' ] );
+				$agenda = $this->filters( 'sd_mt_get_agenda', $speaker_list->data->agenda_id );
+				
+				if ( ! isset( $agenda->items[ $agenda_item_id ] ) )
+					break;
+				
+				$agenda->set_current_item_id( $agenda_item_id );
+				$this->filters( 'sd_mt_update_agenda', $agenda );
+
+				$response['result'] = 'ok';
 				break;
 			case 'create_speaker':
 				$speaker = new SD_Meeting_Tool_Speaker();
@@ -1292,32 +1261,45 @@ class SD_Meeting_Tool_Speakers
 				}
 				else
 					$speaker->data->time_to_speak = $speaker_list->data->default_time_speaker;
-				apply_filters( 'sd_mt_create_speaker', $speaker );
+
+				if ( isset( $_POST[ 'time_to_speak' ] ) )
+					$speaker->data->time_to_speak = $this->time_to_seconds( $_POST[ 'time_to_speak' ] );
+				
+				$this->filters( 'sd_mt_create_speaker', $speaker );
 
 				$response['result'] = 'ok';
 				break;
 			case 'delete_speaker':
-				$speaker = apply_filters( 'sd_mt_get_speaker', $_POST['speaker_id'] );
+				$speaker = $this->filters( 'sd_mt_get_speaker', $_POST['speaker_id'] );
 				
 				if ( $speaker === false )
 					die();
 					
-				apply_filters( 'sd_mt_delete_speaker', $speaker );
+				$this->filters( 'sd_mt_delete_speaker', $speaker );
 
 				$response['result'] = 'ok';
 				break;
+			case 'get_agenda':
+				$this->load_language();
+				$agenda = $this->filters( 'sd_mt_get_agenda', $speaker_list->data->agenda_id );
+				$response['data'] = array(
+					'current_item_id' => $agenda->data->current_item_id,
+					'html' => $this->get_admin_agenda( $speaker_list ),
+				);
+				SD_Meeting_Tool::optimize_response( $response, $_POST['hash'] );
+				break;
 			case 'get_participants':
-				$list = apply_filters( 'sd_mt_get_list', $speaker_list->data->list_id );
+				$list = $this->filters( 'sd_mt_get_list', $speaker_list->data->list_id );
 				$display_format = $this->get_preferred_display_format( $speaker_list, $list );
 
 				$list_sort_id = $speaker_list->data->list_sort_id > 0 ? $speaker_list->data->list_sort_id : $list->data->list_sort_id;
 				$list->data->list_sort = $list_sort_id;
 				
-				$list = apply_filters( 'sd_mt_list_participants', $list );
+				$list = $this->filters( 'sd_mt_list_participants', $list );
 
 				$response[ 'data' ] = array();
 				foreach( $list->participants as $participant )
-					$response[ 'data' ] [ $participant->id ] = apply_filters( 'sd_mt_display_participant', $participant, $display_format );
+					$response[ 'data' ] [ $participant->id ] = $this->filters( 'sd_mt_display_participant', $participant, $display_format );
 				
 				SD_Meeting_Tool::optimize_response( $response, $_POST['hash'] );
 				break;
@@ -1325,16 +1307,16 @@ class SD_Meeting_Tool_Speakers
 				if ( $speaker_list->data->current_speaker < 1 )
 					break;
 					
-				$speaker = apply_filters( 'sd_mt_get_speaker', $speaker_list->data->current_speaker );
+				$speaker = $this->filters( 'sd_mt_get_speaker', $speaker_list->data->current_speaker );
 				
 				$response = array(
 					'time_start' => $speaker->data->time_start,
 					'time_to_speak' => $speaker->data->time_to_speak,
-					'time' => time(),
+					'time' => $this->time(),
 				);
 				break;
 			case 'get_speakers':
-				$list = apply_filters( 'sd_mt_get_list', $speaker_list->data->list_id );
+				$list = $this->filters( 'sd_mt_get_list', $speaker_list->data->list_id );
 				if ( $list === false )
 					break;
 				
@@ -1344,22 +1326,23 @@ class SD_Meeting_Tool_Speakers
 
 				// Convert to html.
 				$response['data'] = $this->speakers_to_html( $speaker_list, $speakers );
+				SD_Meeting_Tool::optimize_response( $response, $_POST['hash'] );
 				break;
 			case 'get_seconds_left':
 				if ($speaker_list->data->current_speaker < 0 )
 					break;
 
-				$speaker = apply_filters( 'sd_mt_get_speaker', $_POST['speaker_id'] );
+				$speaker = $this->filters( 'sd_mt_get_speaker', $_POST['speaker_id'] );
 				if ( $speaker === false )
 					break;
 				
 				$response = array(
 					'result' => 'ok',
-					'seconds_left' => $speaker->data->time_to_speak - ( time() - $speaker->data->time_start ),
+					'seconds_left' => $speaker->data->time_to_speak - ( $this->time() - $speaker->data->time_start ),
 				);
 				break;
 			case 'modify_time':
-				$speaker = apply_filters( 'sd_mt_get_speaker', $_POST['speaker_id'] );
+				$speaker = $this->filters( 'sd_mt_get_speaker', $_POST['speaker_id'] );
 				if ( $speaker === false )
 					break;
 				
@@ -1380,28 +1363,45 @@ class SD_Meeting_Tool_Speakers
 					$speaker->data->time_to_speak = $this->time_to_seconds( $_POST[ 'time' ] );
 				}
 				
-				apply_filters( 'sd_mt_update_speaker', $speaker );
+				$this->filters( 'sd_mt_update_speaker', $speaker );
 				$response = array(
 					'result' => 'ok',
 					'time' => $this->seconds_to_time( $speaker->data->time_to_speak ),
 				);
 				break;
-			case 'start_speaking':
-				$speaker = apply_filters( 'sd_mt_get_speaker', $_POST['speaker_id'] );
+			case 'restop':
+				$speaker = $this->filters( 'sd_mt_get_speaker', $_POST['speaker_id'] );
 				if ( $speaker === false )
 					break;
 				
-				$speaker->data->time_start = time();
-				apply_filters( 'sd_mt_update_speaker', $speaker );
+				// Can't restop someone who has not stopped speaking
+				if ( ! $speaker->data->time_stop > 0 )
+				{
+					echo json_encode( array( 'result' => 'not speaking' ) );
+					break;
+				}
+				
+				$speaker->data->time_stop = $this->time();
+				$this->filters( 'sd_mt_update_speaker', $speaker );
+				
+				$response['result'] = 'ok';
+				break;
+			case 'start_speaking':
+				$speaker = $this->filters( 'sd_mt_get_speaker', $_POST['speaker_id'] );
+				if ( $speaker === false )
+					break;
+				
+				$speaker->data->time_start = $this->time();
+				$this->filters( 'sd_mt_update_speaker', $speaker );
 
 				$speaker_list->data->current_speaker = $speaker->id;
 				$speaker_list->data->speaker_agenda_item_id = $_POST[ 'agenda_item_id' ];
-				apply_filters( 'sd_mt_update_speaker_list', $speaker_list );
+				$this->filters( 'sd_mt_update_speaker_list', $speaker_list );
 				
 				$response['result'] = 'ok';
 				break;
 			case 'stop_speaking':
-				$speaker = apply_filters( 'sd_mt_get_speaker', $_POST['speaker_id'] );
+				$speaker = $this->filters( 'sd_mt_get_speaker', $_POST['speaker_id'] );
 				if ( $speaker === false )
 					break;
 				
@@ -1415,21 +1415,21 @@ class SD_Meeting_Tool_Speakers
 					break;
 				}
 				
-				$speaker->data->time_stop = time();
-				apply_filters( 'sd_mt_update_speaker', $speaker );
+				$speaker->data->time_stop = $this->time();
+				$this->filters( 'sd_mt_update_speaker', $speaker );
 				
 				$speaker_list->data->current_speaker = -1;
 				$speaker_list->data->speaker_agenda_item_id = -1;
-				apply_filters( 'sd_mt_update_speaker_list', $speaker_list );
+				$this->filters( 'sd_mt_update_speaker_list', $speaker_list );
 
 				$response['result'] = 'ok';
 				break;
 			case 'save_order':
 				foreach( $_POST['order'] as $index => $speaker_id )
 				{
-					$speaker = apply_filters( 'sd_mt_get_speaker', $speaker_id );
+					$speaker = $this->filters( 'sd_mt_get_speaker', $speaker_id );
 					$speaker->data->order = $index;
-					apply_filters( 'sd_mt_update_speaker', $speaker );
+					$this->filters( 'sd_mt_update_speaker', $speaker );
 				}
 				$response['result'] = 'ok';
 				break;
@@ -1459,16 +1459,16 @@ class SD_Meeting_Tool_Speakers
 				// Someone new must be speaking in order for us to return more info about the speaker.
 				if ( isset( $response['data'] ) )
 				{
-					$speaker_list = apply_filters( 'sd_mt_get_speaker_list', $options[ 'speaker_list_id' ] );
+					$speaker_list = $this->filters( 'sd_mt_get_speaker_list', $options[ 'speaker_list_id' ] );
 					$speaker_id = $speaker_list->data->current_speaker;
 					// Someone has to be speaking in order to return the time left.
 					if ( $speaker_id > 0 )
 					{
-						$speaker = apply_filters( 'sd_mt_get_speaker', $speaker_id );
+						$speaker = $this->filters( 'sd_mt_get_speaker', $speaker_id );
 						if ( $speaker->data->time_to_speak > 0 )
 						{
 							$response['time_left'] = $speaker->data->time_to_speak -
-								( time() - $speaker->data->time_start );
+								( $this->time() - $speaker->data->time_start );
 						}
 						else
 						{
@@ -1536,14 +1536,14 @@ class SD_Meeting_Tool_Speakers
 
 		// Find all the speakers that have this speaker as a parent.
 		// Means we'll first have to find all speakers for this list and the agenda item id.
-		$speaker_list = apply_filters( 'sd_mt_get_speaker_list', $SD_Meeting_Tool_Speaker->data->speaker_list_id );
-		$speakers = apply_filters( 'sd_mt_get_speakers', $speaker_list, $SD_Meeting_Tool_Speaker->data->agenda_item_id );
+		$speaker_list = $this->filters( 'sd_mt_get_speaker_list', $SD_Meeting_Tool_Speaker->data->speaker_list_id );
+		$speakers = $this->filters( 'sd_mt_get_speakers', $speaker_list, $SD_Meeting_Tool_Speaker->data->agenda_item_id );
 		foreach( $speakers as $speaker )
 		{
 			if ( $speaker->data->parent == $SD_Meeting_Tool_Speaker->id )
 			{
 				$speaker->data->parent = $SD_Meeting_Tool_Speaker->data->parent;
-				apply_filters( 'sd_mt_update_speaker', $speaker );
+				$this->filters( 'sd_mt_update_speaker', $speaker );
 			}
 		}
 	}
@@ -1586,12 +1586,12 @@ class SD_Meeting_Tool_Speakers
 		global $blog_id;
 		$query = "SELECT id FROM `".$this->wpdb->base_prefix."sd_mt_speaker_displays` WHERE `blog_id` = '$blog_id'";
 		$results = $this->query( $query );
-		$returnValue = array();
+		$rv = array();
 		
 		foreach( $results as $result )
-			$returnValue[ $result['id'] ] = $this->sd_mt_get_speaker_display( $result['id'] );
+			$rv[ $result['id'] ] = $this->sd_mt_get_speaker_display( $result['id'] );
 		
-		return SD_Meeting_Tool::sort_data_array( $returnValue, 'name' );
+		return SD_Meeting_Tool::sort_data_array( $rv, 'name' );
 	}
 	
 	public function sd_mt_get_all_speaker_lists()
@@ -1599,12 +1599,12 @@ class SD_Meeting_Tool_Speakers
 		global $blog_id;
 		$query = "SELECT id FROM `".$this->wpdb->base_prefix."sd_mt_speaker_lists` WHERE `blog_id` = '$blog_id'";
 		$results = $this->query( $query );
-		$returnValue = array();
+		$rv = array();
 		
 		foreach( $results as $result )
-			$returnValue[ $result['id'] ] = $this->sd_mt_get_speaker_list( $result['id'] );
+			$rv[ $result['id'] ] = $this->sd_mt_get_speaker_list( $result['id'] );
 
-		return $returnValue;
+		return $rv;
 	}
 	
 	public function sd_mt_get_speaker( $SD_Meeting_Tool_Speaker_id )
@@ -1645,11 +1645,11 @@ class SD_Meeting_Tool_Speakers
 		$query = "SELECT * FROM `".$this->wpdb->base_prefix."sd_mt_speakers` WHERE `speaker_list_id` = '".$SD_Meeting_Tool_Speaker_List->id."' AND `agenda_item_id` = '$agenda_item_id'";
 		$results = $this->query( $query );
 		
-		$returnValue = array();
+		$rv = array();
 		foreach( $results as $result )
-			$returnValue[ $result['id'] ] = $this->sql_to_speaker( $result );
+			$rv[ $result['id'] ] = $this->sql_to_speaker( $result );
 		
-		return SD_Meeting_Tool::sort_data_array( $returnValue, 'order' );
+		return SD_Meeting_Tool::sort_data_array( $rv, 'order' );
 	}
 	
 	public function sd_mt_update_speaker_display( $SD_Meeting_Tool_Speaker_Display )
@@ -1722,10 +1722,12 @@ class SD_Meeting_Tool_Speakers
 	}
 	
 	/**
-		Converts a time string, [HH:]MM:SS, to a bunch of seconds.
+		@brief		Converts a time string, [HH:]MM:SS, to a bunch of seconds.
 		
-		@param	$string		String to be converted.
-		@return				Number of seconds in that string.
+		If the time cannot be parse, a default value of 30 will be returned.
+		
+		@param		string		$string		String to be converted.
+		@return		Number of seconds in that string.
 	**/
 	private function time_to_seconds( $string )
 	{
@@ -1785,11 +1787,15 @@ class SD_Meeting_Tool_Speakers
 	
 	/**
 		Convert an array of speakers to html.
-		@param	$speakers		Array of {SD_Meeting_Tool_Speaker}s to be convert into a html list.
+		
+		@param		$speaker_list		A speaker list object.
+		@param		$speakers			Array of {SD_Meeting_Tool_Speaker}s to be convert into a html list.
+		
+		@return		A HTML string containing the list of speakers.
 	**/
 	private function speakers_to_html( $speaker_list, $speakers )
 	{
-		$returnValue = '';
+		$rv = '';
 		
 		// Insert the speakers into a tree.
 		require_once( 'include/sd_tree.php' );
@@ -1807,49 +1813,54 @@ class SD_Meeting_Tool_Speakers
 		$options->depth = 1;
 		$options->keys = $tree->get_subnodes();
 		
-		$returnValue .= '<ul class="speaker_group speaker_group_depth_1">' . $this->display_speakers( $options ) .'</ul>';
+		$rv .= '<ul class="speaker_group speaker_group_depth_1">' . $this->display_speakers( $options ) .'</ul>';
 		
-		return $returnValue;
+		return $rv;
 	}
 	
 	private function display_speakers( $options )
 	{
 		$this->load_language();
-		$returnValue = '';
+		$rv = '';
 		$tree = $options->tree;
 		foreach( $options->keys as $key )
 		{
 			$speaker = $tree->get_data( $key );
 
-			$returnValue .= $this->display_speaker( $options->speaker_list, $speaker );
+			$rv .= $this->display_speaker( $options->speaker_list, $speaker );
 						
 			$subnodes = $tree->get_subnodes( $key );
 			if ( count( $subnodes ) > 0 )
 			{
-				$returnValue .= '<ul class="speaker_group speaker_group_depth_">';
+				$rv .= '<ul class="speaker_group speaker_group_depth_">';
 				foreach( $subnodes as $subnode )
 				{
 					$temp_options = clone( $options );
 					$temp_options->keys = array($subnode);
 					$temp_options->depth++;
-					$returnValue .= $this->display_speakers( $temp_options );
+					$rv .= $this->display_speakers( $temp_options );
 				}
-				$returnValue .= '</ul>';
+				$rv .= '</ul>';
 			}
-			$returnValue .= '</li>';
+			$rv .= '</li>';
 		}
-		return $returnValue;
+		return $rv;
 	}
 	
 	private function display_speaker( $speaker_list, $speaker )
 	{
-		$returnValue = '';
+		$rv = '';
 		$classes = array( 'speaker' );
 		$rows = array(); 
 		$form = $this->form();
 		$data = $speaker->data;		// Convenience. 
 
-		$rows[] = '<div class="participant_name">' . $speaker->participant_name . '</div>';
+		$rows[] = '
+			<div class="header">
+				<div class="quick_add" title="' . $this->_( 'Quick-add this speaker again' ) . '">+</div>
+				<div class="participant_name">' . $speaker->participant_name . '</div>
+			</div>
+		';
 
 		$rows[] = '<div class="extra_rows">';
 		
@@ -1898,6 +1909,13 @@ class SD_Meeting_Tool_Speakers
 				'value' => $this->_( 'Stop' ),
 				'css_class' => 'time_stop button-secondary',
 			),
+			'time_restop' => array(
+				'name' => 'time_restop',
+				'type' => 'submit',
+				'value' => $this->_( 'Restop' ),
+				'title' => $this->_( 'Update the time spoken of the participant' ),
+				'css_class' => 'time_restop button-secondary',
+			),
 		);
 
 		$classes[] = 'clickable';
@@ -1918,20 +1936,28 @@ class SD_Meeting_Tool_Speakers
 			if ( $data->time_stop !== false )
 			{
 				$classes[] = 'spoken';
+				
+				$rows[] .= '
+					<div class="time_control time_restop">
+						' . $form->make_input( $inputs['time_restop'] ) . '
+					</div>
+				';
+				
 				$time_spoken = $this->seconds_to_time( $data->time_stop - $data->time_start );
 				$time_to_speak = $this->seconds_to_time( $data->time_to_speak );
 				$time_start = date('H:i', $data->time_start );
 				$time_stop = date('H:i', $data->time_stop );
-				$text = '%s / %s / %s / %s';
-				$text = sprintf( $text, $time_start, $time_stop, $time_to_speak, $time_spoken );
-				$rows[] = $text;
+				$rows[] .= sprintf( '%s / %s / %s / %s',
+					$time_start,
+					$time_stop,
+					$time_to_speak,
+					$time_spoken
+				);
 			}
 			else
 			{
 				$classes[] = 'speaking';
-				
 				$rows[] = $controls_started;
-				
 			}
 		}
 		else
@@ -1939,20 +1965,18 @@ class SD_Meeting_Tool_Speakers
 			$classes[] = 'sortable';
 
 			$rows[] = '
-				<div class="time_controls">
-					<div class="time_controls_stopped">
-						<div class="time_control time_subtract">
-							' . $form->make_input( $inputs['time_subtract'] ) . '
-						</div>
-						<div class="time_control time">
-							' . $form->make_input( $inputs['time'] ) . '
-						</div>
-						<div class="time_control time_add">
-							' . $form->make_input( $inputs['time_add'] ) . '
-						</div>
-						<div class="time_start">
-							' . $form->make_input( $inputs['time_start'] ) . '
-						</div>
+				<div class="time_controls time_controls_stopped">
+					<div class="time_control time_subtract">
+						' . $form->make_input( $inputs['time_subtract'] ) . '
+					</div>
+					<div class="time_control time">
+						' . $form->make_input( $inputs['time'] ) . '
+					</div>
+					<div class="time_control time_add">
+						' . $form->make_input( $inputs['time_add'] ) . '
+					</div>
+					<div class="time_control time_start">
+						' . $form->make_input( $inputs['time_start'] ) . '
 					</div>
 				</div>
 			';
@@ -1964,10 +1988,10 @@ class SD_Meeting_Tool_Speakers
 		$rows[] = '</div>';
 		
 		$classes = implode( ' ', $classes );
-		$returnValue .= '<li speaker_id="' . $speaker->id. '" class="' . $classes . ' speaker speaker_id_' . $speaker->id. '">';
-		$returnValue .= '<div class="' . $classes . ' speaker speaker_id_' . $speaker->id. '">';
-		$returnValue .= implode( "\n", $rows );
-		return $returnValue;
+		$rv .= '<li speaker_id="' . $speaker->id. '" participant_id="' . $speaker->data->participant_id . '" class="' . $classes . ' speaker speaker_id_' . $speaker->id. '">';
+		$rv .= '<div class="' . $classes . ' speaker speaker_id_' . $speaker->id. '">';
+		$rv .= implode( "\n", $rows );
+		return $rv;
 	}
 	
 	private function get_admin_agenda( $speaker_list )
@@ -1983,14 +2007,38 @@ class SD_Meeting_Tool_Speakers
 		);
 
 		// Fill the agenda items
-		$agenda = apply_filters( 'sd_mt_get_agenda', $speaker_list->data->agenda_id );
+		$agenda = $this->filters( 'sd_mt_get_agenda', $speaker_list->data->agenda_id );
+		$current_item_id = $agenda->data->current_item_id;
+		
 		foreach( $agenda->items as $item )
 		{
-			$item_speakers = apply_filters( 'sd_mt_get_speakers', $speaker_list, $item->id );
-			$extra = count( $item_speakers );
-			$extra .= ( $speaker_list->data->speaker_agenda_item_id == $item->id ? '*' : '' );
+			$item_data = array();
+			
+			if ( $item->id == $current_item_id )
+				$item_data[] = $this->_( 'Current' );
+			
+			$selected_item = ( $speaker_list->data->speaker_agenda_item_id == $item->id );
+			if ( $selected_item )
+				$item_data[] = $this->_( 'Speaking' );
+			
+			// Count the speakers
+			$item_speakers = $this->filters( 'sd_mt_get_speakers', $speaker_list, $item->id );
+			$count = count( $item_speakers );
+			if ( $count > 0 )
+			{
+				if ( $count == 1 )
+					$item_data[] = count( $item_speakers ) . ' ' . $this->_( 'speaker' );
+				else
+					$item_data[] = count( $item_speakers ) . ' ' . $this->_( 'speakers' );
+			}
+			
+			if ( count( $item_data ) > 0 )
+				$item_data = implode( ', ', $item_data ) . ': ';
+			else
+				$item_data = '';
+			
 			// We want a counter of how many speakers each item has.
-			$inputs[ 'agenda_items' ]['options'][ $item->id ] = $extra . ' - ' . $item->data->name;
+			$inputs[ 'agenda_items' ]['options'][ $item->id ] = $item_data . $item->data->name;
 		}
 		return $form->make_input( $inputs[ 'agenda_items' ] );
 	}
@@ -2004,53 +2052,94 @@ class SD_Meeting_Tool_Speakers
 		else
 		{
 			if ( $list === null )
-				$list = apply_filters( 'sd_mt_get_list', $SD_Speaker_List->data->list_id );
+				$list = $this->filters( 'sd_mt_get_list', $SD_Speaker_List->data->list_id );
 			$id = $list->data->display_format_id;
 		}
-		return apply_filters( 'sd_mt_get_display_format', $id );
+		return $this->filters( 'sd_mt_get_display_format', $id );
 	}
 	
 	private function get_sorted_speaker_list( $SD_Meeting_Tool_Speaker_List, $agenda_item_id, $SD_Meeting_Tool_Display_Format )
 	{
-		$returnValue = array();
-		$speakers = apply_filters( 'sd_mt_get_speakers', $SD_Meeting_Tool_Speaker_List, $agenda_item_id );
+		$rv = array();
+		$speakers = $this->filters( 'sd_mt_get_speakers', $SD_Meeting_Tool_Speaker_List, $agenda_item_id );
 		foreach( $speakers as $speaker_id => $speaker )
 		{
-			$speaker->participant = apply_filters( 'sd_mt_get_participant', $speaker->data->participant_id );
-			$speaker->participant_name = apply_filters( 'sd_mt_display_participant', $speaker->participant, $SD_Meeting_Tool_Display_Format );
-			$returnValue[ $speaker->data->order ] = $speaker;
+			$speaker->participant = $this->filters( 'sd_mt_get_participant', $speaker->data->participant_id );
+			$speaker->participant_name = $this->filters( 'sd_mt_display_participant', $speaker->participant, $SD_Meeting_Tool_Display_Format );
+			$rv[ $speaker->data->order ] = $speaker;
 		}
-		ksort( $returnValue );
-		return $returnValue;
+		ksort( $rv );
+		return $rv;
 	}
 	
+	/**
+		@brief		Returns the speaker list log of a speaker list.
+		@param		$speaker_list
+					The speaker list object, whose log we will display.
+		
+		@return		The speaker list log, in HTML format.
+	**/
+	public function get_speaker_list_log( $speaker_list )
+	{
+		$agenda = $this->filters( 'sd_mt_get_agenda', $speaker_list->data->agenda_id );
+		$rv = '';
+
+		foreach( $agenda->items as $agenda_item )
+		{
+			$rv .= '<h3>' . $agenda_item->data->name . '</h3>';
+			
+			$speakers = $this->filters( 'sd_mt_get_speakers', $speaker_list, $agenda_item->id );
+			$speakers = SD_Meeting_Tool::sort_data_array( $speakers, 'order' );
+			// Put the speakers in a tree. K-i-s-s-i-n-g...
+			require_once( 'include/sd_tree.php' );
+			$tree = new sd_tree();
+			foreach( $speakers as $speaker )
+			{
+				$speaker_id = intval( $speaker->id );
+				$parent = $speaker->data->parent > 0 ? $speaker->data->parent : null ;
+				$tree->add( $speaker_id, $speaker, $parent );
+			}
+			$options = new stdClass();
+			$options->speaker_list = $speaker_list;
+			$options->display_format = $this->get_preferred_display_format( $speaker_list );
+			$options->tree = $tree;
+			$options->depth = 1;
+			$options->keys = $tree->get_subnodes();
+				
+			$rv .= '<ul class="log">';
+			$rv .= $this->display_logged_speakers( $options );
+			$rv .= '</ul>';
+		}
+		return $rv;
+	}
+		
 	private function display_current_speaker( $options )
 	{
-		$speaker_display = apply_filters( 'sd_mt_get_speaker_display', $options[ 'speaker_display_id' ] );
+		$speaker_display = $this->filters( 'sd_mt_get_speaker_display', $options[ 'speaker_display_id' ] );
 		if ( $speaker_display === false )
 			return;
 		
-		$speaker_list = apply_filters( 'sd_mt_get_speaker_list', $options[ 'speaker_list_id' ] );
+		$speaker_list = $this->filters( 'sd_mt_get_speaker_list', $options[ 'speaker_list_id' ] );
 		if ( $speaker_list === false )
 			return;
 		
 		$display_format = $options['display_format_id'];
-		$display_format = apply_filters( 'sd_mt_get_display_format', $display_format );
+		$display_format = $this->filters( 'sd_mt_get_display_format', $display_format );
 		if ( $display_format === false )
 			return;
 		
 		$speaker = $speaker_list->data->current_speaker;
-		$speaker = apply_filters( 'sd_mt_get_speaker', $speaker );
+		$speaker = $this->filters( 'sd_mt_get_speaker', $speaker );
 		if ( $speaker === false )
 			return;
 			
 		$participant = $speaker->data->participant_id;
-		$participant = apply_filters( 'sd_mt_get_participant', $participant );
+		$participant = $this->filters( 'sd_mt_get_participant', $participant );
 		if ( $participant === false )
 			return;
 		
 		$replace = array(
-			'#participant#' => apply_filters( 'sd_mt_display_participant', $participant, $display_format ),
+			'#participant#' => $this->filters( 'sd_mt_display_participant', $participant, $display_format ),
 			'#time_left#' => '<span class="time_left">00:00</span>',
 		);
 		
@@ -2071,16 +2160,16 @@ class SD_Meeting_Tool_Speakers
 	**/
 	private function display_current_speaker_list( $options )
 	{
-		$speaker_list = apply_filters( 'sd_mt_get_speaker_list', $options[ 'speaker_list_id' ] );
+		$speaker_list = $this->filters( 'sd_mt_get_speaker_list', $options[ 'speaker_list_id' ] );
 		if ( $speaker_list === false )
 			return;
 		
 		$display_format = $options['display_format_id'];
-		$display_format = apply_filters( 'sd_mt_get_display_format', $display_format );
+		$display_format = $this->filters( 'sd_mt_get_display_format', $display_format );
 		if ( $display_format === false )
 			return;
 		
-		$agenda = apply_filters( 'sd_mt_get_agenda', $speaker_list->data->agenda_id );
+		$agenda = $this->filters( 'sd_mt_get_agenda', $speaker_list->data->agenda_id );
 		if ( $agenda->data->current_item_id < 1 )
 			return;
 
@@ -2106,21 +2195,21 @@ class SD_Meeting_Tool_Speakers
 		$options->counter_has_not_spoken = 1;
 		$options->counter_has_spoken = 1;
 		
-		$returnValue = '<ul class="speaker_group speaker_group_depth_1">' . $this->display_current_speakers( $options ) .'</ul>';
+		$rv = '<ul class="speaker_group speaker_group_depth_1">' . $this->display_current_speakers( $options ) .'</ul>';
 		
-		return $returnValue;
+		return $rv;
 	}
 
-	private function display_current_speakers( $options )
+	private function display_current_speakers( &$options )
 	{
-		$returnValue = '';
+		$rv = '';
 		$tree = $options->tree;		// Convenience
 		foreach( $options->keys as $key )
 		{
 			$speaker = $tree->get_data( $key );
 			
 			$p_id = $speaker->data->participant_id;
-			$participant = apply_filters( 'sd_mt_get_participant', $p_id );
+			$participant = $this->filters( 'sd_mt_get_participant', $p_id );
 			
 			$classes = array();
 			$classes[] = 'participant';
@@ -2143,49 +2232,55 @@ class SD_Meeting_Tool_Speakers
 			}
 			
 			$classes = implode( ' ', $classes );
-			$returnValue .= '<li class="' . $classes . '">';
-			$returnValue .= '<div class="' . $classes . '">';
+			$rv .= '<li class="' . $classes . '">';
+			$rv .= '<div class="' . $classes . '">';
 			
-			$returnValue .= apply_filters( 'sd_mt_display_participant', $participant, $options->display_format );
+			$rv .= $this->filters( 'sd_mt_display_participant', $participant, $options->display_format );
 
-			$returnValue .= '</div>';
+			$rv .= '</div>';
 						
 			$subnodes = $tree->get_subnodes( $key );
 			if ( count( $subnodes ) > 0 )
 			{
-				$returnValue .= '<ul class="speaker_group speaker_group_depth_">';
+				$rv .= '<ul class="speaker_group speaker_group_depth_">';
 				foreach( $subnodes as $subnode )
 				{
 					$temp_options = clone( $options );
 					$temp_options->keys = array($subnode);
 					$temp_options->depth++;
-					$returnValue .= $this->display_current_speakers( &$temp_options );
+					$rv .= $this->display_current_speakers( $temp_options );
 					$options->counter_has_not_spoken = $temp_options->counter_has_not_spoken;
 				}
-				$returnValue .= '</ul>';
+				$rv .= '</ul>';
 			}
-			$returnValue .= '</li>';
+			$rv .= '</li>';
 		}
-		return $returnValue;
+		return $rv;
 	}
 	
 	private function display_logged_speakers( $options )
 	{
-		$returnValue = '';
+		$rv = '';
 		$tree = $options->tree;		// Convenience
 		foreach( $options->keys as $key )
 		{
 			$speaker = $tree->get_data( $key );
 			
 			$p_id = $speaker->data->participant_id;
-			$participant = apply_filters( 'sd_mt_get_participant', $p_id );
+			$participant = $this->filters( 'sd_mt_get_participant', $p_id );
 			
-			$returnValue .= '<li>';
-			$returnValue .= '<div>';
+			$rv .= '<li>';
+			$rv .= '<div>';
 			
-			$display = apply_filters( 'sd_mt_display_participant', $participant, $options->display_format );
+			$display = $this->filters( 'sd_mt_display_participant', $participant, $options->display_format );
 			
-			$returnValue .= sprintf( '%s,%s,%s,%s,%s',
+			$columns = 5;
+			$string = array();
+			for( $counter=0; $counter < $columns; $counter ++ )
+				$string[] = '<span class="column">%s';
+			$string = implode( '<span class="comma">,</span></span>', $string ) . '</span>';
+			
+			$rv .= sprintf( $string,
 				$display,
 				$this->seconds_to_time( $speaker->data->time_to_speak ),
 				date( 'H:i:s', $speaker->data->time_start ),
@@ -2193,24 +2288,24 @@ class SD_Meeting_Tool_Speakers
 				$this->seconds_to_time( $speaker->data->time_stop - $speaker->data->time_start )
 			);
 
-			$returnValue .= '</div>';
+			$rv .= '</div>';
 						
 			$subnodes = $tree->get_subnodes( $key );
 			if ( count( $subnodes ) > 0 )
 			{
-				$returnValue .= '<ul>';
+				$rv .= '<ul>';
 				foreach( $subnodes as $subnode )
 				{
 					$temp_options = clone( $options );
 					$temp_options->keys = array($subnode);
 					$temp_options->depth++;
-					$returnValue .= $this->display_logged_speakers( $temp_options );
+					$rv .= $this->display_logged_speakers( $temp_options );
 				}
-				$returnValue .= '</ul>';
+				$rv .= '</ul>';
 			}
-			$returnValue .= '</li>';
+			$rv .= '</li>';
 		}
-		return $returnValue;
+		return $rv;
 	}
 
 	/**
@@ -2278,13 +2373,13 @@ class SD_Meeting_Tool_Speakers
 		
 		$div_id = rand(0, PHP_INT_MAX);
 		
-		$returnValue = '<div id="current_speaker_' . $div_id . '" class="speaker_list_'.$attr['speaker_list_id'].' current_speaker">
+		$rv = '<div id="current_speaker_' . $div_id . '" class="speaker_list_'.$attr['speaker_list_id'].' current_speaker">
 			' . $display . '
 			</div>';		
 		
 		if ( isset( $attr['autorefresh'] ) && $attr['autorefresh'] == 'yes' )
 		{
-			$returnValue .= '
+			$rv .= '
 				<script type="text/javascript" src="'. $this->paths['url'] . '/js/sd_meeting_tool_speakers.js' .'"></script>
 				<script type="text/javascript" >
 					jQuery(document).ready(function($){
@@ -2301,7 +2396,7 @@ class SD_Meeting_Tool_Speakers
 				</script>
 			';
 		}
-		return $returnValue;
+		return $rv;
 	}
 	
 	/**
@@ -2328,7 +2423,7 @@ class SD_Meeting_Tool_Speakers
 		
 		$div_id = rand(0, PHP_INT_MAX);
 		
-		$returnValue = '<div id="current_speaker_list_' . $div_id . '" class="speaker_list_'.$attr['speaker_list_id'].' current_speaker_list">
+		$rv = '<div id="current_speaker_list_' . $div_id . '" class="speaker_list_'.$attr['speaker_list_id'].' current_speaker_list">
 			' . $display . '
 			</div>		
 		
@@ -2347,8 +2442,34 @@ class SD_Meeting_Tool_Speakers
 			</script>
 		';
 
-		return $returnValue;
+		return $rv;
 	}	
+
+	/**
+		@brief		Shows a speaker list log for a speaker list.
+		
+		@par		Attributes
+		
+		- speaker_list_id	ID of speaker list.
+		
+		@param		$attr		Attributes array.
+		@return					Speaker list log HTML.
+	**/
+	public function shortcode_speaker_list_log( $attr )
+	{
+		if ( !isset( $attr['speaker_list_id'] ) )
+			return;
+		
+		$speaker_list_id = intval( $attr[ 'speaker_list_id' ] );
+		$speaker_list = $this->filters( 'sd_mt_get_speaker_list', $speaker_list_id );
+		if ( $speaker_list === false )
+			return;
+		
+		$this->load_language();
+		
+		return $this->get_speaker_list_log( $speaker_list );
+	}
+	
 }
 $SD_Meeting_Tool_Speakers = new SD_Meeting_Tool_Speakers();
 

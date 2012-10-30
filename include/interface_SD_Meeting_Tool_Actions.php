@@ -27,16 +27,16 @@ interface interface_SD_Meeting_Tool_Actions
 		Delete an action.
 		
 		@wp_filter
-		@param		$SD_Meeting_Tool_Action		SD_Meeting_Tool_Action object to delete.
+		@param		SD_Meeting_Tool_Action		$action		SD_Meeting_Tool_Action object to delete.
 	**/
-	public function sd_mt_delete_action( $SD_Meeting_Tool_Action );
+	public function sd_mt_delete_action( $action );
 	
 	/**
 		Return an action.
 		
 		@wp_filter
-		@param		$action_id		Action ID to get.
-		@return						Returned SD_Meeting_Tool_Action, or false if it doesn't exist. 
+		@param		int		$action_id		Action ID to get.
+		@return		Returned SD_Meeting_Tool_Action, or false if it doesn't exist. 
 	**/
 	public function sd_mt_get_action( $action_id );
 	
@@ -52,8 +52,8 @@ interface interface_SD_Meeting_Tool_Actions
 		Returns an action item.
 		
 		@wp_filter
-		@param		$item_id							Item ID to get.
-		@return											Returned SD_Meeting_Tool_Action_Item item, else false if it doesn't exist.
+		@param		int		$item_id			Item ID to get.
+		@return		Returned SD_Meeting_Tool_Action_Item item, else false if it doesn't exist.
 	**/
 	public function sd_mt_get_action_item( $item_id );
 	
@@ -63,9 +63,9 @@ interface interface_SD_Meeting_Tool_Actions
 		Given an SD_Meeting_Tool_Action_Trigger it will go through the action's items and call each item action.
 		
 		@wp_action
-		@param		$SD_Meeting_Tool_Action_Trigger		Action trigger to distribute amonst the plugins.
+		@param		SD_Meeting_Tool_Action_Trigger		$trigger		Action trigger to distribute amonst the plugins.
 	**/
-	public function sd_mt_trigger_action( $SD_Meeting_Tool_Action_Trigger );
+	public function sd_mt_trigger_action( $trigger );
 	
 	/**
 		Creates or updates an action.
@@ -73,10 +73,10 @@ interface interface_SD_Meeting_Tool_Actions
 		If the ID is null, a new action will be created in the database.
 		
 		@wp_filter
-		@param		$SD_Meeting_Tool_Action				Action to create or update.
-		@return											The complete action.
+		@param		SD_Meeting_Tool_Action		$action		Action to create or update.
+		@return		The complete action.
 	**/
-	public function sd_mt_update_action( $SD_Meeting_Tool_Action );
+	public function sd_mt_update_action( $action );
 	
 	/**
 		Updates an action item.
@@ -84,8 +84,8 @@ interface interface_SD_Meeting_Tool_Actions
 		If the item does not have an ID, a new item will be created and the ID will be returned.
 		
 		@wp_filter
-		@param		$SD_Meeting_Tool_Action_Item		The item to update.
-		@return											Updated SD_Meeting_Tool_Action_Item item.
+		@param		SD_Meeting_Tool_Action_Item		$item		The item to update.
+		@return		Updated SD_Meeting_Tool_Action_Item item.
 	**/
-	public function sd_mt_update_action_item( $SD_Meeting_Tool_Action_Item );
+	public function sd_mt_update_action_item( $item );
 }

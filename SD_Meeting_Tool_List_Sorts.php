@@ -1,12 +1,12 @@
 <?php
 /*                                                                                                                                                                                                                                                             
 Plugin Name: SD Meeting Tool List Sorts
-Plugin URI: http://frimjukvara.sverigedemokraterna.se/meeting-control
+Plugin URI: https://it.sverigedemokraterna.se
 Description: Stores sort orders and sorts lists.
-Version: 1.0
+Version: 1.1
 Author: Sverigedemokraterna IT
-Author URI: http://frimjukvara.sverigedemokraterna.se
-Author Email: it@mindreantre.se
+Author URI: https://it.sverigedemokraterna.se
+Author Email: it@sverigedemokraterna.se
 */
 
 if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('You are not allowed to call this page directly.'); }
@@ -44,11 +44,14 @@ if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('You 
 	@author		Edward Plainview	edward.plainview@sverigedemokraterna.se
 */
 
-/**
-	List sorting plugin for SD Meeting Tool.
-	
+/**	
 	@brief		Plugin providing list sorting services for SD Meeting Tool.
 	@author		Edward Plainview	edward.plainview@sverigedemokraterna.se
+
+	@par		Changelog
+
+	@par		1.1
+	- Version bump.
 **/
 class SD_Meeting_Tool_List_Sorts
 	extends SD_Meeting_Tool_0
@@ -127,19 +130,16 @@ class SD_Meeting_Tool_List_Sorts
 		
 		if ( isset( $_GET['tab'] ) )
 		{
-			if ( $_GET['tab'] == $this->tab_slug( $this->_('Edit list sort') ) )
+			if ( $_GET['tab'] == 'edit' )
 			{
 				$tab_data['tabs']['edit'] = $this->_( 'Edit list sort');
 				$tab_data['functions']['edit'] = 'admin_edit';
 
-				$list_sort = apply_filters( 'sd_mt_get_list_sort', $_GET['id'] );
+				$list_sort = $this->filters( 'sd_mt_get_list_sort', $_GET['id'] );
 				if ( $list_sort === false )
 					wp_die( $this->_( 'Specified list sort does not exist!' ) );
 
-				$tab_data['page_titles']['edit'] = sprintf(
-					$this->_( 'Editing list sort: %s' ),
-					$list_sort->data->name
-				);
+				$tab_data['page_titles']['edit'] = $this->_( 'Editing list sort: %s', $list_sort->data->name );
 			}
 		}
 
@@ -150,7 +150,7 @@ class SD_Meeting_Tool_List_Sorts
 	{
 		$form = $this->form();
 		$returnValue = $form->start();
-		$fields = apply_filters( 'sd_mt_get_participant_fields', array() );
+		$fields = $this->filters( 'sd_mt_get_participant_fields', array() );
 
 		if ( isset( $_POST['action_submit'] ) && isset( $_POST['list_sorts'] ) )
 		{
@@ -158,14 +158,11 @@ class SD_Meeting_Tool_List_Sorts
 			{
 				foreach( $_POST['list_sorts'] as $list_sort_id => $ignore )
 				{
-					$list_sort = apply_filters( 'sd_mt_get_list_sort', $list_sort_id );
+					$list_sort = $this->filters( 'sd_mt_get_list_sort', $list_sort_id );
 					if ( $list_sort !== false )
 					{
-						apply_filters( 'sd_mt_delete_list_sort', $list_sort );
-						$this->message( sprintf(
-							$this->_( 'List sort <em>%s</em> deleted.' ),
-							$list_sort->data->name
-						) );
+						$this->filters( 'sd_mt_delete_list_sort', $list_sort );
+						$this->message( $this->_( 'List sort <em>%s</em> deleted.', $list_sort->data->name ) );
 					}
 				}
 			}	// delete
@@ -174,27 +171,21 @@ class SD_Meeting_Tool_List_Sorts
 		if ( isset( $_POST['create_list_sort'] ) )
 		{
 			$list_sort = new SD_Meeting_Tool_List_Sort();
-			$list_sort->data->name = sprintf(
-				$this->_( 'List sort created %s' ),
-				$this->now()
-			);
+			$list_sort->data->name = $this->_( 'List sort created %s', $this->now() );
 			// Assign the default field order... which is basically all the fields.
 			foreach( $fields as $field )
 				$list_sort->data->orders[] = new SD_Meeting_Tool_List_Sort_Order( $field );
-			$list_sort = apply_filters( 'sd_mt_update_list_sort', $list_sort );
+			$list_sort = $this->filters( 'sd_mt_update_list_sort', $list_sort );
 			
 			$edit_link = add_query_arg( array(
-				'tab' => $this->tab_slug( $this->_('Edit list sort') ),
+				'tab' => 'edit',
 				'id' => $list_sort->id,
 			) );
 			
-			$this->message( sprintf(
-				$this->_( 'List sort created! <a href="%s">Edit the newly-created list sort</a>.' ),
-				$edit_link
-			) );
+			$this->message( $this->_( 'List sort created! <a href="%s">Edit the newly-created list sort</a>.', $edit_link ) );
 		}	// create_list_sort
 
-		$list_sorts = apply_filters( 'sd_mt_get_all_list_sorts', null );
+		$list_sorts = $this->filters( 'sd_mt_get_all_list_sorts', null );
 
 		if ( count( $list_sorts ) < 1 )
 			$this->message( $this->_( 'There are no list sorts available.' ) );
@@ -215,7 +206,7 @@ class SD_Meeting_Tool_List_Sorts
 				);
 				
 				$edit_link = add_query_arg( array(
-					'tab' => $this->tab_slug( $this->_('Edit list sort') ),
+					'tab' => 'edit',
 					'id' => $list_sort->id,
 				) );
 				
@@ -334,11 +325,11 @@ class SD_Meeting_Tool_List_Sorts
 
 			if ($result === true)
 			{
-				$list_sort = apply_filters( 'sd_mt_get_list_sort', $id );
+				$list_sort = $this->filters( 'sd_mt_get_list_sort', $id );
 				$list_sort->id = $id;
 				$list_sort->data->name = $_POST['name'];
 				
-				apply_filters( 'sd_mt_update_list_sort', $list_sort );
+				$this->filters( 'sd_mt_update_list_sort', $list_sort );
 				
 				$this->message( $this->_('The list sort has been updated!') );
 				SD_Meeting_Tool::reload_message();
@@ -349,7 +340,7 @@ class SD_Meeting_Tool_List_Sorts
 			}
 		}
 		
-		$list_sort = apply_filters( 'sd_mt_get_list_sort', $id );
+		$list_sort = $this->filters( 'sd_mt_get_list_sort', $id );
 		
 		$inputs['name']['value'] = $list_sort->data->name;
 		
@@ -365,9 +356,7 @@ class SD_Meeting_Tool_List_Sorts
 			
 			<h3>' . $this->_('List sort settings') . '</h3>
 			
-			' . $this->display_form_table( array(
-				'inputs' => $inputs,
-			) ).'
+			' . $this->display_form_table( $inputs ).'
 
 			<p>
 				' . $form->make_input( $input_update ) . '
@@ -379,7 +368,7 @@ class SD_Meeting_Tool_List_Sorts
 		$items = '';
 		$t_body = '';
 
-		$fields = apply_filters( 'sd_mt_get_participant_fields', array() );
+		$fields = $this->filters( 'sd_mt_get_participant_fields', array() );
 		
 		foreach( $list_sort->data->orders as $order )
 		{
@@ -457,7 +446,7 @@ class SD_Meeting_Tool_List_Sorts
 		switch ( $_POST['type'] )
 		{
 			case 'switch_ascending':
-				$list_sort = apply_filters( 'sd_mt_get_list_sort', $_POST['id'] );
+				$list_sort = $this->filters( 'sd_mt_get_list_sort', $_POST['id'] );
 				if ( $list_sort === false )
 					return;
 				
@@ -471,10 +460,10 @@ class SD_Meeting_Tool_List_Sorts
 					}
 				}
 
-				apply_filters( 'sd_mt_update_list_sort', $list_sort );
+				$this->filters( 'sd_mt_update_list_sort', $list_sort );
 				break;
 			case 'reorder_orders':
-				$list_sort = apply_filters( 'sd_mt_get_list_sort', $_POST['id'] );
+				$list_sort = $this->filters( 'sd_mt_get_list_sort', $_POST['id'] );
 				if ( $list_sort === false )
 					return;
 				
@@ -494,7 +483,7 @@ class SD_Meeting_Tool_List_Sorts
 				
 				$list_sort->data->orders = $correct_fields;
 
-				apply_filters( 'sd_mt_update_list_sort', $list_sort );
+				$this->filters( 'sd_mt_update_list_sort', $list_sort );
 				
 				echo json_encode( array( 'ok' ) );
 				break;
@@ -524,7 +513,7 @@ class SD_Meeting_Tool_List_Sorts
 		$returnValue = array();
 		
 		foreach( $results as $result )
-			$returnValue[ $result['id'] ] = apply_filters( 'sd_mt_get_list_sort', $result['id'] );
+			$returnValue[ $result['id'] ] = $this->filters( 'sd_mt_get_list_sort', $result['id'] );
 
 		return SD_Meeting_Tool::sort_data_array( $returnValue, 'name' );
 	}
@@ -604,7 +593,7 @@ class SD_Meeting_Tool_List_Sorts
 	**/
 	private function rebuild_orders( $SD_Meeting_Tool_List_Sort )
 	{
-		$fields = apply_filters( 'sd_mt_get_participant_fields', array() );
+		$fields = $this->filters( 'sd_mt_get_participant_fields', array() );
 		
 		foreach( $SD_Meeting_Tool_List_Sort->data->orders as $index => $order )
 		{
@@ -628,7 +617,7 @@ class SD_Meeting_Tool_List_Sorts
 			$SD_Meeting_Tool_List_Sort->data->orders[] = $order;
 		}
 		
-		apply_filters( 'sd_mt_update_list_sort', $SD_Meeting_Tool_List_Sort );
+		$this->filters( 'sd_mt_update_list_sort', $SD_Meeting_Tool_List_Sort );
 		return $SD_Meeting_Tool_List_Sort;
 	}
 }

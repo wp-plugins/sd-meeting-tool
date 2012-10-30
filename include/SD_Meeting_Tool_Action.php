@@ -1,6 +1,6 @@
 <?php
 /**
-	Actions can be fired by using @ref SD_Meeting_Tool_Actions::sd_mt_trigger_action action.
+	Actions can be fired by using interface_SD_Meeting_Tool_Actions::sd_mt_trigger_action action.
 	
 	Actions are stored by the @ref SD_Meeting_Tool_Actions plugin.
 	

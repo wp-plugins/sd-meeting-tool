@@ -1,12 +1,12 @@
 <?php
 /*                                                                                                                                                                                                                                                             
 Plugin Name: SD Meeting Tool Participants
-Plugin URI: http://frimjukvara.sverigedemokraterna.se/meeting-control
+Plugin URI: https://it.sverigedemokraterna.se
 Description: Provides participant storage and manipulation.
-Version: 1.0
+Version: 1.1
 Author: Sverigedemokraterna IT
-Author URI: http://frimjukvara.sverigedemokraterna.se
-Author Email: it@mindreantre.se
+Author URI: https://it.sverigedemokraterna.se
+Author Email: it@sverigedemokraterna.se
 */
 
 if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('You are not allowed to call this page directly.'); }
@@ -52,6 +52,14 @@ if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('You 
 	An option underneath the import box specifies what to do with existing participants: ignore them, update them
 	or cancel the import.
 	
+	@par Updating participants
+	
+	When importing participants the admin can choose to update existing participants, which will update only
+	the fields of the participant that exist in the import.
+	
+	In other words: to update only specific columns for the participants, make sure that only those columns are
+	in the pasted spreadsheet.
+	
 	@par Editing participants
 	
 	Basic participant editing is available if the participant's ID number is clicked.
@@ -68,6 +76,13 @@ if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('You 
 	
 	@brief		Plugin providing participant storage and manipulation filters for SD Meeting Tool.
 	@author		Edward Plainview	edward.plainview@sverigedemokraterna.se
+
+	@par		Changelog
+	
+	@par		1.1
+	
+	- New: Clear participants function.
+	
 **/
 class SD_Meeting_Tool_Participants
 	extends SD_Meeting_Tool_0
@@ -82,6 +97,7 @@ class SD_Meeting_Tool_Participants
 		parent::__construct( __FILE__ );
 
 		// Internal filters
+		add_filter( 'sd_mt_clear_participants',					array( &$this, 'sd_mt_clear_participants' ) );
 		add_filter( 'sd_mt_delete_participant',					array( &$this, 'sd_mt_delete_participant' ) );
 		add_filter( 'sd_mt_get_participant',					array( &$this, 'sd_mt_get_participant' ) );
 		add_filter( 'sd_mt_get_all_participants',				array( &$this, 'sd_mt_get_all_participants' ) );
@@ -146,21 +162,21 @@ class SD_Meeting_Tool_Participants
 
 		if ( isset( $_GET['tab'] ) )
 		{
-			if ( $_GET['tab'] == $this->tab_slug( $this->_('Edit') ) )
+			if ( $_GET['tab'] == 'edit' )
 			{
 				$tab_data['tabs']['edit'] = $this->_( 'Edit' );
 				$tab_data['functions']['edit'] = 'admin_edit';
 
-				$participant = apply_filters( 'sd_mt_get_participant', $_GET['id'] );
+				$participant = $this->filters( 'sd_mt_get_participant', $_GET['id'] );
 				if ( $participant === false )
 					wp_die( $this->_( 'Specified participant does not exist!' ) );
 
-				$tab_data['page_titles']['edit'] = sprintf(
-					$this->_( 'Editing participant: %s' ),
-					$participant->id
-				);
+				$tab_data['page_titles']['edit'] = $this->_( 'Editing participant: %s', $participant->id );
 			}	// edit
 		}
+
+		$tab_data['tabs']['clear'] = $this->_( 'Clear' );
+		$tab_data['functions']['clear'] = 'admin_clear';
 
 		$tab_data['tabs']['import'] = $this->_( 'Import' );
 		$tab_data['functions']['import'] = 'admin_import';
@@ -176,23 +192,20 @@ class SD_Meeting_Tool_Participants
 			{
 				foreach( $_POST['participants'] as $participant_id => $ignore )
 				{
-					$participant = apply_filters( 'sd_mt_get_participant', $participant_id );
+					$participant = $this->filters( 'sd_mt_get_participant', $participant_id );
 					if ( $participant !== false )
 					{
-						apply_filters( 'sd_mt_delete_participant', $participant );
-						$this->message( sprintf(
-							$this->_( 'Participant <em>%s</em> deleted.' ),
-							$participant_id
-						) );
+						$this->filters( 'sd_mt_delete_participant', $participant );
+						$this->message( $this->_( 'Participant <em>%s</em> deleted.', $participant_id ) );
 					}
 				}
 			}	// delete
 		}
 		
 		$form = $this->form();
-		$returnValue = $form->start();
+		$rv = $form->start();
 		
-		$participants = apply_filters( 'sd_mt_get_all_participants', null );
+		$participants = $this->filters( 'sd_mt_get_all_participants', null );
 		
 		if ( count( $participants ) < 1 )
 		{
@@ -200,7 +213,7 @@ class SD_Meeting_Tool_Participants
 		}
 		else
 		{
-			$fields = apply_filters( 'sd_mt_get_participant_fields', array() );
+			$fields = $this->filters( 'sd_mt_get_participant_fields', array() );
 			$t_head = '';
 			foreach( $fields as $field )
 			{
@@ -237,7 +250,7 @@ class SD_Meeting_Tool_Participants
 					{
 						// Make the ID linkable and editable
 						$url = add_query_arg( array(
-							'tab' => $this->tab_slug( $this->_('Edit') ),
+							'tab' => 'edit',
 							'id' => $participant->id,
 						) );
 						$participant->id = sprintf(
@@ -280,7 +293,7 @@ class SD_Meeting_Tool_Participants
 				'name' => 'check',
 			);
 			
-			$returnValue .= '
+			$rv .= '
 				<p>
 					' . $form->make_label( $input_actions ) . '
 					' . $form->make_input( $input_actions ) . '
@@ -298,15 +311,15 @@ class SD_Meeting_Tool_Participants
 					</tbody>
 				</table>
 				<p>
-					' . sprintf( $this->_('%s participants.'), count($participants) ) . '
+					' . $this->_('%s participants.', count($participants) ) . '
 				</p>
 			';
 		}
 
-		$returnValue .= $form->stop();
+		$rv .= $form->stop();
 
 		wp_enqueue_script( 'jquery-ui' );
-		$returnValue .= '
+		$rv .= '
 			<script type="text/javascript" src="'. $this->paths["url"] . "/js/jquery.tablesorter.min.js" .'"></script>
 			<script type="text/javascript">
 				jQuery(document).ready(function($)
@@ -315,16 +328,45 @@ class SD_Meeting_Tool_Participants
 				}); 
 			</script>
 		';
-		echo $returnValue;
+		echo $rv;
+	}
+	
+	public function admin_clear()
+	{
+		$rv = '';
+		$form = $this->form();
+		
+		if ( isset( $_POST[ 'clear' ] ) )
+		{
+			$this->filters( 'sd_mt_clear_participants' );
+			$this->message_( 'All participants have been cleared from the database.' );
+		}
+		
+		$inputs = array(
+			'clear' => array(
+				'css_class' => 'button-primary',
+				'name' => 'clear',
+				'type' => 'submit',
+				'value' => $this->_( 'Clear all participants' ),
+			),
+		);
+		
+		$rv .= $this->p_( 'Clearing the participants will completely remove them and clear the field data, making the Meeting Tool ready to import new participants from scratch.' );
+		
+		$rv .= $form->start();
+		$rv .= $this->display_form_table( $inputs );
+		$rv .= $form->stop();
+		
+		echo $rv;
 	}
 	
 	public function admin_edit()
 	{
 		$form = $this->form();
-		$returnValue = $form->start();
+		$rv = $form->start();
 		$id = $_GET['id'];
-		$participant = apply_filters( 'sd_mt_get_participant', $_GET['id'] );
-		$fields = apply_filters( 'sd_mt_get_participant_fields', array() );
+		$participant = $this->filters( 'sd_mt_get_participant', $_GET['id'] );
+		$fields = $this->filters( 'sd_mt_get_participant_fields', array() );
 		
 		if ( isset( $_POST['update'] ) )
 		{
@@ -341,7 +383,7 @@ class SD_Meeting_Tool_Participants
 				$participant->$field_name = trim( stripslashes( $_POST[ $field_name ] ) );
 			}
 			
-			apply_filters( 'sd_mt_update_participant', $participant );
+			$this->filters( 'sd_mt_update_participant', $participant );
 			$this->message( $this->_('The participant has been updated!') );
 		}
 		
@@ -376,16 +418,16 @@ class SD_Meeting_Tool_Participants
 			'css_class' => 'button-primary',
 		);
 		
-		$returnValue .= $this->display_form_table( array( 'inputs' => $inputs ) )
+		$rv .= $this->display_form_table( $inputs )
 		. $form->stop();
 		
-		echo $returnValue;
+		echo $rv;
 	}
 	
 	public function admin_import()
 	{
 		$form = $this->form();
-		$returnValue = $form->start();
+		$rv = $form->start();
 		
 		if ( isset( $_POST['submit'] ) )
 			$this->import_users( $_POST );
@@ -417,7 +459,7 @@ class SD_Meeting_Tool_Participants
 			),
 		);
 		
-		$returnValue .= '
+		$rv .= '
 			<p>
 				' . $form->make_label( $inputs['calc'] ) . '<br />
 				' . $form->make_input( $inputs['calc'] ) . '
@@ -433,13 +475,25 @@ class SD_Meeting_Tool_Participants
 			</p>
 		';
 		
-		echo $returnValue;
+		echo $rv;
 	}
 	
 	// --------------------------------------------------------------------------------------------
 	// ----------------------------------------- Filters
 	// --------------------------------------------------------------------------------------------
 
+	public function sd_mt_clear_participants()
+	{
+		global $blog_id;
+
+		// Delete the participants
+		$query = "DELETE FROM `".$this->wpdb->base_prefix."sd_mt_participants` WHERE `blog_id` = '".$blog_id."'";
+		$this->query( $query );
+		
+		// And reset the fields.
+		$this->update_local_option( 'fields', array() );
+	}
+	
  	public function sd_mt_delete_participant( $SD_Meeting_Tool_Participant )
 	{
 		global $blog_id;
@@ -454,12 +508,12 @@ class SD_Meeting_Tool_Participants
 		$query = "SELECT * FROM `".$this->wpdb->base_prefix."sd_mt_participants` WHERE `blog_id` = '".$blog_id."'";
 		$results = $this->query( $query );
 		
-		$returnValue = array();
+		$rv = array();
 		foreach( $results as $result )
-			$returnValue[ $result['id'] ] = $this->participant_sql_to_object( $result );
+			$rv[ $result['id'] ] = $this->participant_sql_to_object( $result );
 		
-		ksort( $returnValue );
-		return $returnValue;
+		ksort( $rv );
+		return $rv;
 	}
 	
 	public function sd_mt_get_participant( $participant_id )
@@ -490,7 +544,7 @@ class SD_Meeting_Tool_Participants
 	
 	public function sd_mt_update_participant( $SD_Meeting_Tool_Participant )
 	{
-		$participant = apply_filters( 'sd_mt_get_participant', $SD_Meeting_Tool_Participant->id );
+		$participant = $this->filters( 'sd_mt_get_participant', $SD_Meeting_Tool_Participant->id );
 		$insert = false;
 		
 		if ( $participant === false )
@@ -623,14 +677,14 @@ class SD_Meeting_Tool_Participants
 			$fields[] = $field;
 		}
 		
-		$this->update_local_option( 'fields', $fields );
-		
 		array_shift( $rows );		// The first line was the headers. Now only the data is left.
 		
 		if ( $POST['existing'] == 'cancel' )
-			$existing_users = apply_filters( 'sd_mt_get_all_participants', null );
+			$existing_users = $this->filters( 'sd_mt_get_all_participants', null );
 		else
 			$existing_users = array();
+		
+		$update = ($POST['existing'] == 'update');
 		
 		// Begin parsing!
 		foreach( $rows as $index => $row )
@@ -638,10 +692,7 @@ class SD_Meeting_Tool_Participants
 			$columns = explode( "\t", $row );
 			if ( count($columns) != count($headers ) )
 			{
-				$this->error( sprintf(
-					$this->_( 'Row %s does not have the same amount of columns as the first row!' ),
-					$index
-				) );
+				$this->error( $this->_( 'Row %s does not have the same amount of columns as the first row!', $index ) );
 				return;
 			}
 			
@@ -653,24 +704,24 @@ class SD_Meeting_Tool_Participants
 			}
 			
 			// Now decide what to do with this imported user.
-			$update = false;	// Send an update filter.
+			$save = true;
 			
 			// Does this user exist?
-			$user = apply_filters( 'sd_mt_get_participant', $participant->id );
-			if ( $user !== false )
+			$old_participant = $this->filters( 'sd_mt_get_participant', $participant->id );
+			if ( $old_participant !== false )
 			{
 				// User already exists. What now?
 				switch ( $POST['existing'] )
 				{
 					case 'ignore':
 						$count['ignored']++;
+						$save = false;
 						break;
 					case 'cancel':
-						$this->error( sprintf( $this->_( 'User %s already exists! Aborting import.' ), $participant->id ) );
+						$this->error( $this->_( 'User %s already exists! Aborting import.', $participant->id ) );
 						return;
 						break;
 					case 'update':
-						$update = true;
 						$count['updated']++;
 						break;
 				}
@@ -678,15 +729,22 @@ class SD_Meeting_Tool_Participants
 			else
 			{
 				$count['created']++;
-				$update = true;
+				$save = true;
 			}
 			
-			if ( $update )
-				apply_filters( 'sd_mt_update_participant', $participant );
+			if ( $save )
+			{
+				// Update only the fields of the participant that are in the import.
+				foreach( $participant as $field => $value )
+					$old_participant->$field = $value;
+				$this->filters( 'sd_mt_update_participant', $old_participant );
+			}
 		}
 		
-		$this->message( sprintf(
-			$this->_('Import comlete. %s users created. %s users updated. %s users ignored.'),
+		if ( ! $update )
+			$this->update_local_option( 'fields', $fields );
+		
+		$this->message( $this->_('Import comlete. %s users created. %s users updated. %s users ignored.',
 			$count['created'],
 			$count['updated'],
 			$count['ignored']

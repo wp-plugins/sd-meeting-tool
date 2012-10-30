@@ -1,12 +1,12 @@
 <?php
 /*                                                                                                                                                                                                                                                             
 Plugin Name: SD Meeting Tool Display Formats
-Plugin URI: http://frimjukvara.sverigedemokraterna.se/meeting-control
+Plugin URI: https://it.sverigedemokraterna.se
 Description: Controls how plugins display participants.
-Version: 1.0
+Version: 1.1
 Author: Sverigedemokraterna IT
-Author URI: http://frimjukvara.sverigedemokraterna.se
-Author Email: it@mindreantre.se
+Author URI: https://it.sverigedemokraterna.se
+Author Email: it@sverigedemokraterna.se
 */
 
 if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('You are not allowed to call this page directly.'); }
@@ -73,6 +73,11 @@ if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('You 
 	
 	@brief		Plugin providing participant display formats for internal (admin) use.
 	@author		Edward Plainview	edward.plainview@sverigedemokraterna.se
+
+	@par		Changelog
+
+	@par		1.1
+	- Version bump.
 **/
 class SD_Meeting_Tool_Display_Formats
 	extends SD_Meeting_Tool_0
@@ -149,19 +154,16 @@ class SD_Meeting_Tool_Display_Formats
 
 		if ( isset( $_GET['tab'] ) )
 		{
-			if ( $_GET['tab'] == $this->tab_slug( $this->_('Edit') ) )
+			if ( $_GET['tab'] == 'edit' )
 			{
 				$tab_data['tabs']['edit'] = $this->_( 'Edit');
 				$tab_data['functions']['edit'] = 'admin_edit';
 				
-				$display_format = apply_filters( 'sd_mt_get_display_format', $_GET['id'] );
+				$display_format = $this->filters( 'sd_mt_get_display_format', $_GET['id'] );
 				if ( $display_format === false )
 					wp_die( $this->_( 'Specified display format does not exist!' ) );
 				
-				$tab_data['page_titles']['edit'] = sprintf(
-					$this->_( 'Editing display format: %s' ),
-					$display_format->data->name
-				);
+				$tab_data['page_titles']['edit'] = $this->_( 'Editing display format: %s', $display_format->data->name );
 			}
 		}
 
@@ -173,21 +175,15 @@ class SD_Meeting_Tool_Display_Formats
 		if ( isset( $_POST['create_display_format'] ) )
 		{
 			$display_format = new SD_Meeting_Tool_Display_Format();
-			$display_format->data->name = sprintf(
-				$this->_( 'Display format created %s' ),
-				$this->now()
-			);
-			$display_format = apply_filters( 'sd_mt_update_display_format', $display_format );
+			$display_format->data->name = $this->_( 'Display format created %s', $this->now() );
+			$display_format = $this->filters( 'sd_mt_update_display_format', $display_format );
 			
 			$edit_link = add_query_arg( array(
-				'tab' => $this->tab_slug( $this->_('Edit') ),
+				'tab' => 'edit',
 				'id' => $display_format->id,
 			) );
 			
-			$this->message( sprintf(
-				$this->_( 'Display format created! <a href="%s">Edit the newly-created display format</a>.' ),
-				$edit_link
-			) );
+			$this->message( $this->_( 'Display format created! <a href="%s">Edit the newly-created display format</a>.', $edit_link ) );
 		}
 
 		if ( isset( $_POST['action_submit'] ) && isset( $_POST['display_formats'] ) )
@@ -196,25 +192,19 @@ class SD_Meeting_Tool_Display_Formats
 			{
 				foreach( $_POST['display_formats'] as $display_format_id => $ignore )
 				{
-					$display_format = apply_filters( 'sd_mt_get_display_format', $display_format_id );
+					$display_format = $this->filters( 'sd_mt_get_display_format', $display_format_id );
 					if ( $display_format !== false )
 					{
 						$display_format->id = null;
-						$display_format->data->name = sprintf(
-							$this->_( 'Clone of %s' ),
-							$display_format->data->name
-						);
-						$display_format = apply_filters( 'sd_mt_update_display_format', $display_format );
+						$display_format->data->name = $this->_( 'Clone of %s', $display_format->data->name );
+						$display_format = $this->filters( 'sd_mt_update_display_format', $display_format );
 						
 						$edit_link = add_query_arg( array(
-							'tab' => $this->tab_slug( $this->_('Edit') ),
+							'tab' => 'edit',
 							'id' => $display_format->id,
 						) );
 						
-						$this->message( sprintf(
-							$this->_( 'Display format cloned! <a href="%s">Edit the newly-cloned display format</a>.' ),
-							$edit_link
-						) );
+						$this->message( $this->_( 'Display format cloned! <a href="%s">Edit the newly-cloned display format</a>.', $edit_link ) );
 					}
 				}
 			}	// clone
@@ -222,14 +212,11 @@ class SD_Meeting_Tool_Display_Formats
 			{
 				foreach( $_POST['display_formats'] as $display_format_id => $ignore )
 				{
-					$display_format = apply_filters( 'sd_mt_get_display_format', $display_format_id );
+					$display_format = $this->filters( 'sd_mt_get_display_format', $display_format_id );
 					if ( $display_format !== false )
 					{
-						apply_filters( 'sd_mt_delete_display_format', $display_format );
-						$this->message( sprintf(
-							$this->_( 'Display format <em>%s</em> deleted.' ),
-							$display_format_id
-						) );
+						$this->filters( 'sd_mt_delete_display_format', $display_format );
+						$this->message( $this->_( 'Display format <em>%s</em> deleted.', $display_format_id ) );
 					}
 				}
 			}	// delete
@@ -238,7 +225,7 @@ class SD_Meeting_Tool_Display_Formats
 		$form = $this->form();
 		$returnValue = $form->start();
 		
-		$display_formats = apply_filters( 'sd_mt_get_all_display_formats', array() );
+		$display_formats = $this->filters( 'sd_mt_get_all_display_formats', array() );
 		
 		if ( count( $display_formats ) < 1 )
 		{
@@ -258,7 +245,7 @@ class SD_Meeting_Tool_Display_Formats
 				);
 				
 				$edit_link = add_query_arg( array(
-					'tab' => $this->tab_slug( $this->_('Edit') ),
+					'tab' => 'edit',
 					'id' => $display_format->id,
 				) );
 				
@@ -377,11 +364,11 @@ class SD_Meeting_Tool_Display_Formats
 
 			if ($result === true)
 			{
-				$display_format = apply_filters( 'sd_mt_get_display_format', $id );
+				$display_format = $this->filters( 'sd_mt_get_display_format', $id );
 				$display_format->data->name = $_POST['name'];
 				$display_format->data->display_format = $this->parse_display_format_string( stripslashes( $_POST['display_format'] ) );
 								
-				apply_filters( 'sd_mt_update_display_format', $display_format );
+				$this->filters( 'sd_mt_update_display_format', $display_format );
 				
 				$this->message( $this->_('The display_format has been updated!') );
 				SD_Meeting_Tool::reload_message();
@@ -392,7 +379,7 @@ class SD_Meeting_Tool_Display_Formats
 			}
 		}
 
-		$display_format = apply_filters( 'sd_mt_get_display_format', $id );
+		$display_format = $this->filters( 'sd_mt_get_display_format', $id );
 		
 		$inputs['name']['value'] = $display_format->data->name;
 		$inputs['display_format']['value'] = $this->parse_display_format_array( $display_format->data->display_format );
@@ -402,9 +389,7 @@ class SD_Meeting_Tool_Display_Formats
 		$returnValue .= '
 			' . $form->start() . '
 			
-			' . $this->display_form_table( array(
-				'inputs' => $inputs,
-			) ). '
+			' . $this->display_form_table( $inputs ). '
 
 			' . $form->stop() . '
 		';
@@ -419,7 +404,7 @@ class SD_Meeting_Tool_Display_Formats
 		';
 		
 		$t_body = '';
-		$fields = apply_filters( 'sd_mt_get_participant_fields', array() );
+		$fields = $this->filters( 'sd_mt_get_participant_fields', array() );
 		foreach( $fields as $field )
 		{
 			$t_body .= '
@@ -451,10 +436,10 @@ class SD_Meeting_Tool_Display_Formats
 	// ----------------------------------------- Filters
 	// --------------------------------------------------------------------------------------------
 
- 	public function sd_mt_delete_display_format( $SD_Meeting_Tool_Display_Format )
+ 	public function sd_mt_delete_display_format( $format )
 	{
 		global $blog_id;
-		$id = $SD_Meeting_Tool_Display_Format->id;
+		$id = $format->id;
 		$query = "DELETE FROM `".$this->wpdb->base_prefix."sd_mt_display_formats` WHERE `id` = '$id' AND `blog_id` = '".$blog_id."'";
 		$this->query( $query );
 	}
@@ -465,7 +450,7 @@ class SD_Meeting_Tool_Display_Formats
  		if ( $SD_Meeting_Tool_Display_Format === false )
  			return $SD_Meeting_Tool_Participant->id;
  		if ( !isset( $this->cache['participant_fields'] ) )
- 			$this->cache['participant_fields'] = apply_filters( 'sd_mt_get_participant_fields', array() );
+ 			$this->cache['participant_fields'] = $this->filters( 'sd_mt_get_participant_fields', array() );
  		$fields = $this->cache['participant_fields'];
  		
  		$returnValue = '';
@@ -483,7 +468,7 @@ class SD_Meeting_Tool_Display_Formats
  							if ( $field->name == $format['keyword'] )
  							{
  								$field->value = $SD_Meeting_Tool_Participant->$value;
-		 						$field = apply_filters( 'sd_mt_display_participant_field', $field );
+		 						$field = $this->filters( 'sd_mt_display_participant_field', $field );
 		 						$returnValue .= $field->value;
  								break;
  							}
@@ -575,7 +560,7 @@ class SD_Meeting_Tool_Display_Formats
 	**/
 	private function parse_display_format_string( $string )
 	{
-		$fields = apply_filters( 'sd_mt_get_participant_fields', null );
+		$fields = $this->filters( 'sd_mt_get_participant_fields', null );
 		$returnValue = array();
 		
 		$matches = preg_split( '/(\#[a-z_]*\#)/', $string, -1, PREG_SPLIT_DELIM_CAPTURE);

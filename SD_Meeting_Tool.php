@@ -1,12 +1,12 @@
 <?php
 /*                                                                                                                                                                                                                                                             
 Plugin Name: SD Meeting Tool Base
-Plugin URI: http://frimjukvara.sverigedemokraterna.se/meeting-control
+Plugin URI: https://it.sverigedemokraterna.se
 Description: Handle meetings and conferences.
-Version: 1.0
+Version: 1.1
 Author: Sverigedemokraterna IT
-Author URI: http://frimjukvara.sverigedemokraterna.se
-Author Email: it@mindreantre.se
+Author URI: https://it.sverigedemokraterna.se
+Author Email: it@sverigedemokraterna.se
 */
 
 if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('You are not allowed to call this page directly.'); }
@@ -155,13 +155,19 @@ require_once( 'include/SD_Meeting_Tool_Registration_UI.php' );
 /**
 	SD Meeting Tool base.
 	
-	@section	section_actions_fired	Actions fired
+	@par		Actions fired
 	
 	- sd_mt_admin_menu - Menu has been created, allow modules to create submenus.
 
-	@section	section_filters_fired	Filters fired
+	@par		Filters fired
 	
 	- sd_mt_overview_tabs - Allow modules to create their own overview tabs.
+	
+	@par		Changelog
+	
+	@par		1.1
+	
+	- Added: Settings tab.
 	
 	@brief		Base plugin for the Meeting Tool.
 	@author		Edward Plainview	edward.plainview@sverigedemokraterna.se
@@ -171,7 +177,7 @@ class SD_Meeting_Tool extends SD_Meeting_Tool_0
 	/**
 		Local options.
 		
-		role_use Minimum role needed to access MT at all.
+		- role_use Minimum role needed to access MT at all.
 		
 		@var	$local_options
 	**/
@@ -196,7 +202,7 @@ class SD_Meeting_Tool extends SD_Meeting_Tool_0
 	}
 
 	/**
-	*	Shows the admin menu.
+		@brief		Shows the admin menu.
 	**/
 	public function admin_menu()
 	{
@@ -212,7 +218,7 @@ class SD_Meeting_Tool extends SD_Meeting_Tool_0
 				null
 			);
 
-			$menus = apply_filters( 'sd_mt_admin_menu', array() );
+			$menus = $this->filters( 'sd_mt_admin_menu', array() );
 			ksort( $menus );
 			foreach( $menus as $menu )
 				add_submenu_page( $menu[0], $menu[1], $menu[2], $menu[3], $menu[4], $menu[5] ); 
@@ -235,9 +241,65 @@ class SD_Meeting_Tool extends SD_Meeting_Tool_0
 			'functions' =>	array(),
 		);
 				
-		$tab_data = apply_filters( 'sd_mt_overview_tabs', $tab_data );
+		$tab_data['tabs']['overview'] = $this->_( 'Overview' );
+		$tab_data['functions']['overview'] = 'admin_overview';
+
+		$tab_data['tabs']['settings'] = $this->_( 'Settings' );
+		$tab_data['functions']['settings'] = 'admin_settings';
+
+		$tab_data = $this->filters( 'sd_mt_overview_tabs', $tab_data );
 		
 		$this->tabs($tab_data);
+	}
+	
+	/**
+		@brief		An overview of the situation.
+	**/
+	public function admin_overview()
+	{
+		$rv = '';
+		
+		$rv .= $this->_( 'No overview yet.' );
+		
+		echo $rv;
+	}
+	
+	/**
+		@brief		General settings.
+	**/
+	public function admin_settings()
+	{
+		$rv = '';
+		$form = $this->form();
+		
+		if ( isset( $_POST[ 'update' ] ) )
+		{
+			$this->update_site_option( 'role_use', $_POST[ 'role_use' ] );
+			$this->message_( 'The settings have been updated!' );
+		}
+		
+		$inputs = array(
+			'role_use' => array(
+				'name' => 'role_use',
+				'type' => 'select',
+				'label' => $this->_( 'Access role' ),
+				'description' => $this->_( 'What is the minimum use role needed to access the plugin?' ),
+				'options' => $this->roles_as_options(),
+				'value' => $this->get_site_option( 'role_use' ),
+			),
+			'update' => array(
+				'name' => 'update',
+				'type' => 'submit',
+				'value' => $this->_( 'Update settings' ),
+				'css_class' => 'button-primary',
+			),
+		);
+		
+		$rv = $form->start();
+		$rv .= $this->display_form_table( $inputs );
+		$rv .= $form->stop();
+
+		echo $rv;
 	}
 	
 	// --------------------------------------------------------------------------------------------
@@ -245,9 +307,9 @@ class SD_Meeting_Tool extends SD_Meeting_Tool_0
 	// --------------------------------------------------------------------------------------------
 	
 	/**
-		Add tabs to admin overview.
+		@brief		Add tabs to admin overview.
 		
-		@param		$tab_data		array		Tab data to add to.
+		@param		array		$tab_data		Tab data to add to.
 	**/ 
 	public function filter_overview_tabs( $tab_data )
 	{
@@ -259,24 +321,12 @@ class SD_Meeting_Tool extends SD_Meeting_Tool_0
 		return $tab_data;
 	}
 
-	/**
-		An overview of the situation.
-	**/
-	public function admin_overview()
-	{
-		$returnValue = '';
-		
-		$returnValue .= $this->_( 'No overview yet.' );
-		
-		echo $returnValue;
-	}
-	
 	// --------------------------------------------------------------------------------------------
 	// ----------------------------------------- Misc
 	// --------------------------------------------------------------------------------------------
 
 	/**
-		Shows a message that links to a reload of this page.
+		@brief		Shows a message that links to a reload of this page.
 	**/
 	public static function reload_message()
 	{
@@ -295,11 +345,11 @@ class SD_Meeting_Tool extends SD_Meeting_Tool_0
 	}
 	
 	/**
-		Makes a standard back link using a text string and a link.
+		@brief		Makes a standard back link using a text string and a link.
 		
-		@param	$text		Text to show on link.
-		@param	$url		URL
-		@return				HTML string.
+		@param		string		$text		Text to show on link.
+		@param		string		$url		URL
+		@return		HTML string.
 	**/
 	public static function make_back_link( $text, $url )
 	{
@@ -307,7 +357,7 @@ class SD_Meeting_Tool extends SD_Meeting_Tool_0
 	}
 
 	/**
-		Returns a random uuid.
+		@brief		Returns a random uuid.
 		
 		@return		A SHA512 of a random number.
 	**/
@@ -321,24 +371,24 @@ class SD_Meeting_Tool extends SD_Meeting_Tool_0
 	/**
 		Sorts an array of objects with the key stored in the array item's ->data field.
 		
-		@param		$array		Array to sort
-		@param		@key		Which key in the array to sort by.
+		@param		array		$array		Array to sort
+		@param		mixed		$key		Which key in the array to sort by.
 		@return		The sorted array.
 	**/
 	public static function sort_data_array( $array, $key )
 	{
 		// In order to be able to sort a bunch of objects, we have to extract the key and use it as a key in another array.
 		// But we can't just use the key, since there could be duplicates, therefore we attach a random value.
-		$rand = rand(0, PHP_INT_MAX / 2);
 		$sorted = array();
 		foreach( $array as $index => $item )
 		{
 			do
 			{
-				if ( is_int( $item->data->$key ) )
-					$random_key = $rand + $item->data->$key;
-				else
-					$random_key = $item->data->$key . '-' . $rand;
+				$new_key = $item->data->$key;
+				if ( is_int( $new_key ) )
+					$new_key = str_pad( $new_key, 32, '0', STR_PAD_LEFT );
+				$rand = rand(0, PHP_INT_MAX / 10);
+				$random_key = $new_key . '_' . $rand;
 			}
 			while ( isset( $sorted[ $random_key ] ) );
 			$sorted[ $random_key ] = array( 'key' => $index, 'value' => $item );
@@ -346,19 +396,19 @@ class SD_Meeting_Tool extends SD_Meeting_Tool_0
 		ksort( $sorted );
 		
 		// The array has been sorted, we want the original array again.
-		$returnValue = array();
+		$rv = array();
 		foreach( $sorted as $item )
-			$returnValue[ $item['key'] ] = $item['value'];
+			$rv[ $item['key'] ] = $item['value'];
 			
-		return $returnValue;
+		return $rv;
 	}
 
 	/**
-		Converts array values into ints.
+		@brief		Converts array values into ints.
 		
 		Can and will recurse subarrays.
 		
-		@param		$array		Array of values to convert to ints.
+		@param		array		$array		Array of values to convert to ints.
 		@return		The integerized array.
 	**/
 	public static function array_intval( $array )
@@ -374,11 +424,11 @@ class SD_Meeting_Tool extends SD_Meeting_Tool_0
 	}
 	
 	/**
-		Does basically the same thing as Wordpress' check_admin_referrer, but with even more checks.
+		@brief		Does the same thing as Wordpress' check_admin_referrer, but with even more checks.
 
-		@param		$action		Nonce action name
-		@param		$key		Key in POST where nonce is stored.
-		@return					True if the nonce checks out.
+		@param		string		$action		Nonce action name
+		@param		string		$key		Key in POST where nonce is stored.
+		@return		True if the nonce checks out.
 	**/
 	public static function check_admin_referrer( $action, $key = 'ajaxnonce' )
 	{
@@ -388,12 +438,12 @@ class SD_Meeting_Tool extends SD_Meeting_Tool_0
 	}
 
 	/**
-		Check that the response hash has changed.
+		@brief		Check that the response hash has changed.
 		
 		If not, the data key is emptied.
 		
-		@param	$response		An array containing the keys hash and html.
-		@param	$hash			"Old" hash to check. If it's different the data is kept.
+		@param		array		$response		An array containing the keys hash and html.
+		@param		string		$hash			"Old" hash to check. If it's different the data is kept.
 	**/
 	public function optimize_response( &$response, $hash )
 	{

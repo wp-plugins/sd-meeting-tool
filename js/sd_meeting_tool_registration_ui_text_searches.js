@@ -63,7 +63,8 @@ sd_meeting_tool_registration_ui_text_searches = searches = {
 		
 		options = searches.ajaxoptions;
 		options.type = 'fetch_latest_list';
-		$.post( options.ajaxurl, options, function(data){
+		$.post( options.ajaxurl, options, function(data)
+		{
 			$('.latest_list').html( data );
 		} );
 		searches.settings.latest_list.timeout = setTimeout( "sd_meeting_tool_registration_ui_text_searches.fetch_latest_list()", searches.settings.latest_list_refresh );
@@ -109,7 +110,7 @@ sd_meeting_tool_registration_ui_text_searches = searches = {
 		// Several hits and cursor used.
 
 		var value = 0;
-		var hits = $('option', '#__participant_lookup');
+		var hits = $( 'option', '#__participant_lookup' );
 		
 		// Several hits and not manually chosen? Meh.
 		if ( hits.length != 1 && ! searches.settings.manually_selected )
@@ -120,10 +121,12 @@ sd_meeting_tool_registration_ui_text_searches = searches = {
 		else
 			value = $('#__participant_lookup').val();
 		
+		var value_text = $('#__participant_lookup option[value=' + value + ']').text();
+		
 		$("#__text")
 			.attr('readonly', true)
 			.addClass('search_successful')
-			.val( value );
+			.val( value_text );
 		
 		if ( searches.settings.ajax_submit )
 		{
@@ -200,6 +203,10 @@ sd_meeting_tool_registration_ui_text_searches = searches = {
 			
 
 		$('#__participant_lookup')
+			.dblclick( function(e){
+				searches.settings.manually_selected = true;
+				sd_meeting_tool_registration_ui_text_searches.handle_enter(e);
+			})
 			.keydown( function(e){
 				if ( e.which == 13 )
 				{

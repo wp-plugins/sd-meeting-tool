@@ -1,12 +1,12 @@
 <?php
 /*                                                                                                                                                                                                                                                             
 Plugin Name: SD Meeting Tool Registration UI Text Searches
-Plugin URI: http://frimjukvara.sverigedemokraterna.se/meeting-control
+Plugin URI: https://it.sverigedemokraterna.se
 Description: Registration UI that works by searching for text strings.
-Version: 1.0
+Version: 1.1
 Author: Sverigedemokraterna IT
-Author URI: http://frimjukvara.sverigedemokraterna.se
-Author Email: it@mindreantre.se
+Author URI: https://it.sverigedemokraterna.se
+Author Email: it@sverigedemokraterna.se
 */
 
 if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('You are not allowed to call this page directly.'); }
@@ -69,6 +69,14 @@ if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('You 
 	
 	@brief		Plugin providing a registration UI that works by searching for text strings.
 	@author		Edward Plainview	edward.plainview@sverigedemokraterna.se
+
+	@par		Changelog
+	
+	@par		1.1
+	
+	- Change: UUID is now an MD5, not a SHA512. It appears that inputs can't have names that long.
+	- Change: Selected text row is shown instead of ID number when registration is successful.
+	
 **/
 class SD_Meeting_Tool_Registration_UI_Text_Searches
 	extends SD_Meeting_Tool_0
@@ -103,7 +111,7 @@ class SD_Meeting_Tool_Registration_UI_Text_Searches
 		if ( ! SD_Meeting_Tool::check_admin_referrer( 'ajax_sd_mt_registration_ui_text_searches' ) )
 			die();
 		
-		$registration = apply_filters( 'sd_mt_get_registration', $_POST['registration_id'] );
+		$registration = $this->filters( 'sd_mt_get_registration', $_POST['registration_id'] );
 		if ( $registration === false )
 			die();
 		
@@ -111,13 +119,13 @@ class SD_Meeting_Tool_Registration_UI_Text_Searches
 		{
 			case 'fetch_participants':
 				$list_id = $registration->data->list_id;
-				$list = apply_filters( 'sd_mt_get_list', $list_id );
+				$list = $this->filters( 'sd_mt_get_list', $list_id );
 				if ( $list === false )
 					die();
-				$list = apply_filters( 'sd_mt_list_participants', $list );
+				$list = $this->filters( 'sd_mt_list_participants', $list );
 				
 				$display_format_id = $list->data->display_format_id;
-				$display_format = apply_filters( 'sd_mt_get_display_format', $display_format_id );
+				$display_format = $this->filters( 'sd_mt_get_display_format', $display_format_id );
 
 				$returnValue = array(
 					'hash' => '',
@@ -125,7 +133,7 @@ class SD_Meeting_Tool_Registration_UI_Text_Searches
 				);
 				
 				foreach( $list->participants as $participant )
-					$returnValue['participants'][ $participant->id ] = apply_filters( 'sd_mt_display_participant', $participant, $display_format );
+					$returnValue['participants'][ $participant->id ] = $this->filters( 'sd_mt_display_participant', $participant, $display_format );
 				
 				$returnValue['hash'] = $this->hash( serialize( $returnValue['participants'] ) );
 				
@@ -143,14 +151,14 @@ class SD_Meeting_Tool_Registration_UI_Text_Searches
 				if ( $latest_list < 1 )
 					die();
 				
-				$list = apply_filters( 'sd_mt_get_list', $latest_list );
+				$list = $this->filters( 'sd_mt_get_list', $latest_list );
 				if ( $list === false )
 					die();
-					
-				$list = apply_filters( 'sd_mt_list_participants', $list );
+				
+				$list = $this->filters( 'sd_mt_list_participants', $list );
 				$participants = $list->participants;
 				
-				$display_format = apply_filters( 'sd_mt_get_display_format', $list->data->display_format_id );
+				$display_format = $this->filters( 'sd_mt_get_display_format', $list->data->display_format_id );
 				
 				// We want the first xx amount
 				$participants = array_splice( $participants, 0, $ui->data->latest_list_count );
@@ -161,7 +169,7 @@ class SD_Meeting_Tool_Registration_UI_Text_Searches
 				foreach( $participants as $participant )
 				{
 					$time = date('Y-m-d H:i:s', $participant->registered );
-					$display_name = apply_filters( 'sd_mt_display_participant', $participant, $display_format );
+					$display_name = $this->filters( 'sd_mt_display_participant', $participant, $display_format );
 					$t_body .= '
 						<tr>
 							<td>' . $display_name . '</td>
@@ -185,7 +193,7 @@ class SD_Meeting_Tool_Registration_UI_Text_Searches
 				echo $returnValue;
 				break;
 			case 'submit_registration':
-				apply_filters( 'sd_mt_process_registration', $registration );
+				$this->filters( 'sd_mt_process_registration', $registration );
 				break;
 		}
 		die();
@@ -208,7 +216,7 @@ class SD_Meeting_Tool_Registration_UI_Text_Searches
 		$nameprefix = '[' . $uuid . ']';
 		$updated = false;
 		
-		$lists = apply_filters( 'sd_mt_get_all_lists', array() );
+		$lists = $this->filters( 'sd_mt_get_all_lists', array() );
 		$lists_as_options = array();
 		foreach( $lists as $list )
 			$lists_as_options[ $list->id ] = $list->data->name;
@@ -245,7 +253,7 @@ class SD_Meeting_Tool_Registration_UI_Text_Searches
 				'type' => 'select',
 				'value' => intval( $SD_Meeting_Tool_Registration_UI->data->latest_list ),
 				'label' => $this->_( 'Latest list' ),
-				'description' => $this->_( 'Show the first 10 registrations of a specified list. Can be used to show the latest registrations.' ),
+				'description' => $this->_( 'Show the first %s registrations of a specified list. Can be used to show the latest registrations.', $SD_Meeting_Tool_Registration_UI->data->latest_list_count ),
 				'options' => array( '' => $this->_('Do not show a list') ) + $lists_as_options,
 			),
 			'latest_list_count' => array(
@@ -291,9 +299,9 @@ class SD_Meeting_Tool_Registration_UI_Text_Searches
 		
 		$returnValue = '';
 		$returnValue .= '<h4>' . $this->_('General settings') . '</h4>';
-		$returnValue .= $this->display_form_table( array( 'inputs' => $inputs['general'] ) );
+		$returnValue .= $this->display_form_table( $inputs['general'] );
 		$returnValue .= '<h4>' . $this->_('Timing settings') . '</h4>';
-		$returnValue .= $this->display_form_table( array( 'inputs' => $inputs['timing'] ) );
+		$returnValue .= $this->display_form_table( $inputs['timing'] );
 		
 		return $returnValue;
 	}
@@ -326,15 +334,15 @@ class SD_Meeting_Tool_Registration_UI_Text_Searches
 		
 		// Does the participant exist?
 		$participant_id = intval( $_POST['text'] );
-		$participant = apply_filters( 'sd_mt_get_participant', $participant_id );
+		$participant = $this->filters( 'sd_mt_get_participant', $participant_id );
 		if ( ! is_object( $participant ) )
 			return $SD_Meeting_Tool_Registration;
 		
 		$list_id = $SD_Meeting_Tool_Registration->data->list_id;
-		$list = apply_filters( 'sd_mt_get_list', $list_id );
+		$list = $this->filters( 'sd_mt_get_list', $list_id );
 		if ( $list === false )
 			return $SD_Meeting_Tool_Registration;
-		$list = apply_filters( 'sd_mt_list_participants', $list );
+		$list = $this->filters( 'sd_mt_list_participants', $list );
 		
 		$exists = false;
 		foreach( $list->participants as $participant )
@@ -395,7 +403,7 @@ class SD_Meeting_Tool_Registration_UI_Text_Searches
 			),
 		);
 		
-		$display_latest_list = ($ui->data->latest_list > 0 ) && ( $ui->data->latest_list_count > 0 ); 
+		$display_latest_list = ( $ui->data->latest_list > 0 ) && ( $ui->data->latest_list_count > 0 ); 
 		$latest_list_div = $display_latest_list ? '<div class="latest_list"></div>' : '';
 		
 		$returnValue = '<div class="ui_text_searches ui_text_searches_' . $uuid . '">';
@@ -463,7 +471,7 @@ class SD_Meeting_Tool_Registration_UI_Text_Searches
 			return $SD_Meeting_Tool_Registration_UI;
 		
 		$post = $_POST[ $uuid ];									// Convenience
-		
+
 		$SD_Meeting_Tool_Registration_UI->data->ajax_submit = isset($post[ 'ajax_submit' ]);
 		$SD_Meeting_Tool_Registration_UI->data->disabled_color = $post[ 'disabled_color' ];
 		$SD_Meeting_Tool_Registration_UI->data->enter_delay = intval($post[ 'enter_delay' ]);
@@ -512,7 +520,7 @@ class SD_Meeting_Tool_Registration_UI_Text_Search
 		parent::__construct();
 		$this->name = 'Text Search';
 		$this->data->version = '1.0';
-		$this->data->uuid = hash( 'sha512', rand(0, PHP_INT_MAX ) );
+		$this->data->uuid = md5( rand(0, PHP_INT_MAX ) );
 		$this->data->ajax_submit = true;
 		$this->data->disabled_color = '#999';
 		$this->data->enter_delay = 1000;

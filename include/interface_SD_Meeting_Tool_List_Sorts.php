@@ -13,9 +13,9 @@ interface interface_SD_Meeting_Tool_List_Sorts
 		Deletes a sort.
 		
 		@wp_filter
-		@param		$SD_Meeting_Tool_List_Sort		List sort order to delete.
+		@param		SD_Meeting_Tool_List_Sort		$sort		List sort order to delete.
 	**/
-	public function sd_mt_delete_list_sort( $SD_Meeting_Tool_List_Sort );
+	public function sd_mt_delete_list_sort( $sort );
 	
 	/**
 		Return an array of all available list sorts.
@@ -29,8 +29,8 @@ interface interface_SD_Meeting_Tool_List_Sorts
 		Return a list sort.
 		
 		@wp_filter
-		@param		$id		List sort order ID to get.
-		@return				SD_Meeting_Tool_list_sort, or false if it doesn't exist. 
+		@param		integer							$id			List sort order ID to get.
+		@return		SD_Meeting_Tool_list_sort, or false if it doesn't exist. 
 	**/
 	public function sd_mt_get_list_sort( $id );
 	
@@ -38,11 +38,11 @@ interface interface_SD_Meeting_Tool_List_Sorts
 		Sorts a list given a specific List Sort.
 		
 		@wp_filter
-		@param		$SD_Meeting_Tool_List					List to sort.
-		@param		$SD_Meeting_Tool_List_Sort				$SD_Meeting_Tool_List_Sort
-		@return												The sorted SD_Meeting_Tool_List.
+		@param		SD_Meeting_Tool_List			$list		List to sort.
+		@param		SD_Meeting_Tool_List_Sort		$sort		$SD_Meeting_Tool_List_Sort
+		@return		The sorted SD_Meeting_Tool_List.
 	**/
-	public function sd_mt_sort_list( $SD_Meeting_Tool_List, $SD_Meeting_Tool_List_Sort );
+	public function sd_mt_sort_list( $list, $sort );
 	
 	/**
 		Creates or updates a list sort.
@@ -50,8 +50,8 @@ interface interface_SD_Meeting_Tool_List_Sorts
 		If the ID is null, a new list sort will be created in the database.
 		
 		@wp_filter
-		@param		$SD_Meeting_Tool_List_Sort			List sort to create or update.
-		@return											The complete list sort.
+		@param		SD_Meeting_Tool_List_Sort		$sort		List sort to create or update.
+		@return		The complete list sort.
 	**/
-	public function sd_mt_update_list_sort( $SD_Meeting_Tool_List_Sort );
+	public function sd_mt_update_list_sort( $sort );
 }

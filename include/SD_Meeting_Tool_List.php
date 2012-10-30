@@ -62,6 +62,16 @@ class SD_Meeting_Tool_List
 	}
 	
 	/**
+		@brief		Returns the display format used by this list.
+		@return		The SD_Meeting_Tool_Display_Format used by this list.
+		@see		SD_Meeting_Tool_Display_Format
+	**/
+	public function get_display_format()
+	{
+		return apply_filters( 'sd_mt_get_display_format', $this->display_format_id() );
+	}
+	
+	/**
 		Returns the current list sort.
 		@return		The list's current list sort.
 	**/
